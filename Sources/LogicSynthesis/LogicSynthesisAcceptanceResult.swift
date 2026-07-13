@@ -1,13 +1,13 @@
 import Foundation
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct LogicSynthesisAcceptanceResult: Sendable, Hashable, Codable {
     public let state: LogicSynthesisAcceptanceState
-    public let diagnostics: [XcircuiteEngineDiagnostic]
+    public let diagnostics: [DesignDiagnostic]
 
     public init(
         state: LogicSynthesisAcceptanceState,
-        diagnostics: [XcircuiteEngineDiagnostic] = []
+        diagnostics: [DesignDiagnostic] = []
     ) {
         self.state = state
         self.diagnostics = diagnostics

@@ -1,5 +1,5 @@
 import Foundation
-import XcircuitePackage
+import CircuiteFoundation
 import LogicIR
 import LogicEngineCore
 
@@ -7,18 +7,18 @@ public struct LogicSimulationPayload: Sendable, Hashable, Codable {
     public var traceCount: Int
     public var assertionFailureCount: Int
     public var eventCount: Int
-    public var waveform: XcircuiteFileReference?
-    public var assertionReport: XcircuiteFileReference?
-    public var cancellationRecord: XcircuiteFileReference?
+    public var waveform: ArtifactReference?
+    public var assertionReport: ArtifactReference?
+    public var cancellationRecord: ArtifactReference?
     public var finalValues: [String: LogicVector]
 
     public init(
         traceCount: Int,
         assertionFailureCount: Int,
         eventCount: Int = 0,
-        waveform: XcircuiteFileReference? = nil,
-        assertionReport: XcircuiteFileReference? = nil,
-        cancellationRecord: XcircuiteFileReference? = nil,
+        waveform: ArtifactReference? = nil,
+        assertionReport: ArtifactReference? = nil,
+        cancellationRecord: ArtifactReference? = nil,
         finalValues: [String: LogicVector] = [:]
     ) {
         self.traceCount = traceCount
@@ -45,9 +45,9 @@ public struct LogicSimulationPayload: Sendable, Hashable, Codable {
         traceCount = try container.decode(Int.self, forKey: .traceCount)
         assertionFailureCount = try container.decode(Int.self, forKey: .assertionFailureCount)
         eventCount = try container.decodeIfPresent(Int.self, forKey: .eventCount) ?? traceCount
-        waveform = try container.decodeIfPresent(XcircuiteFileReference.self, forKey: .waveform)
-        assertionReport = try container.decodeIfPresent(XcircuiteFileReference.self, forKey: .assertionReport)
-        cancellationRecord = try container.decodeIfPresent(XcircuiteFileReference.self, forKey: .cancellationRecord)
+        waveform = try container.decodeIfPresent(ArtifactReference.self, forKey: .waveform)
+        assertionReport = try container.decodeIfPresent(ArtifactReference.self, forKey: .assertionReport)
+        cancellationRecord = try container.decodeIfPresent(ArtifactReference.self, forKey: .cancellationRecord)
         finalValues = try container.decodeIfPresent([String: LogicVector].self, forKey: .finalValues) ?? [:]
     }
 }

@@ -15,7 +15,6 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../CircuiteFoundation"),
-        .package(path: "../XcircuitePackage"),
         .package(path: "../LogicDesign"),
         .package(path: "../TimingEngine"),
         .package(path: "../PDKKit"),
@@ -25,7 +24,6 @@ let package = Package(
             name: "LogicEngineCore",
             dependencies: [
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "XcircuitePackage", package: "XcircuitePackage"),
             ]
         ),
         .target(
@@ -34,7 +32,6 @@ let package = Package(
                 "LogicEngineCore",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
                 .product(name: "LogicIR", package: "LogicDesign"),
-                .product(name: "XcircuitePackage", package: "XcircuitePackage"),
             ]
         ),
         .target(
@@ -43,7 +40,6 @@ let package = Package(
                 "LogicEngineCore",
                 "LogicLowering",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "XcircuitePackage", package: "XcircuitePackage"),
                 .product(name: "LogicIR", package: "LogicDesign"),
             ]
         ),
@@ -54,7 +50,6 @@ let package = Package(
                 "LogicLowering",
                 "LogicSimulation",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "XcircuitePackage", package: "XcircuitePackage"),
                 .product(name: "LogicIR", package: "LogicDesign"),
                 .product(name: "PowerIntent", package: "LogicDesign"),
                 .product(name: "TimingCore", package: "TimingEngine"),

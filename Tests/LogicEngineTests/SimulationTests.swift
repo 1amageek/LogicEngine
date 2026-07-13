@@ -3,7 +3,7 @@ import LogicEngineCore
 import LogicIR
 import LogicSimulation
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Native logic simulation")
 struct SimulationTests {
@@ -91,10 +91,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "extended-semantics-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "extended_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -153,10 +153,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "arithmetic_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -235,10 +235,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "vector-logical-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_logical_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -319,10 +319,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "signed-arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "signed_arithmetic_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -400,10 +400,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "reset_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -478,10 +478,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "dff-reset-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "dff_reset_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -571,10 +571,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "async-reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "async_reset_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -635,10 +635,10 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "case-equality-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "case_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -707,10 +707,10 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "sequential-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "sequential_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -789,10 +789,10 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "negative-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "negative_edge_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -867,14 +867,14 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "vector-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "vector-stimulus.json", root: root, kind: .testPattern)
-        let designDigest = designReference.sha256 ?? ""
+        let designDigest = designReference.digest.hexadecimalValue
         let request = LogicSimulationRequest(
             runID: "vector-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_top",
-                designDigest: designDigest
+                designRevision: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -934,7 +934,7 @@ struct SimulationTests {
         let envelope = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
 
         #expect(envelope.status == .blocked)
-        #expect(envelope.diagnostics.first?.code == "LOGIC_SEMANTICS_UNSUPPORTED")
+        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_SEMANTICS_UNSUPPORTED")
         #expect(envelope.payload.traceCount == 0)
     }
 
@@ -1012,16 +1012,16 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "cycle-simulation",
             inputs: [designReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "cycle_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             artifactDirectory: "outputs"
         ))
 
         #expect(envelope.status == .failed)
-        #expect(envelope.diagnostics.first?.code == "LOGIC_COMBINATIONAL_CYCLE")
+        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_COMBINATIONAL_CYCLE")
     }
 
     @Test("rejects multiple output drivers before simulation")
@@ -1056,35 +1056,38 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "multiple-driver-simulation",
             inputs: [designReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: designReference,
                 topDesignName: "multiple_driver_top",
-                designDigest: designReference.sha256 ?? ""
+                designRevision: designReference.digest
             ),
             artifactDirectory: "outputs"
         ))
 
         #expect(envelope.status == .failed)
-        #expect(envelope.diagnostics.first?.code == "LOGIC_DESIGN_INVALID")
+        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_DESIGN_INVALID")
     }
 
     private func writeJSON<T: Encodable>(
         _ value: T,
         name: String,
         root: URL,
-        kind: XcircuiteFileKind
-    ) throws -> XcircuiteFileReference {
+        kind: ArtifactKind
+    ) throws -> ArtifactReference {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: root.appending(path: name), options: [.atomic])
-        return XcircuiteFileReference(
-            artifactID: name,
-            path: name,
-            kind: kind,
-            format: .json,
-            sha256: XcircuiteHasher().sha256(data: data),
-            byteCount: Int64(data.count)
+        return ArtifactReference(
+            id: try ArtifactID(rawValue: name),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: name),
+                role: .input,
+                kind: kind,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
         )
     }
 }

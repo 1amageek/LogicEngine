@@ -1,19 +1,25 @@
 import Foundation
+import CircuiteFoundation
 import LogicEngineCore
-import XcircuitePackage
 
 public struct LogicLoweringResult: Sendable, Hashable, Codable {
-    public var status: XcircuiteEngineExecutionStatus
+    public var status: LogicExecutionStatus
     public var document: LogicDesignDocument?
-    public var diagnostics: [XcircuiteEngineDiagnostic]
+    public var payload: LogicLoweringPayload
+    public var artifacts: [ArtifactReference]
+    public var diagnostics: [DesignDiagnostic]
 
     public init(
-        status: XcircuiteEngineExecutionStatus,
+        status: LogicExecutionStatus,
         document: LogicDesignDocument? = nil,
-        diagnostics: [XcircuiteEngineDiagnostic] = []
+        payload: LogicLoweringPayload = LogicLoweringPayload(),
+        artifacts: [ArtifactReference] = [],
+        diagnostics: [DesignDiagnostic] = []
     ) {
         self.status = status
         self.document = document
+        self.payload = payload
+        self.artifacts = artifacts
         self.diagnostics = diagnostics
     }
 }

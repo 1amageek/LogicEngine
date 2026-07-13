@@ -4,7 +4,7 @@ import LogicIR
 import PDKCore
 import LogicSynthesis
 import TimingCore
-import XcircuitePackage
+import CircuiteFoundation
 
 struct LogicEngineTestFixture {
     static func workspaceRootURL() -> URL {
@@ -24,29 +24,33 @@ struct LogicEngineTestFixture {
 
     static func reference(
         named name: String,
-        kind: XcircuiteFileKind = .other,
-        format: XcircuiteFileFormat = .json
-    ) throws -> XcircuiteFileReference {
+        kind: ArtifactKind = .other,
+        format: ArtifactFormat = .json
+    ) throws -> ArtifactReference {
         let url = try url(named: name)
         let data = try Data(contentsOf: url)
-        let hasher = XcircuiteHasher()
-        return XcircuiteFileReference(
-            artifactID: name,
-            path: url.path(percentEncoded: false),
+        let locator = ArtifactLocator(
+            location: try ArtifactLocation(fileURL: url),
+            role: .input,
             kind: kind,
-            format: format,
-            sha256: hasher.sha256(data: data),
-            byteCount: Int64(data.count)
+            format: format
+        )
+        return ArtifactReference(
+            id: try ArtifactID(rawValue: name),
+            locator: locator,
+            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
         )
     }
 
-    static func designReference(named name: String = "and-design") throws -> LogicDesignReference {
+    static func designReference(named name: String = "and-design") throws -> LogicFoundationDesignReference {
         let artifact = try reference(named: name, kind: .netlist)
-        guard let digest = artifact.sha256 else {
-            throw LogicExecutionError.artifactDigestMismatch(artifact.path)
-        }
         let topDesignName = name == "and-design" ? "and_top" : "unsupported_top"
-        return LogicDesignReference(artifact: artifact, topDesignName: topDesignName, designDigest: digest)
+        return LogicFoundationDesignReference(
+            artifact: artifact,
+            topDesignName: topDesignName,
+            designRevision: artifact.digest
+        )
     }
 
     static func temporaryOutputDirectory() throws -> URL {
@@ -62,16 +66,13 @@ struct LogicEngineTestFixture {
         let libraryArtifact = try reference(named: "logic-cells", kind: .timingLibrary, format: .json)
         let constraintsArtifact = try reference(named: "logic-constraints", kind: .constraint, format: .json)
         let pdkArtifact = try reference(named: "pdk-manifest", kind: .technology, format: .json)
-        guard let pdkDigest = pdkArtifact.sha256 else {
-            throw LogicExecutionError.artifactDigestMismatch(pdkArtifact.path)
-        }
         return LogicSynthesisRequest(
             runID: "logic-synthesis-fixture",
             inputs: [design.artifact, libraryArtifact, constraintsArtifact, pdkArtifact],
             design: design,
             libraries: [TimingLibraryReference(artifact: libraryArtifact, cornerIDs: ["typical"])],
             constraints: TimingConstraintReference(artifact: constraintsArtifact, modeIDs: ["default"]),
-            pdk: PDKReference(manifest: pdkArtifact, processID: "logic-fixture", version: "1", digest: pdkDigest),
+            pdk: PDKReference(manifest: pdkArtifact, processID: "logic-fixture", version: "1", digest: pdkArtifact.sha256),
             artifactDirectory: outputDirectory?.path(percentEncoded: false)
         )
     }

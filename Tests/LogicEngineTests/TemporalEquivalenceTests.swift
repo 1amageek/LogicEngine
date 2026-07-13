@@ -3,7 +3,7 @@ import LogicEngineCore
 import LogicIR
 import LogicSynthesis
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Bounded temporal equivalence")
 struct TemporalEquivalenceTests {
@@ -77,7 +77,7 @@ struct TemporalEquivalenceTests {
         #expect(result.payload.proofStatus == .counterexample)
         #expect(result.payload.mismatchCount == 1)
         #expect(result.payload.counterexample != nil)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_BOUNDED_TEMPORAL_COUNTEREXAMPLE" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_BOUNDED_TEMPORAL_COUNTEREXAMPLE" })
     }
 
     @Test("blocks a trace that exceeds the declared sample bound")
@@ -106,28 +106,28 @@ struct TemporalEquivalenceTests {
 
         #expect(result.status == .blocked)
         #expect(result.payload.proofStatus == .blocked)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_PREREQUISITE_MISSING" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_PREREQUISITE_MISSING" })
     }
 
     private func makeRequest(
         runID: String,
-        referenceArtifact: XcircuiteFileReference,
-        implementationArtifact: XcircuiteFileReference,
-        stimulusArtifact: XcircuiteFileReference,
+        referenceArtifact: ArtifactReference,
+        implementationArtifact: ArtifactReference,
+        stimulusArtifact: ArtifactReference,
         sampleLimit: Int
     ) -> LogicBoundedTemporalEquivalenceRequest {
         LogicBoundedTemporalEquivalenceRequest(
             runID: runID,
             inputs: [referenceArtifact, implementationArtifact, stimulusArtifact],
-            referenceDesign: LogicDesignReference(
+            referenceDesign: LogicFoundationDesignReference(
                 artifact: referenceArtifact,
                 topDesignName: "temporal_top",
-                designDigest: referenceArtifact.sha256 ?? ""
+                designRevision: referenceArtifact.digest
             ),
-            implementationDesign: LogicDesignReference(
+            implementationDesign: LogicFoundationDesignReference(
                 artifact: implementationArtifact,
                 topDesignName: "temporal_top",
-                designDigest: implementationArtifact.sha256 ?? ""
+                designRevision: implementationArtifact.digest
             ),
             stimulus: stimulusArtifact,
             outputSignals: ["y"],
@@ -191,20 +191,23 @@ struct TemporalEquivalenceTests {
         _ value: T,
         name: String,
         root: URL,
-        kind: XcircuiteFileKind
-    ) throws -> XcircuiteFileReference {
+        kind: ArtifactKind
+    ) throws -> ArtifactReference {
         let url = root.appending(path: name)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: url, options: .atomic)
-        return XcircuiteFileReference(
-            artifactID: name,
-            path: name,
-            kind: kind,
-            format: .json,
-            sha256: XcircuiteHasher().sha256(data: data),
-            byteCount: Int64(data.count)
+        return ArtifactReference(
+            id: try ArtifactID(rawValue: name),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: name),
+                role: .input,
+                kind: kind,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
         )
     }
 }

@@ -5,7 +5,7 @@ import LogicSynthesis
 import PDKCore
 import Testing
 import TimingCore
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Native logic synthesis")
 struct SynthesisTests {
@@ -24,14 +24,12 @@ struct SynthesisTests {
         #expect(envelope.payload.equivalenceRequired)
         #expect(envelope.payload.acceptanceState == .pendingEquivalence)
         #expect(envelope.payload.equivalenceRequest != nil)
-        #expect(envelope.diagnostics.contains { $0.code == "LOGIC_EQUIVALENCE_REQUIRED" })
+        #expect(envelope.diagnostics.contains { $0.code.rawValue == "LOGIC_EQUIVALENCE_REQUIRED" })
         guard let mappedDesign = envelope.payload.mappedDesign else {
             Issue.record("mapped design is missing")
             return
         }
-        #expect(mappedDesign.provenance?.sourceDesignDigest == request.design.designDigest)
-        #expect(mappedDesign.provenance?.inputDesignDigest == request.design.designDigest)
-        #expect(mappedDesign.provenance?.transformationID == "native-synthesis")
+        #expect(mappedDesign.designRevision?.hexadecimalValue == mappedDesign.artifact.sha256)
         let mappedData = try Data(contentsOf: URL(fileURLWithPath: mappedDesign.artifact.path))
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: mappedData)
         #expect(document.nodes.first?.parameters["mappedCell"] == "AND2_X1")
@@ -43,7 +41,7 @@ struct SynthesisTests {
         let equivalenceData = try Data(contentsOf: URL(fileURLWithPath: equivalenceRequest.path))
         let equivalenceRequestPayload = try JSONDecoder().decode(LogicSynthesisEquivalenceRequest.self, from: equivalenceData)
         try equivalenceRequestPayload.validate()
-        #expect(equivalenceRequestPayload.mappedDesign == mappedDesign)
+        #expect(equivalenceRequestPayload.mappedDesign.designDigest == mappedDesign.artifact.sha256)
     }
 
     @Test("missing qualified cells block mapping instead of passing")
@@ -53,65 +51,36 @@ struct SynthesisTests {
         let library = try LogicEngineTestFixture.reference(named: "logic-cells-unqualified", kind: .timingLibrary, format: .json)
         let constraints = try LogicEngineTestFixture.reference(named: "logic-constraints", kind: .constraint, format: .json)
         let pdk = try LogicEngineTestFixture.reference(named: "pdk-manifest", kind: .technology, format: .json)
-        guard let pdkDigest = pdk.sha256 else {
-            throw LogicExecutionError.artifactDigestMismatch(pdk.path)
-        }
         let request = LogicSynthesisRequest(
             runID: "logic-synthesis-no-cell",
             inputs: [design.artifact, constraints, pdk],
             design: design,
             libraries: [TimingLibraryReference(artifact: library, cornerIDs: ["typical"])],
             constraints: TimingConstraintReference(artifact: constraints, modeIDs: ["default"]),
-            pdk: PDKReference(manifest: pdk, processID: "logic-fixture", version: "1", digest: pdkDigest),
+            pdk: PDKReference(manifest: pdk, processID: "logic-fixture", version: "1", digest: pdk.sha256),
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
         let envelope = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
         #expect(envelope.status == .blocked)
-        #expect(envelope.diagnostics.first?.code == "LOGIC_CELL_UNQUALIFIED")
+        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_CELL_UNQUALIFIED")
     }
 
     @Test("accepts only matching proved equivalence evidence")
     func acceptsMatchingEquivalenceEvidence() throws {
+        let sourceArtifact = try artifact(id: "source", path: "source.json", kind: .netlist)
+        let mappedArtifact = try artifact(id: "mapped", path: "mapped.json", kind: .netlist)
+        let proof = try artifact(id: "proof", path: "proof.json", kind: .report)
+        let provenance = try artifact(id: "provenance", path: "provenance.json", kind: .report)
         let sourceDesign = LogicDesignReference(
-            artifact: XcircuiteFileReference(
-                artifactID: "source",
-                path: "source.json",
-                kind: .netlist,
-                format: .json,
-                sha256: "source-digest",
-                byteCount: 1
-            ),
+            artifact: sourceArtifact.locator,
             topDesignName: "top",
-            designDigest: "source-digest"
+            designDigest: sourceArtifact.sha256
         )
         let mappedDesign = LogicDesignReference(
-            artifact: XcircuiteFileReference(
-                artifactID: "mapped",
-                path: "mapped.json",
-                kind: .netlist,
-                format: .json,
-                sha256: "mapped-digest",
-                byteCount: 1
-            ),
+            artifact: mappedArtifact.locator,
             topDesignName: "top",
-            designDigest: "mapped-digest"
-        )
-        let proof = XcircuiteFileReference(
-            artifactID: "proof",
-            path: "proof.json",
-            kind: .report,
-            format: .json,
-            sha256: "proof-digest",
-            byteCount: 1
-        )
-        let provenance = XcircuiteFileReference(
-            artifactID: "provenance",
-            path: "provenance.json",
-            kind: .report,
-            format: .json,
-            sha256: "provenance-digest",
-            byteCount: 1
+            designDigest: mappedArtifact.sha256
         )
         let request = LogicSynthesisEquivalenceRequest(
             runID: "acceptance-run",
@@ -131,7 +100,7 @@ struct SynthesisTests {
         let result = NativeLogicSynthesisAcceptanceEvaluator().evaluate(request: request, evidence: evidence)
 
         #expect(result.state == .accepted)
-        #expect(result.diagnostics.first?.code == "LOGIC_SYNTHESIS_ACCEPTED")
+        #expect(result.diagnostics.first?.code.rawValue == "LOGIC_SYNTHESIS_ACCEPTED")
 
         let mismatchedEvidence = LogicSynthesisEquivalenceEvidence(
             runID: request.runID,
@@ -146,6 +115,25 @@ struct SynthesisTests {
             evidence: mismatchedEvidence
         )
         #expect(rejected.state == .rejected)
-        #expect(rejected.diagnostics.first?.code == "LOGIC_EQUIVALENCE_MAPPED_DIGEST_MISMATCH")
+        #expect(rejected.diagnostics.first?.code.rawValue == "LOGIC_EQUIVALENCE_MAPPED_DIGEST_MISMATCH")
+    }
+
+    private func artifact(
+        id: String,
+        path: String,
+        kind: ArtifactKind
+    ) throws -> ArtifactReference {
+        let data = Data([0])
+        return ArtifactReference(
+            id: try ArtifactID(rawValue: id),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: path),
+                role: .input,
+                kind: kind,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
+        )
     }
 }

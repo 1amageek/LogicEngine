@@ -1,13 +1,13 @@
 import Foundation
-import XcircuitePackage
+import LogicEngineCore
 
 public struct LogicQualificationExpectation: Sendable, Hashable, Codable {
-    public var expectedStatus: XcircuiteEngineExecutionStatus
+    public var expectedStatus: LogicExecutionStatus
     public var requiredDiagnosticCodes: [String]
     public var forbiddenDiagnosticCodes: [String]
 
     public init(
-        expectedStatus: XcircuiteEngineExecutionStatus,
+        expectedStatus: LogicExecutionStatus,
         requiredDiagnosticCodes: [String] = [],
         forbiddenDiagnosticCodes: [String] = []
     ) {

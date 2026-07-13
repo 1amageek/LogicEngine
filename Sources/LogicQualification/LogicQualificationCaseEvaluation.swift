@@ -1,10 +1,10 @@
 import Foundation
-import XcircuitePackage
+import LogicEngineCore
 
 public struct LogicQualificationCaseEvaluation: Sendable, Hashable, Codable {
     public var caseID: String
     public var matched: Bool
-    public var observedStatus: XcircuiteEngineExecutionStatus
+    public var observedStatus: LogicExecutionStatus
     public var observedDiagnosticCodes: [String]
     public var observedArtifactIDs: [String]
     public var mismatches: [String]
@@ -12,7 +12,7 @@ public struct LogicQualificationCaseEvaluation: Sendable, Hashable, Codable {
     public init(
         caseID: String,
         matched: Bool,
-        observedStatus: XcircuiteEngineExecutionStatus,
+        observedStatus: LogicExecutionStatus,
         observedDiagnosticCodes: [String],
         observedArtifactIDs: [String],
         mismatches: [String]

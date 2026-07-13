@@ -41,8 +41,8 @@ Provide independently qualifiable functional simulation and logic synthesis over
   results; it never upgrades bounded traces into an unbounded claim.
 - Xcircuite owns flow construction, artifact persistence, qualification gates, repair loops, approval and resume.
 - The package never imports the Xcircuite runtime or circuit-studio. The
-  retained `XcircuitePackage` dependency is restricted to the explicit,
-  package-owned compatibility boundary and never appears in Foundation-native
+  workspace persistence dependency is restricted to the explicit,
+  package-owned flow boundary and never appears in Foundation-native
   request or result payloads.
 
 ## Required developer surfaces

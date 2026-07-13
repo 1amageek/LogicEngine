@@ -29,9 +29,9 @@ DesignFlowKernel and .xcircuite artifacts
 ```
 
 Backends may depend on lower-level data packages. This package must never import
-`Xcircuite` or `circuit-studio`. The retained `XcircuitePackage` imports are
-compatibility inputs owned by LogicEngine and are not the Foundation-native
-public contract.
+`Xcircuite` or `circuit-studio`. Flow and project storage are supplied by
+`DesignFlowKernel` and the injected Xcircuite workspace store; they are not
+part of the Foundation-native public contract.
 
 ## Trust model
 

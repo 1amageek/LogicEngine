@@ -1,27 +1,27 @@
 import Foundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
+import CircuiteFoundation
 
-public struct LogicBoundedTemporalEquivalenceRequest: XcircuiteEngineRequest {
+public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
     public var schemaVersion: Int
     public var runID: String
-    public var inputs: [XcircuiteFileReference]
-    public var referenceDesign: LogicDesignReference
-    public var implementationDesign: LogicDesignReference
-    public var stimulus: XcircuiteFileReference
+    public var inputs: [ArtifactReference]
+    public var referenceDesign: LogicFoundationDesignReference
+    public var implementationDesign: LogicFoundationDesignReference
+    public var stimulus: ArtifactReference
     public var outputSignals: [String]
     public var sampleLimit: Int
     public var artifactDirectory: String?
 
     public init(
         runID: String,
-        inputs: [XcircuiteFileReference],
-        referenceDesign: LogicDesignReference,
-        implementationDesign: LogicDesignReference,
-        stimulus: XcircuiteFileReference,
+        inputs: [ArtifactReference],
+        referenceDesign: LogicFoundationDesignReference,
+        implementationDesign: LogicFoundationDesignReference,
+        stimulus: ArtifactReference,
         outputSignals: [String] = [],
         sampleLimit: Int,
         artifactDirectory: String? = nil
@@ -52,13 +52,13 @@ public struct LogicBoundedTemporalEquivalenceRequest: XcircuiteEngineRequest {
                 "bounded temporal equivalence designs must use the same top design"
             )
         }
-        guard !referenceDesign.designDigest.isEmpty,
-              !implementationDesign.designDigest.isEmpty else {
+        guard referenceDesign.designRevision != nil,
+              implementationDesign.designRevision != nil else {
             throw LogicExecutionError.invalidArtifact(
                 "bounded temporal equivalence designs must carry digests"
             )
         }
-        guard !stimulus.path.isEmpty else {
+        guard !stimulus.locator.location.value.isEmpty else {
             throw LogicExecutionError.invalidArtifact("bounded temporal equivalence stimulus path is empty")
         }
         guard sampleLimit > 0 else {

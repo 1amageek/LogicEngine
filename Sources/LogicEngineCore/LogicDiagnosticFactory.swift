@@ -1,21 +1,22 @@
-import Foundation
-import XcircuitePackage
+import CircuiteFoundation
 
 public enum LogicDiagnosticFactory {
     public static func make(
         for error: LogicExecutionError,
         entity: String? = nil
-    ) -> XcircuiteEngineDiagnostic {
-        XcircuiteEngineDiagnostic(
+    ) -> DesignDiagnostic {
+        DesignDiagnostic(
+            code: .trusted(code(for: error)),
             severity: .error,
-            code: code(for: error),
-            message: error.localizedDescription,
-            entity: entity,
-            suggestedActions: suggestedActions(for: error)
+            summary: error.localizedDescription,
+            detail: entity.map { "entity=\($0)" },
+            suggestedActions: suggestedActions(for: error).map {
+                SuggestedAction(code: "logic.action.\($0)", summary: $0)
+            }
         )
     }
 
-    public static func status(for error: LogicExecutionError) -> XcircuiteEngineExecutionStatus {
+    public static func status(for error: LogicExecutionError) -> LogicExecutionStatus {
         switch error {
         case .unsupportedNode, .missingPrerequisite, .unqualifiedCell, .unsupportedWaveform, .timedOut:
             return .blocked

@@ -2,7 +2,7 @@ import Foundation
 import LogicEngineCore
 import LogicIR
 import LogicSimulation
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalEquivalenceExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -18,7 +18,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
 
     public func execute(
         _ request: LogicBoundedTemporalEquivalenceRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicBoundedTemporalEquivalencePayload> {
+    ) async throws -> LogicBoundedTemporalEquivalenceResult {
         let startedAt = Date()
         do {
             try request.validate()
@@ -40,7 +40,9 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
             try stimulus.validate(against: referenceDesign)
             try stimulus.validate(against: implementationDesign)
             let requestDigest = try digest(of: request)
-            let stimulusDigest = XcircuiteHasher().sha256(data: stimulusData)
+            let stimulusDigest = try SHA256ContentDigester()
+                .digest(data: stimulusData, using: .sha256)
+                .hexadecimalValue
 
             let baseDirectory = request.artifactDirectory
                 ?? ".logic-engine/runs/\(request.runID)/bounded-temporal"
@@ -97,8 +99,10 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 runID: request.runID,
                 requestDigest: requestDigest,
                 stimulusDigest: stimulusDigest,
-                referenceDesignDigest: request.referenceDesign.designDigest,
-                implementationDesignDigest: request.implementationDesign.designDigest,
+                referenceDesignDigest: request.referenceDesign.designRevision?.hexadecimalValue
+                    ?? request.referenceDesign.artifact.digest.hexadecimalValue,
+                implementationDesignDigest: request.implementationDesign.designRevision?.hexadecimalValue
+                    ?? request.implementationDesign.artifact.digest.hexadecimalValue,
                 outputSignals: outputSignals,
                 sampleLimit: request.sampleLimit,
                 comparedSampleCount: Set(referenceReport.samples.map(\.time))
@@ -112,7 +116,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 fileName: "logic-bounded-temporal-equivalence-report.json",
                 request: request
             )
-            let counterexampleReference: XcircuiteFileReference?
+            let counterexampleReference: ArtifactReference?
             if differences.isEmpty {
                 counterexampleReference = nil
             } else {
@@ -123,16 +127,16 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 )
             }
             let simulationArtifacts = referenceArtifacts + implementationArtifacts
-            let diagnostics: [XcircuiteEngineDiagnostic]
+            let diagnostics: [DesignDiagnostic]
             if differences.isEmpty {
-                diagnostics = [XcircuiteEngineDiagnostic(
-                    severity: .info,
+                diagnostics = [DesignDiagnostic(
+                    severity: .information,
                     code: "LOGIC_BOUNDED_TEMPORAL_EQUIVALENCE_PROVED",
                     message: "The reference and implementation traces matched for the declared output signals and finite sample bound.",
                     suggestedActions: ["retain_bounded_equivalence_report", "request_qualified_unbounded_proof"]
                 )]
             } else {
-                diagnostics = [XcircuiteEngineDiagnostic(
+                diagnostics = [DesignDiagnostic(
                     severity: .error,
                     code: "LOGIC_BOUNDED_TEMPORAL_COUNTEREXAMPLE",
                     message: "The reference and implementation traces differ within the declared bounded proof scope.",
@@ -149,13 +153,13 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 equivalenceReport: reportReference,
                 counterexample: counterexampleReference
             )
-            return XcircuiteEngineResultEnvelope(
+            return LogicBoundedTemporalEquivalenceResult(
                 schemaVersion: LogicBoundedTemporalEquivalenceRequest.currentSchemaVersion,
                 runID: request.runID,
                 status: differences.isEmpty ? .completed : .failed,
                 diagnostics: diagnostics,
                 artifacts: simulationArtifacts + [reportReference] + (counterexampleReference.map { [$0] } ?? []),
-                metadata: XcircuiteEngineExecutionMetadata(
+                metadata: LogicExecutionMetadata(
                     engineID: "LogicBoundedTemporalEquivalence",
                     implementationID: "native-bounded-trace",
                     implementationVersion: implementationVersion,
@@ -172,7 +176,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         }
     }
 
-    private func decodeDesign(_ reference: XcircuiteFileReference) throws -> LogicDesignDocument {
+    private func decodeDesign(_ reference: ArtifactReference) throws -> LogicDesignDocument {
         let data = try artifactStore.read(reference)
         do {
             let design = try JSONDecoder().decode(LogicDesignDocument.self, from: data)
@@ -251,10 +255,10 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
 
     private func simulate(
         request: LogicBoundedTemporalEquivalenceRequest,
-        design: LogicDesignReference,
+        design: LogicFoundationDesignReference,
         role: String,
         outputDirectory: String
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicSimulationPayload> {
+    ) async throws -> LogicSimulationResult {
         try await NativeLogicSimulationEngine(artifactStore: artifactStore).execute(
             LogicSimulationRequest(
                 runID: "\(request.runID)-\(role)",
@@ -268,23 +272,20 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
     }
 
     private func labelArtifacts(
-        _ artifacts: [XcircuiteFileReference],
+        _ artifacts: [ArtifactReference],
         role: String
-    ) -> [XcircuiteFileReference] {
+    ) -> [ArtifactReference] {
         artifacts.map { labeled($0, role: role) }
     }
 
     private func labeled(
-        _ reference: XcircuiteFileReference,
+        _ reference: ArtifactReference,
         role: String
-    ) -> XcircuiteFileReference {
-        var labeledReference = reference
-        let suffix = reference.artifactID ?? "artifact"
-        labeledReference.artifactID = "logic-bounded-" + role + "-" + suffix
-        return labeledReference
+    ) -> ArtifactReference {
+        reference
     }
 
-    private func decodeReport(_ reference: XcircuiteFileReference) throws -> LogicSimulationReport {
+    private func decodeReport(_ reference: ArtifactReference) throws -> LogicSimulationReport {
         let data = try artifactStore.read(reference)
         do {
             return try JSONDecoder().decode(LogicSimulationReport.self, from: data)
@@ -324,7 +325,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         _ value: T,
         fileName: String,
         request: LogicBoundedTemporalEquivalenceRequest
-    ) throws -> XcircuiteFileReference {
+    ) throws -> ArtifactReference {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try artifactStore.write(
@@ -341,21 +342,23 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
     private func digest(of request: LogicBoundedTemporalEquivalenceRequest) throws -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        return XcircuiteHasher().sha256(data: try encoder.encode(request))
+        return try SHA256ContentDigester()
+            .digest(data: try encoder.encode(request), using: .sha256)
+            .hexadecimalValue
     }
 
     private func failureEnvelope(
         request: LogicBoundedTemporalEquivalenceRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) -> XcircuiteEngineResultEnvelope<LogicBoundedTemporalEquivalencePayload> {
-        XcircuiteEngineResultEnvelope(
+    ) -> LogicBoundedTemporalEquivalenceResult {
+        LogicBoundedTemporalEquivalenceResult(
             schemaVersion: LogicBoundedTemporalEquivalenceRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
             artifacts: [],
-            metadata: XcircuiteEngineExecutionMetadata(
+            metadata: LogicExecutionMetadata(
                 engineID: "LogicBoundedTemporalEquivalence",
                 implementationID: "native-bounded-trace",
                 implementationVersion: implementationVersion,

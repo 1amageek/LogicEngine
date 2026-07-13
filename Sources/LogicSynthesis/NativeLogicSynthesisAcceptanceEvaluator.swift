@@ -1,6 +1,6 @@
 import Foundation
 import LogicEngineCore
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct NativeLogicSynthesisAcceptanceEvaluator: LogicSynthesisAcceptanceEvaluating {
     public init() {}
@@ -49,8 +49,8 @@ public struct NativeLogicSynthesisAcceptanceEvaluator: LogicSynthesisAcceptanceE
             }
             return LogicSynthesisAcceptanceResult(
                 state: .accepted,
-                diagnostics: [XcircuiteEngineDiagnostic(
-                    severity: .info,
+                diagnostics: [DesignDiagnostic(
+                    severity: .information,
                     code: "LOGIC_SYNTHESIS_ACCEPTED",
                     message: "The mapped design is accepted for the declared equivalence proof scope.",
                     suggestedActions: ["retain_acceptance_record", "continue_to_next_flow_stage"]
@@ -58,7 +58,7 @@ public struct NativeLogicSynthesisAcceptanceEvaluator: LogicSynthesisAcceptanceE
             )
         } catch let error as LogicExecutionError {
             return rejected(
-                code: LogicDiagnosticFactory.make(for: error).code,
+                code: LogicDiagnosticFactory.make(for: error).code.rawValue,
                 message: error.localizedDescription,
                 actions: ["repair_equivalence_request_or_evidence", "rerun_equivalence"]
             )
@@ -78,7 +78,7 @@ public struct NativeLogicSynthesisAcceptanceEvaluator: LogicSynthesisAcceptanceE
     ) -> LogicSynthesisAcceptanceResult {
         LogicSynthesisAcceptanceResult(
             state: .rejected,
-            diagnostics: [XcircuiteEngineDiagnostic(
+            diagnostics: [DesignDiagnostic(
                 severity: .error,
                 code: code,
                 message: message,

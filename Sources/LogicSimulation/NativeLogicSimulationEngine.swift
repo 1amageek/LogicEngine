@@ -1,7 +1,7 @@
 import Foundation
+import CircuiteFoundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
 
 public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -17,7 +17,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
 
     public func execute(
         _ request: LogicSimulationRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicSimulationPayload> {
+    ) async throws -> LogicSimulationResult {
         let startedAt = Date()
         do {
             try validate(request)
@@ -26,9 +26,10 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 _ = try artifactStore.read(input)
             }
             let designData = try artifactStore.read(request.design.artifact)
-            let designDigest = request.design.artifact.sha256 ?? XcircuiteHasher().sha256(data: designData)
-            guard request.design.designDigest.isEmpty || request.design.designDigest == designDigest else {
-                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
+            let designDigest = request.design.artifact.digest.hexadecimalValue
+            guard request.design.designRevision?.hexadecimalValue == nil
+                || request.design.designRevision?.hexadecimalValue == designDigest else {
+                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
             }
             let design = try decodeDesign(designData)
             guard design.topDesignName == request.design.topDesignName else {
@@ -94,7 +95,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
     }
 
     private func loadStimulus(
-        _ reference: XcircuiteFileReference?,
+        _ reference: ArtifactReference?,
         design: LogicDesignDocument
     ) throws -> LogicStimulusDocument {
         guard let reference else {
@@ -500,7 +501,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         design: LogicDesignDocument,
         result: SimulationResult,
         startedAt: Date
-    ) throws -> XcircuiteEngineResultEnvelope<LogicSimulationPayload> {
+    ) throws -> LogicSimulationResult {
         let reportData: Data
         do {
             let encoder = JSONEncoder()
@@ -533,20 +534,23 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             format: .json
         )
         let failureCount = result.report.assertions.filter { !$0.passed }.count
-        let status: XcircuiteEngineExecutionStatus = failureCount == 0 ? .completed : .failed
-        var diagnostics: [XcircuiteEngineDiagnostic] = [
-            XcircuiteEngineDiagnostic(
-                severity: .info,
-                code: "LOGIC_SIMULATION_COMPLETED",
-                message: "Simulated \(result.report.eventCount) event(s) over \(result.report.samples.count) trace sample(s)."
+        let status: LogicEngineCore.LogicExecutionStatus = failureCount == 0 ? .completed : .failed
+        var diagnostics: [DesignDiagnostic] = [
+            DesignDiagnostic(
+                code: .trusted("logic.simulation.completed"),
+                severity: .information,
+                summary: "Simulated \(result.report.eventCount) event(s) over \(result.report.samples.count) trace sample(s)."
             ),
         ]
         if failureCount > 0 {
-            diagnostics.append(XcircuiteEngineDiagnostic(
+            diagnostics.append(DesignDiagnostic(
+                code: .trusted("logic.simulation.assertion-failed"),
                 severity: .error,
-                code: "LOGIC_ASSERTION_FAILED",
-                message: "\(failureCount) assertion(s) failed.",
-                suggestedActions: ["inspect_assertion_report", "review_waveform_at_assertion_time"]
+                summary: "\(failureCount) assertion(s) failed.",
+                suggestedActions: [
+                    SuggestedAction(code: "logic.simulation.inspect-report", summary: "inspect_assertion_report"),
+                    SuggestedAction(code: "logic.simulation.review-waveform", summary: "review_waveform_at_assertion_time")
+                ]
             ))
         }
         let completedAt = Date()
@@ -558,21 +562,11 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             assertionReport: reportReference,
             finalValues: result.finalValues
         )
-        return XcircuiteEngineResultEnvelope(
-            schemaVersion: LogicSimulationRequest.currentSchemaVersion,
-            runID: request.runID,
+        return LogicSimulationResult(
             status: status,
-            diagnostics: diagnostics,
+            payload: payload,
             artifacts: [waveformReference, reportReference],
-            metadata: XcircuiteEngineExecutionMetadata(
-                engineID: "LogicSimulation",
-                implementationID: "native-four-state",
-                implementationVersion: implementationVersion,
-                startedAt: startedAt,
-                completedAt: completedAt,
-                seed: request.seed
-            ),
-            payload: payload
+            diagnostics: diagnostics
         )
     }
 
@@ -580,9 +574,9 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         request: LogicSimulationRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) throws -> XcircuiteEngineResultEnvelope<LogicSimulationPayload> {
+    ) throws -> LogicSimulationResult {
         let diagnostic = LogicDiagnosticFactory.make(for: error)
-        let cancellationReference: XcircuiteFileReference?
+        let cancellationReference: ArtifactReference?
         if case .cancelled = error {
             let record = LogicCancellationRecord(
                 runID: request.runID,
@@ -611,25 +605,15 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         } else {
             cancellationReference = nil
         }
-        return XcircuiteEngineResultEnvelope(
-            schemaVersion: LogicSimulationRequest.currentSchemaVersion,
-            runID: request.runID,
+        return LogicSimulationResult(
             status: LogicDiagnosticFactory.status(for: error),
-            diagnostics: [diagnostic],
-            artifacts: cancellationReference.map { [$0] } ?? [],
-            metadata: XcircuiteEngineExecutionMetadata(
-                engineID: "LogicSimulation",
-                implementationID: "native-four-state",
-                implementationVersion: implementationVersion,
-                startedAt: startedAt,
-                completedAt: Date(),
-                seed: request.seed
-            ),
             payload: LogicSimulationPayload(
                 traceCount: 0,
                 assertionFailureCount: 0,
                 cancellationRecord: cancellationReference
-            )
+            ),
+            artifacts: cancellationReference.map { [$0] } ?? [],
+            diagnostics: [diagnostic]
         )
     }
 

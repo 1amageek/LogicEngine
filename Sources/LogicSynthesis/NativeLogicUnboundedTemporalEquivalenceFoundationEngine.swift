@@ -2,7 +2,6 @@ import CircuiteFoundation
 import Foundation
 import LogicEngineCore
 import LogicSimulation
-import XcircuitePackage
 
 /// Native exhaustive proof engine for the finite-state execution-graph profile.
 ///
@@ -71,25 +70,12 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     private func loadDesignPair(
         request: LogicUnboundedTemporalEquivalenceFoundationRequest
     ) throws -> DesignPair {
-        let bridge = LogicFoundationArtifactBridge()
-        let referenceReference = try bridge.legacyReference(
-            from: request.referenceDesign.artifact,
-            runID: request.runID,
-            kind: .netlist,
-            format: .json
-        )
-        let implementationReference = try bridge.legacyReference(
-            from: request.implementationDesign.artifact,
-            runID: request.runID,
-            kind: .netlist,
-            format: .json
-        )
         let reference = try decodeDesign(
-            artifact: referenceReference,
+            artifact: request.referenceDesign.artifact,
             label: "reference"
         )
         let implementation = try decodeDesign(
-            artifact: implementationReference,
+            artifact: request.implementationDesign.artifact,
             label: "implementation"
         )
         try validatePair(
@@ -146,7 +132,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func decodeDesign(
-        artifact: XcircuiteFileReference,
+        artifact: ArtifactReference,
         label: String
     ) throws -> LogicDesignDocument {
         let data = try artifactStore.read(artifact)
@@ -770,7 +756,9 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let reportData = try encoder.encode(report)
-        let reportDigest = XcircuiteHasher().sha256(data: reportData)
+        let reportDigest = try SHA256ContentDigester()
+            .digest(data: reportData, using: .sha256)
+            .hexadecimalValue
         let reportReference = try artifactStore.write(
             reportData,
             fileName: "logic-unbounded-temporal-equivalence-report.json",
@@ -781,7 +769,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             format: .json
         )
         var legacyArtifacts = [reportReference]
-        let certificateReference: XcircuiteFileReference?
+        let certificateReference: ArtifactReference?
         if outcome.status == .proved {
             let certificate = LogicUnboundedTemporalEquivalenceCertificate(
                 requestDigest: requestDigest,
@@ -812,7 +800,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         } else {
             certificateReference = nil
         }
-        let counterexampleReference: XcircuiteFileReference?
+        let counterexampleReference: ArtifactReference?
         if outcome.status == .counterexample {
             counterexampleReference = try artifactStore.write(
                 reportData,
@@ -829,20 +817,11 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         } else {
             counterexampleReference = nil
         }
-        let bridge = LogicFoundationArtifactBridge()
         let producer = try producerIdentity()
-        let artifacts = try legacyArtifacts.map {
-            try bridge.foundationReference(
-                from: $0,
-                defaultKind: .report,
-                defaultFormat: .json,
-                producer: producer
-            )
-        }
+        let artifacts = legacyArtifacts
         let diagnostics = try diagnostics(
             for: outcome.status,
-            exploredTransitionCount: outcome.exploredTransitionCount,
-            bridge: bridge
+            exploredTransitionCount: outcome.exploredTransitionCount
         )
         let payload = LogicUnboundedTemporalEquivalenceFoundationPayload(
             proofStatus: outcome.status,
@@ -851,28 +830,9 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             outputSignals: pair.outputSignals,
             stateSignals: pair.stateSignals,
             inputSignals: pair.inputSignals,
-            equivalenceReport: try bridge.foundationReference(
-                from: reportReference,
-                defaultKind: .report,
-                defaultFormat: .json,
-                producer: producer
-            ),
-            proofCertificate: try certificateReference.map {
-                try bridge.foundationReference(
-                    from: $0,
-                    defaultKind: .report,
-                    defaultFormat: .json,
-                    producer: producer
-                )
-            },
-            counterexample: try counterexampleReference.map {
-                try bridge.foundationReference(
-                    from: $0,
-                    defaultKind: .report,
-                    defaultFormat: .json,
-                    producer: producer
-                )
-            }
+            equivalenceReport: reportReference,
+            proofCertificate: certificateReference,
+            counterexample: counterexampleReference
         )
         return try makeResult(
             request: request,
@@ -890,11 +850,10 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         error: LogicExecutionError,
         startedAt: Date
     ) throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
-        let bridge = LogicFoundationArtifactBridge()
         let producer = try producerIdentity()
-        let legacyDiagnostic: XcircuiteEngineDiagnostic
+        let legacyDiagnostic: DesignDiagnostic
         if case .timedOut = error {
-            legacyDiagnostic = XcircuiteEngineDiagnostic(
+            legacyDiagnostic = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_TIMEOUT",
                 message: error.localizedDescription,
@@ -903,10 +862,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         } else {
             legacyDiagnostic = LogicDiagnosticFactory.make(for: error)
         }
-        let diagnostic = try bridge.foundationDiagnostic(
-            from: legacyDiagnostic,
-            namespace: "logic.unbounded"
-        )
+        let diagnostic = legacyDiagnostic
         let executionStatus: LogicExecutionStatus
         let proofStatus: LogicUnboundedTemporalEquivalenceStatus
         switch error {
@@ -934,41 +890,40 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
 
     private func diagnostics(
         for status: LogicUnboundedTemporalEquivalenceStatus,
-        exploredTransitionCount: Int,
-        bridge: LogicFoundationArtifactBridge
+        exploredTransitionCount: Int
     ) throws -> [DesignDiagnostic] {
-        let legacy: XcircuiteEngineDiagnostic
+        let legacy: DesignDiagnostic
         switch status {
         case .proved:
-            legacy = XcircuiteEngineDiagnostic(
-                severity: .info,
+            legacy = DesignDiagnostic(
+                severity: .information,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_PROVED",
                 message: "The complete finite transition relation was exhausted and no mismatch was found.",
                 suggestedActions: ["retain_unbounded_equivalence_certificate", "proceed_to_human_review"]
             )
         case .counterexample:
-            legacy = XcircuiteEngineDiagnostic(
+            legacy = DesignDiagnostic(
                 severity: .error,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_COUNTEREXAMPLE",
                 message: "The exhaustive finite transition relation contains a mismatch.",
                 suggestedActions: ["inspect_unbounded_counterexample", "repair_implementation"]
             )
         case .blocked:
-            legacy = XcircuiteEngineDiagnostic(
+            legacy = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_BLOCKED",
                 message: "The declared finite transition relation could not be exhausted.",
                 suggestedActions: ["increase_proof_limits", "provide_supported_execution_graph"]
             )
         case .timeout:
-            legacy = XcircuiteEngineDiagnostic(
+            legacy = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_TIMEOUT",
                 message: "The exhaustive proof exceeded its declared timeout.",
                 suggestedActions: ["increase_timeout_budget", "reduce_declared_state_or_input_space"]
             )
         }
-        let diagnostic = try bridge.foundationDiagnostic(from: legacy, namespace: "logic.unbounded")
+        let diagnostic = legacy
         if status == .proved, exploredTransitionCount == 0 {
             throw LogicExecutionError.invalidArtifact("a proof must explore at least one transition")
         }
@@ -1016,6 +971,8 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     ) throws -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        return XcircuiteHasher().sha256(data: try encoder.encode(request))
+        return try SHA256ContentDigester()
+            .digest(data: try encoder.encode(request), using: .sha256)
+            .hexadecimalValue
     }
 }

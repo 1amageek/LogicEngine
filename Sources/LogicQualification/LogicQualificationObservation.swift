@@ -1,13 +1,13 @@
 import Foundation
-import XcircuitePackage
+import LogicEngineCore
 
 public struct LogicQualificationObservation: Sendable, Hashable, Codable {
-    public var status: XcircuiteEngineExecutionStatus
+    public var status: LogicExecutionStatus
     public var diagnosticCodes: [String]
     public var artifactIDs: [String]
 
     public init(
-        status: XcircuiteEngineExecutionStatus,
+        status: LogicExecutionStatus,
         diagnosticCodes: [String] = [],
         artifactIDs: [String] = []
     ) {

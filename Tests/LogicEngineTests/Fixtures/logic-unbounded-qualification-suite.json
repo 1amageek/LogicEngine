@@ -65,7 +65,7 @@
       },
       "expectation": {
         "expectedStatus": "completed",
-        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_proved"],
+        "requiredDiagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_PROVED"],
         "forbiddenDiagnosticCodes": []
       }
     },
@@ -125,7 +125,7 @@
       },
       "expectation": {
         "expectedStatus": "failed",
-        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_counterexample"],
+        "requiredDiagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_COUNTEREXAMPLE"],
         "forbiddenDiagnosticCodes": []
       }
     },
@@ -150,7 +150,7 @@
       },
       "expectation": {
         "expectedStatus": "blocked",
-        "requiredDiagnosticCodes": ["logic.unbounded.logic_prerequisite_missing"],
+        "requiredDiagnosticCodes": ["LOGIC_PREREQUISITE_MISSING"],
         "forbiddenDiagnosticCodes": []
       }
     },
@@ -175,7 +175,7 @@
       },
       "expectation": {
         "expectedStatus": "blocked",
-        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_timeout"],
+        "requiredDiagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_TIMEOUT"],
         "forbiddenDiagnosticCodes": []
       }
     },
@@ -200,7 +200,7 @@
       },
       "expectation": {
         "expectedStatus": "blocked",
-        "requiredDiagnosticCodes": ["logic.unbounded.logic_semantics_unsupported"],
+        "requiredDiagnosticCodes": ["LOGIC_SEMANTICS_UNSUPPORTED"],
         "forbiddenDiagnosticCodes": []
       }
     }

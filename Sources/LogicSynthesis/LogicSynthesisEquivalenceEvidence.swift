@@ -1,6 +1,6 @@
 import Foundation
 import LogicEngineCore
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
@@ -11,7 +11,7 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
     public let mappedDesignDigest: String
     public let proofScope: String
     public let status: LogicEquivalenceEvidenceStatus
-    public let proofArtifact: XcircuiteFileReference?
+    public let proofArtifact: ArtifactReference?
 
     public init(
         runID: String,
@@ -19,7 +19,7 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
         mappedDesignDigest: String,
         proofScope: String,
         status: LogicEquivalenceEvidenceStatus,
-        proofArtifact: XcircuiteFileReference? = nil
+        proofArtifact: ArtifactReference? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
@@ -46,9 +46,9 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
         }
         if status == .proved {
             guard let proofArtifact,
-                  !proofArtifact.path.isEmpty,
-                  proofArtifact.sha256?.isEmpty == false,
-                  proofArtifact.byteCount.map({ $0 > 0 }) == true else {
+                  !proofArtifact.locator.location.value.isEmpty,
+                  !proofArtifact.digest.hexadecimalValue.isEmpty,
+                  proofArtifact.byteCount > 0 else {
                 throw LogicExecutionError.missingPrerequisite(
                     "proved equivalence evidence requires an integrity-bearing proof artifact"
                 )

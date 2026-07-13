@@ -6,7 +6,7 @@ import LogicLowering
 import LogicSimulation
 import LogicSynthesis
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("LogicEngine CircuiteFoundation boundary")
 struct CircuiteFoundationIntegrationTests {
@@ -20,43 +20,39 @@ struct CircuiteFoundationIntegrationTests {
             id: try ArtifactID(rawValue: "logic-design"),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "inputs/design.json"),
+                role: .input,
                 kind: .netlist,
                 format: .json
             ),
             digest: digest,
             byteCount: 1
         )
-        let output = XcircuiteFileReference(
-            artifactID: "logic-waveform",
-            path: "outputs/waveform.vcd",
-            kind: .waveform,
-            format: .vcd,
-            sha256: String(repeating: "b", count: 64),
+        let output = ArtifactReference(
+            id: try ArtifactID(rawValue: "logic-waveform"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "outputs/waveform.vcd"),
+                role: .output,
+                kind: .waveform,
+                format: .vcd
+            ),
+            digest: try ContentDigest(
+                algorithm: .sha256,
+                hexadecimalValue: String(repeating: "b", count: 64)
+            ),
             byteCount: 2
         )
-        let startedAt = Date(timeIntervalSince1970: 100)
-        let completedAt = Date(timeIntervalSince1970: 101)
-        let legacyResult = XcircuiteEngineResultEnvelope(
-            schemaVersion: 1,
-            runID: "run-1",
+        let fixedResult = LogicSimulationResult(
             status: .completed,
-            artifacts: [output],
-            metadata: XcircuiteEngineExecutionMetadata(
-                engineID: "LogicSimulation",
-                implementationID: "native",
-                implementationVersion: "1",
-                startedAt: startedAt,
-                completedAt: completedAt,
-                seed: 7
-            ),
             payload: LogicSimulationPayload(
                 traceCount: 1,
                 assertionFailureCount: 0,
                 waveform: output
-            )
+            ),
+            artifacts: [output],
+            diagnostics: []
         )
         let engine = NativeLogicSimulationFoundationEngine(
-            legacyEngine: FixedSimulationEngine(result: legacyResult)
+            engine: FixedSimulationEngine(result: fixedResult)
         )
         let request = LogicSimulationFoundationRequest(
             runID: "run-1",
@@ -75,8 +71,7 @@ struct CircuiteFoundationIntegrationTests {
         #expect(result.payload.assertionReport == nil)
         #expect(result.evidence.provenance.inputs == [design])
         #expect(result.evidence.provenance.randomSeed == 7)
-        #expect(result.evidence.provenance.startedAt == startedAt)
-        #expect(result.evidence.provenance.completedAt == completedAt)
+        #expect(result.evidence.provenance.designRevision == design.digest)
     }
 
     @Test
@@ -115,12 +110,15 @@ struct CircuiteFoundationIntegrationTests {
 
         let fileDigest = try ContentDigest(
             algorithm: .sha256,
-            hexadecimalValue: XcircuiteHasher().sha256(data: snapshotData)
+            hexadecimalValue: try SHA256ContentDigester()
+                .digest(data: snapshotData, using: .sha256)
+                .hexadecimalValue
         )
         let artifact = ArtifactReference(
             id: try ArtifactID(rawValue: "rtl-snapshot"),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "snapshot.json"),
+                role: .input,
                 kind: .netlist,
                 format: .json
             ),
@@ -137,7 +135,7 @@ struct CircuiteFoundationIntegrationTests {
         let legacyEngine = NativeLogicLoweringEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         )
-        let engine = NativeLogicLoweringFoundationEngine(legacyEngine: legacyEngine)
+        let engine = NativeLogicLoweringFoundationEngine(engine: legacyEngine)
 
         let result = try await engine.execute(request)
 
@@ -145,26 +143,6 @@ struct CircuiteFoundationIntegrationTests {
         #expect(result.payload.sourceDesignDigest?.hexadecimalValue == snapshot.designDigest)
         #expect(result.payload.executionDesign?.topDesignName == "top")
         #expect(result.evidence.provenance.inputs == [artifact])
-    }
-
-    @Test
-    func bridgeDerivesStableIdentityForLegacyReferenceWithoutID() throws {
-        let legacy = XcircuiteFileReference(
-            path: "outputs/report.json",
-            kind: .report,
-            format: .json,
-            sha256: String(repeating: "c", count: 64),
-            byteCount: 3
-        )
-        let bridge = LogicFoundationArtifactBridge()
-
-        let first = try bridge.foundationReference(from: legacy)
-        let second = try bridge.foundationReference(from: legacy)
-
-        #expect(first.id == second.id)
-        #expect(first.id.rawValue.hasPrefix("derived-"))
-        #expect(first.locator.kind == .report)
-        #expect(first.locator.format == .json)
     }
 
     @Test
@@ -177,6 +155,7 @@ struct CircuiteFoundationIntegrationTests {
             id: try ArtifactID(rawValue: "reference-design"),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "inputs/reference.json"),
+                role: .input,
                 kind: .netlist,
                 format: .json
             ),
@@ -187,6 +166,7 @@ struct CircuiteFoundationIntegrationTests {
             id: try ArtifactID(rawValue: "implementation-design"),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "inputs/implementation.json"),
+                role: .input,
                 kind: .netlist,
                 format: .json
             ),
@@ -197,32 +177,39 @@ struct CircuiteFoundationIntegrationTests {
             id: try ArtifactID(rawValue: "stimulus"),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "inputs/stimulus.json"),
+                role: .input,
                 kind: .evidence,
                 format: .json
             ),
             digest: digest,
             byteCount: 1
         )
-        let output = XcircuiteFileReference(
-            artifactID: "equivalence-report",
-            path: "outputs/equivalence.json",
-            kind: .report,
-            format: .json,
-            sha256: String(repeating: "e", count: 64),
+        let output = ArtifactReference(
+            id: try ArtifactID(rawValue: "equivalence-report"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "outputs/equivalence.json"),
+                role: .output,
+                kind: .report,
+                format: .json
+            ),
+            digest: try ContentDigest(
+                algorithm: .sha256,
+                hexadecimalValue: String(repeating: "e", count: 64)
+            ),
             byteCount: 4
         )
-        let timestamp = Date(timeIntervalSince1970: 200)
-        let legacyResult = XcircuiteEngineResultEnvelope(
+        let fixedResult = LogicBoundedTemporalEquivalenceResult(
             schemaVersion: 1,
             runID: "run-2",
             status: .completed,
+            diagnostics: [],
             artifacts: [output],
-            metadata: XcircuiteEngineExecutionMetadata(
+            metadata: LogicExecutionMetadata(
                 engineID: "LogicBoundedTemporalEquivalence",
                 implementationID: "native",
                 implementationVersion: "1",
-                startedAt: timestamp,
-                completedAt: timestamp.addingTimeInterval(1)
+                startedAt: Date(),
+                completedAt: Date()
             ),
             payload: LogicBoundedTemporalEquivalencePayload(
                 proofStatus: .proved,
@@ -233,7 +220,7 @@ struct CircuiteFoundationIntegrationTests {
             )
         )
         let engine = NativeLogicBoundedTemporalEquivalenceFoundationEngine(
-            legacyEngine: FixedBoundedEquivalenceEngine(result: legacyResult)
+            engine: FixedBoundedEquivalenceEngine(result: fixedResult)
         )
         let request = LogicBoundedTemporalEquivalenceFoundationRequest(
             runID: "run-2",
@@ -260,21 +247,21 @@ struct CircuiteFoundationIntegrationTests {
 }
 
 private struct FixedSimulationEngine: LogicSimulationExecuting {
-    let result: XcircuiteEngineResultEnvelope<LogicSimulationPayload>
+    let result: LogicSimulationResult
 
     func execute(
         _ request: LogicSimulationRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicSimulationPayload> {
+    ) async throws -> LogicSimulationResult {
         result
     }
 }
 
 private struct FixedBoundedEquivalenceEngine: LogicBoundedTemporalEquivalenceExecuting {
-    let result: XcircuiteEngineResultEnvelope<LogicBoundedTemporalEquivalencePayload>
+    let result: LogicBoundedTemporalEquivalenceResult
 
     func execute(
         _ request: LogicBoundedTemporalEquivalenceRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicBoundedTemporalEquivalencePayload> {
+    ) async throws -> LogicBoundedTemporalEquivalenceResult {
         result
     }
 }

@@ -4,7 +4,7 @@ import LogicIR
 import PDKCore
 import PowerIntent
 import TimingCore
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -20,7 +20,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
 
     public func execute(
         _ request: LogicSynthesisRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicSynthesisPayload> {
+    ) async throws -> LogicSynthesisResult {
         let startedAt = Date()
         do {
             try validate(request)
@@ -30,9 +30,10 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             }
 
             let designData = try artifactStore.read(request.design.artifact)
-            let hasher = XcircuiteHasher()
-            let designDigest = request.design.artifact.sha256 ?? hasher.sha256(data: designData)
-            guard request.design.designDigest.isEmpty || request.design.designDigest == designDigest else {
+            let designDigest = request.design.designRevision?.hexadecimalValue
+                ?? request.design.artifact.sha256
+            guard request.design.designRevision == nil
+                || request.design.designRevision?.hexadecimalValue == designDigest else {
                 throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
             }
             let design = try decodeDesign(designData)
@@ -47,8 +48,15 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             let constraintsResult = try loadConstraints(request.constraints.artifact)
             let pdkDigest = try loadAndValidatePDK(request.pdk)
             if let powerIntent = request.powerIntent {
-                let powerIntentData = try artifactStore.read(powerIntent.artifact)
-                let powerIntentDigest = hasher.sha256(data: powerIntentData)
+                guard let powerIntentReference = request.inputs.first(where: {
+                    $0.locator == powerIntent.artifact
+                }) else {
+                    throw LogicExecutionError.missingPrerequisite(
+                        "power intent artifact is missing from the input set"
+                    )
+                }
+                let powerIntentData = try artifactStore.read(powerIntentReference)
+                let powerIntentDigest = try digestHex(powerIntentData)
                 guard powerIntent.designDigest.isEmpty || powerIntent.designDigest == designDigest else {
                     throw LogicExecutionError.artifactDigestMismatch(powerIntent.artifact.path)
                 }
@@ -69,7 +77,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             try checkCancellation()
 
             let outputDesignData = try encode(mapped.design)
-            let outputDesignDigest = hasher.sha256(data: outputDesignData)
+            let outputDesignDigest = try digestHex(outputDesignData)
             let mappedReference = try artifactStore.write(
                 outputDesignData,
                 fileName: "mapped-design.json",
@@ -98,12 +106,20 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 kind: .report,
                 format: .json
             )
-            let mappedDesign = LogicDesignReference(
+            let mappedFoundationDesign = LogicFoundationDesignReference(
                 artifact: mappedReference,
                 topDesignName: mapped.design.topDesignName,
-                designDigest: mappedReference.sha256 ?? outputDesignDigest,
+                designRevision: try ContentDigest(
+                    algorithm: .sha256,
+                    hexadecimalValue: outputDesignDigest
+                )
+            )
+            let mappedDesign = LogicDesignReference(
+                artifact: mappedReference.locator,
+                topDesignName: mapped.design.topDesignName,
+                designDigest: outputDesignDigest,
                 provenance: LogicDesignProvenance(
-                    sourceDesignDigest: request.design.provenance?.sourceDesignDigest ?? designDigest,
+                    sourceDesignDigest: designDigest,
                     inputDesignDigest: designDigest,
                     transformationID: "native-synthesis",
                     producerID: "LogicSynthesis",
@@ -114,7 +130,11 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             let equivalenceRequest = LogicSynthesisEquivalenceRequest(
                 runID: request.runID,
                 topDesignName: mapped.design.topDesignName,
-                sourceDesign: request.design,
+                sourceDesign: LogicDesignReference(
+                    artifact: request.design.artifact.locator,
+                    topDesignName: request.design.topDesignName,
+                    designDigest: designDigest
+                ),
                 mappedDesign: mappedDesign,
                 synthesisProvenance: provenanceReference
             )
@@ -129,13 +149,13 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 kind: .report,
                 format: .json
             )
-            var diagnostics: [XcircuiteEngineDiagnostic] = [
-                XcircuiteEngineDiagnostic(
-                    severity: .info,
+            var diagnostics: [DesignDiagnostic] = [
+                DesignDiagnostic(
+                    severity: .information,
                     code: "LOGIC_SYNTHESIS_COMPLETED",
                     message: "Lowered \(loweredNodeCount) node(s), optimized to \(optimization.design.nodes.count), and mapped \(mapped.cellCount) cell(s)."
                 ),
-                XcircuiteEngineDiagnostic(
+                DesignDiagnostic(
                     severity: .warning,
                     code: "LOGIC_EQUIVALENCE_REQUIRED",
                     message: "The mapped design remains pending equivalence acceptance; a typed equivalence request was emitted.",
@@ -143,14 +163,14 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 ),
             ]
             if let targetClockPeriod = constraintsResult.constraints.targetClockPeriod {
-                diagnostics.append(XcircuiteEngineDiagnostic(
-                    severity: .info,
+                diagnostics.append(DesignDiagnostic(
+                    severity: .information,
                     code: "LOGIC_TARGET_CLOCK_PERIOD",
                     message: "Synthesis used target clock period \(targetClockPeriod)."
                 ))
             }
             let payload = LogicSynthesisPayload(
-                mappedDesign: mappedDesign,
+                mappedDesign: mappedFoundationDesign,
                 mappedCellCount: mapped.cellCount,
                 loweredNodeCount: loweredNodeCount,
                 optimizedNodeCount: optimization.design.nodes.count,
@@ -161,13 +181,13 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 equivalenceRequired: true,
                 acceptanceState: .pendingEquivalence
             )
-            return XcircuiteEngineResultEnvelope(
+            return LogicSynthesisResult(
                 schemaVersion: LogicSynthesisRequest.currentSchemaVersion,
                 runID: request.runID,
                 status: .completed,
                 diagnostics: diagnostics,
                 artifacts: [mappedReference, provenanceReference, equivalenceRequestReference],
-                metadata: XcircuiteEngineExecutionMetadata(
+                metadata: LogicExecutionMetadata(
                     engineID: "LogicSynthesis",
                     implementationID: "native-lowering-optimization-mapping",
                     implementationVersion: implementationVersion,
@@ -214,12 +234,12 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     }
 
     private func loadLibraries(_ references: [TimingLibraryReference]) throws -> LibraryResult {
-        let hasher = XcircuiteHasher()
+        let hasher = SHA256ContentDigester()
         var cells: [LogicCell] = []
         var digests: [String] = []
         for reference in references {
             let data = try artifactStore.read(reference.artifact)
-            let digest = reference.artifact.sha256 ?? hasher.sha256(data: data)
+            let digest = try digestHex(data)
             digests.append(digest)
             let library = try decodeLibrary(data: data, path: reference.artifact.path)
             try library.validate()
@@ -296,9 +316,9 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         return LogicCellLibraryDocument(libraryName: path, cells: cells)
     }
 
-    private func loadConstraints(_ reference: XcircuiteFileReference) throws -> ConstraintResult {
+    private func loadConstraints(_ reference: ArtifactReference) throws -> ConstraintResult {
         let data = try artifactStore.read(reference)
-        let digest = reference.sha256 ?? XcircuiteHasher().sha256(data: data)
+        let digest = try digestHex(data)
         do {
             let constraints = try JSONDecoder().decode(LogicConstraintDocument.self, from: data)
             try constraints.validate()
@@ -355,7 +375,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         guard !data.isEmpty else {
             throw LogicExecutionError.missingPrerequisite("PDK manifest is empty")
         }
-        let actualDigest = XcircuiteHasher().sha256(data: data)
+        let actualDigest = try digestHex(data)
         guard reference.digest == actualDigest else {
             throw LogicExecutionError.artifactDigestMismatch(reference.manifest.path)
         }
@@ -466,17 +486,24 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         }
     }
 
+    private func digestHex(_ data: Data) throws -> String {
+        try SHA256ContentDigester()
+            .digest(data: data, using: .sha256)
+            .hexadecimalValue
+    }
+
     private func failureEnvelope(
         request: LogicSynthesisRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) -> XcircuiteEngineResultEnvelope<LogicSynthesisPayload> {
-        XcircuiteEngineResultEnvelope(
+    ) -> LogicSynthesisResult {
+        LogicSynthesisResult(
             schemaVersion: LogicSynthesisRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
-            metadata: XcircuiteEngineExecutionMetadata(
+            artifacts: [],
+            metadata: LogicExecutionMetadata(
                 engineID: "LogicSynthesis",
                 implementationID: "native-lowering-optimization-mapping",
                 implementationVersion: implementationVersion,

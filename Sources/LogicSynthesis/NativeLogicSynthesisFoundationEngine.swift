@@ -1,85 +1,48 @@
+import CircuiteFoundation
+import Foundation
 import LogicEngineCore
 import LogicIR
 import PDKCore
 import PowerIntent
 import TimingCore
-import XcircuitePackage
 
-/// Package-owned compatibility boundary for the existing native synthesizer.
 public struct NativeLogicSynthesisFoundationEngine: LogicSynthesisFoundationEngine {
-    public let legacyEngine: any LogicSynthesisExecuting
+    public let engine: any LogicSynthesisExecuting
 
     public init(
-        legacyEngine: any LogicSynthesisExecuting = NativeLogicSynthesisEngine()
+        engine: any LogicSynthesisExecuting = NativeLogicSynthesisEngine()
     ) {
-        self.legacyEngine = legacyEngine
+        self.engine = engine
     }
 
     public func execute(
         _ request: LogicSynthesisFoundationRequest
     ) async throws -> LogicSynthesisFoundationResult {
         try request.validate()
-        let bridge = LogicFoundationArtifactBridge()
-        let designArtifact = try bridge.legacyReference(
-            from: request.design.artifact,
-            runID: request.runID,
-            kind: .netlist,
-            format: .json
-        )
-        let libraries = try request.libraries.map { library in
+        let libraries = request.libraries.map { library in
             TimingLibraryReference(
-                artifact: try bridge.legacyReference(
-                    from: library.artifact,
-                    runID: request.runID,
-                    kind: .timingLibrary,
-                    format: .liberty
-                ),
+                artifact: library.artifact,
                 cornerIDs: library.cornerIDs
             )
         }
-        let constraintsArtifact = try bridge.legacyReference(
-            from: request.constraints,
-            runID: request.runID,
-            kind: .constraint,
-            format: .sdc
-        )
-        let pdkArtifact = try bridge.legacyReference(
-            from: request.pdkManifest,
-            runID: request.runID,
-            kind: .technology,
-            format: .json
-        )
-        let powerIntent = try request.powerIntent.map {
+        let powerIntent = request.powerIntent.map {
             PowerIntentReference(
-                artifact: try bridge.legacyReference(
-                    from: $0,
-                    runID: request.runID,
-                    kind: .powerIntent,
-                    format: .upf
-                ),
+                artifact: $0.locator,
                 designDigest: request.powerIntentDesignRevision?.hexadecimalValue
                     ?? request.design.artifact.digest.hexadecimalValue
             )
         }
-        let legacyInputs = try request.inputs.map {
-            try bridge.legacyReference(from: $0, runID: request.runID)
-        }
-        let legacyRequest = LogicSynthesisRequest(
+        let synthesisRequest = LogicSynthesisRequest(
             runID: request.runID,
-            inputs: legacyInputs,
-            design: LogicDesignReference(
-                artifact: designArtifact,
-                topDesignName: request.design.topDesignName,
-                designDigest: request.design.designRevision?.hexadecimalValue
-                    ?? request.design.artifact.digest.hexadecimalValue
-            ),
+            inputs: request.inputs,
+            design: request.design,
             libraries: libraries,
             constraints: TimingConstraintReference(
-                artifact: constraintsArtifact,
+                artifact: request.constraints,
                 modeIDs: request.constraintModeIDs
             ),
             pdk: PDKReference(
-                manifest: pdkArtifact,
+                manifest: request.pdkManifest,
                 processID: request.processID,
                 version: request.pdkVersion,
                 digest: request.pdkDigest.hexadecimalValue
@@ -87,10 +50,33 @@ public struct NativeLogicSynthesisFoundationEngine: LogicSynthesisFoundationEngi
             powerIntent: powerIntent,
             artifactDirectory: request.artifactDirectory
         )
-        let legacyResult = try await legacyEngine.execute(legacyRequest)
-        return try LogicSynthesisFoundationResult(
-            legacy: legacyResult,
-            request: request
+        let result = try await engine.execute(synthesisRequest)
+        let producer = try ProducerIdentity(kind: .engine, identifier: "LogicSynthesis", version: "1")
+        let provenance = try ExecutionProvenance(
+            producer: producer,
+            inputs: request.inputs,
+            designRevision: request.design.designRevision ?? request.design.artifact.digest,
+            startedAt: Date(),
+            completedAt: Date()
+        )
+        return LogicSynthesisFoundationResult(
+            runID: request.runID,
+            status: result.status,
+            payload: LogicSynthesisFoundationPayload(
+                mappedDesign: result.payload.mappedDesign,
+                mappedCellCount: result.payload.mappedCellCount,
+                loweredNodeCount: result.payload.loweredNodeCount,
+                optimizedNodeCount: result.payload.optimizedNodeCount,
+                totalArea: result.payload.totalArea,
+                totalPower: result.payload.totalPower,
+                provenance: result.payload.provenance,
+                equivalenceRequest: result.payload.equivalenceRequest,
+                equivalenceRequired: result.payload.equivalenceRequired,
+                acceptanceState: result.payload.acceptanceState
+            ),
+            artifacts: result.artifacts,
+            diagnostics: result.diagnostics,
+            provenance: provenance
         )
     }
 }

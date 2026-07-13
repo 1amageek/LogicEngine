@@ -2,8 +2,7 @@ import CircuiteFoundation
 import Foundation
 import LogicEngineCore
 
-/// Foundation-native simulation inputs. Legacy Xcircuite references are
-/// created only inside the package-owned compatibility boundary.
+/// Foundation-native simulation inputs and artifact references.
 public struct LogicSimulationFoundationRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = SchemaVersion.v1
 

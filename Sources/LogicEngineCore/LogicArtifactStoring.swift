@@ -1,8 +1,8 @@
+import CircuiteFoundation
 import Foundation
-import XcircuitePackage
 
 public protocol LogicArtifactStoring: Sendable {
-    func read(_ reference: XcircuiteFileReference) throws -> Data
+    func read(_ reference: ArtifactReference) throws -> Data
 
     func write(
         _ data: Data,
@@ -10,7 +10,7 @@ public protocol LogicArtifactStoring: Sendable {
         outputDirectory: String?,
         runID: String,
         artifactID: String?,
-        kind: XcircuiteFileKind,
-        format: XcircuiteFileFormat
-    ) throws -> XcircuiteFileReference
+        kind: ArtifactKind,
+        format: ArtifactFormat
+    ) throws -> ArtifactReference
 }

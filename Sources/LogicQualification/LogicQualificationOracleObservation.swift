@@ -1,5 +1,4 @@
 import Foundation
-import XcircuitePackage
 
 public struct LogicQualificationOracleObservation: Sendable, Hashable, Codable {
     public var caseID: String

@@ -36,11 +36,9 @@ Every design execution product exposes a Foundation-native boundary:
 - a domain protocol refining `CircuiteFoundation.Engine`;
 - explicit blocked, failed, and cancelled states with `ExecutionProvenance`.
 
-The existing `XcircuiteEngineRequest` and
-`XcircuiteEngineResultEnvelope<Payload>` surfaces remain only as a
-source-compatible compatibility boundary for the current CLI and Xcircuite
-stage implementations. The package-owned Foundation engines convert at that
-boundary and do not make Xcircuite responsible for semantic translation.
+The Foundation-native domain engines are the public execution boundary. Flow
+and project storage are injected by `DesignFlowKernel` and `Xcircuite`; this
+package does not expose a compatibility envelope or storage facade.
 `LogicQualification` remains the package-owned qualification lifecycle: it
 consumes execution observations and qualification evidence, but is not itself
 an execution engine or a Foundation replacement for the qualification schema.

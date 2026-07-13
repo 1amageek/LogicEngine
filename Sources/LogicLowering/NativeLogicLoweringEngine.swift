@@ -1,7 +1,7 @@
 import Foundation
+import CircuiteFoundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
 
 public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -20,7 +20,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
 
     public func execute(
         _ request: LogicLoweringRequest
-    ) async throws -> XcircuiteEngineResultEnvelope<LogicLoweringPayload> {
+    ) async throws -> LogicLoweringResult {
         let startedAt = Date()
         do {
             try validate(request)
@@ -35,9 +35,9 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 throw LogicExecutionError.invalidArtifact("RTL snapshot JSON could not be decoded: \(error.localizedDescription)")
             }
             let canonicalDesignDigest = try LogicDesignSnapshotCodec.digest(snapshot)
-            guard request.design.designDigest.isEmpty
-                || request.design.designDigest == canonicalDesignDigest else {
-                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
+            guard request.design.designRevision?.hexadecimalValue == nil
+                || request.design.designRevision?.hexadecimalValue == canonicalDesignDigest else {
+                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
             }
             guard snapshot.rtl.topModuleName == request.design.topDesignName else {
                 throw LogicExecutionError.invalidDesign(
@@ -46,11 +46,12 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
             }
             let lowering = lowerer.lower(snapshot)
             guard lowering.status == .completed, let document = lowering.document else {
-                return envelope(
+                return result(
                     request: request,
                     status: lowering.status,
                     diagnostics: lowering.diagnostics,
                     payload: LogicLoweringPayload(sourceDesignDigest: canonicalDesignDigest),
+                    document: nil,
                     startedAt: startedAt
                 )
             }
@@ -64,21 +65,13 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 kind: .netlist,
                 format: .json
             )
-            let executionDesignDigest = output.sha256 ?? XcircuiteHasher().sha256(data: documentData)
-            let designReference = LogicDesignReference(
+            let executionDesignDigest = output.digest.hexadecimalValue
+            let designReference = LogicFoundationDesignReference(
                 artifact: output,
                 topDesignName: document.topDesignName,
-                designDigest: executionDesignDigest,
-                provenance: LogicDesignProvenance(
-                    sourceDesignDigest: canonicalDesignDigest,
-                    inputDesignDigest: canonicalDesignDigest,
-                    transformationID: "native-rtl-to-execution-graph",
-                    producerID: "LogicLowering",
-                    producerVersion: implementationVersion,
-                    runID: request.runID
-                )
+                designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
             )
-            return envelope(
+            return result(
                 request: request,
                 status: .completed,
                 diagnostics: lowering.diagnostics,
@@ -89,14 +82,16 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                     loweredSignalCount: document.signals.count,
                     loweredNodeCount: document.nodes.count
                 ),
+                document: document,
                 startedAt: startedAt
             )
         } catch let error as LogicExecutionError {
-            return envelope(
+            return result(
                 request: request,
                 status: LogicDiagnosticFactory.status(for: error),
                 diagnostics: [LogicDiagnosticFactory.make(for: error)],
                 payload: LogicLoweringPayload(),
+                document: nil,
                 startedAt: startedAt
             )
         } catch {
@@ -126,28 +121,21 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
         }
     }
 
-    private func envelope(
+    private func result(
         request: LogicLoweringRequest,
-        status: XcircuiteEngineExecutionStatus,
-        diagnostics: [XcircuiteEngineDiagnostic],
-        artifacts: [XcircuiteFileReference] = [],
+        status: LogicEngineCore.LogicExecutionStatus,
+        diagnostics: [DesignDiagnostic],
+        artifacts: [ArtifactReference] = [],
         payload: LogicLoweringPayload,
+        document: LogicDesignDocument?,
         startedAt: Date
-    ) -> XcircuiteEngineResultEnvelope<LogicLoweringPayload> {
-        XcircuiteEngineResultEnvelope(
-            schemaVersion: LogicLoweringRequest.currentSchemaVersion,
-            runID: request.runID,
+    ) -> LogicLoweringResult {
+        LogicLoweringResult(
             status: status,
-            diagnostics: diagnostics,
+            document: document,
+            payload: payload,
             artifacts: artifacts,
-            metadata: XcircuiteEngineExecutionMetadata(
-                engineID: "LogicLowering",
-                implementationID: "native-rtl-to-execution-graph",
-                implementationVersion: implementationVersion,
-                startedAt: startedAt,
-                completedAt: Date()
-            ),
-            payload: payload
+            diagnostics: diagnostics
         )
     }
 }

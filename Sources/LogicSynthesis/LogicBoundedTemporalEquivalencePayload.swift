@@ -1,25 +1,26 @@
 import Foundation
-import XcircuitePackage
+import CircuiteFoundation
+import CircuiteFoundation
 
 public struct LogicBoundedTemporalEquivalencePayload: Sendable, Hashable, Codable {
     public var proofStatus: LogicBoundedTemporalEquivalenceStatus
     public var comparedSampleCount: Int
     public var mismatchCount: Int
     public var outputSignals: [String]
-    public var referenceSimulationReport: XcircuiteFileReference?
-    public var implementationSimulationReport: XcircuiteFileReference?
-    public var equivalenceReport: XcircuiteFileReference?
-    public var counterexample: XcircuiteFileReference?
+    public var referenceSimulationReport: ArtifactReference?
+    public var implementationSimulationReport: ArtifactReference?
+    public var equivalenceReport: ArtifactReference?
+    public var counterexample: ArtifactReference?
 
     public init(
         proofStatus: LogicBoundedTemporalEquivalenceStatus,
         comparedSampleCount: Int,
         mismatchCount: Int,
         outputSignals: [String],
-        referenceSimulationReport: XcircuiteFileReference? = nil,
-        implementationSimulationReport: XcircuiteFileReference? = nil,
-        equivalenceReport: XcircuiteFileReference? = nil,
-        counterexample: XcircuiteFileReference? = nil
+        referenceSimulationReport: ArtifactReference? = nil,
+        implementationSimulationReport: ArtifactReference? = nil,
+        equivalenceReport: ArtifactReference? = nil,
+        counterexample: ArtifactReference? = nil
     ) {
         self.proofStatus = proofStatus
         self.comparedSampleCount = comparedSampleCount

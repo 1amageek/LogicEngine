@@ -1,37 +1,39 @@
+import CircuiteFoundation
 import Foundation
-import XcircuitePackage
 
 public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
     public let rootDirectory: URL
     public let defaultOutputDirectory: URL?
-    private let hasher: XcircuiteHasher
+    private let digester: SHA256ContentDigester
 
     public init(
         rootDirectory: URL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true),
         defaultOutputDirectory: URL? = nil,
-        hasher: XcircuiteHasher = XcircuiteHasher()
+        digester: SHA256ContentDigester = SHA256ContentDigester()
     ) {
         self.rootDirectory = rootDirectory.standardizedFileURL
         self.defaultOutputDirectory = defaultOutputDirectory?.standardizedFileURL
-        self.hasher = hasher
+        self.digester = digester
     }
 
-    public func read(_ reference: XcircuiteFileReference) throws -> Data {
-        let url = resolve(reference.path, relativeTo: rootDirectory)
+    public func read(_ reference: ArtifactReference) throws -> Data {
+        let path = reference.locator.location.value
+        let url = try reference.locator.location.resolvedFileURL(relativeTo: rootDirectory)
         guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else {
-            throw LogicExecutionError.missingArtifact(reference.path)
+            throw LogicExecutionError.missingArtifact(path)
         }
         let data: Data
         do {
             data = try Data(contentsOf: url)
         } catch {
-            throw LogicExecutionError.unreadableArtifact("\(reference.path): \(error.localizedDescription)")
+            throw LogicExecutionError.unreadableArtifact("\(path): \(error.localizedDescription)")
         }
-        if let expectedDigest = reference.sha256, hasher.sha256(data: data) != expectedDigest {
-            throw LogicExecutionError.artifactDigestMismatch(reference.path)
+        let actualDigest = try digester.digest(data: data, using: .sha256)
+        if actualDigest != reference.digest {
+            throw LogicExecutionError.artifactDigestMismatch(path)
         }
-        if let expectedByteCount = reference.byteCount, Int64(data.count) != expectedByteCount {
-            throw LogicExecutionError.artifactByteCountMismatch(reference.path)
+        if UInt64(data.count) != reference.byteCount {
+            throw LogicExecutionError.artifactByteCountMismatch(path)
         }
         return data
     }
@@ -42,9 +44,9 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
         outputDirectory: String?,
         runID: String,
         artifactID: String?,
-        kind: XcircuiteFileKind,
-        format: XcircuiteFileFormat
-    ) throws -> XcircuiteFileReference {
+        kind: ArtifactKind,
+        format: ArtifactFormat
+    ) throws -> ArtifactReference {
         let directory = try resolveOutputDirectory(outputDirectory, runID: runID)
         let destination = directory.appending(path: fileName).standardizedFileURL
         let parentPath = URL(
@@ -65,14 +67,28 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
             throw LogicExecutionError.artifactWriteFailed(error.localizedDescription)
         }
         let path = relativeOrAbsolutePath(destination)
-        return XcircuiteFileReference(
-            artifactID: artifactID,
-            path: path,
-            kind: kind,
-            format: format,
-            sha256: hasher.sha256(data: data),
-            byteCount: Int64(data.count),
-            producedByRunID: runID
+        let location: ArtifactLocation
+        do {
+            if path.hasPrefix("/") {
+                location = try ArtifactLocation(fileURL: destination)
+            } else {
+                location = try ArtifactLocation(workspaceRelativePath: path)
+            }
+        } catch {
+            throw LogicExecutionError.invalidArtifact(path)
+        }
+        let id: ArtifactID?
+        if let artifactID {
+            do { id = try ArtifactID(rawValue: artifactID) }
+            catch { throw LogicExecutionError.invalidArtifact("invalid artifact ID: \(artifactID)") }
+        } else {
+            id = nil
+        }
+        return ArtifactReference(
+            id: id,
+            locator: ArtifactLocator(location: location, role: .output, kind: kind, format: format),
+            digest: try digester.digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
         )
     }
 

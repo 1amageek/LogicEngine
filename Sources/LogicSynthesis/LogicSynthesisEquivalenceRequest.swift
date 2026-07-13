@@ -1,7 +1,7 @@
 import Foundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
+import CircuiteFoundation
 
 public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
@@ -11,7 +11,7 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
     public let topDesignName: String
     public let sourceDesign: LogicDesignReference
     public let mappedDesign: LogicDesignReference
-    public let synthesisProvenance: XcircuiteFileReference
+    public let synthesisProvenance: ArtifactReference
     public let proofScope: String
 
     public init(
@@ -19,7 +19,7 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
         topDesignName: String,
         sourceDesign: LogicDesignReference,
         mappedDesign: LogicDesignReference,
-        synthesisProvenance: XcircuiteFileReference,
+        synthesisProvenance: ArtifactReference,
         proofScope: String = "rtl-to-mapped-structural"
     ) {
         self.schemaVersion = Self.currentSchemaVersion

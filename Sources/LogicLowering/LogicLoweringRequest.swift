@@ -1,20 +1,21 @@
+import CircuiteFoundation
 import Foundation
 import LogicIR
-import XcircuitePackage
+import LogicEngineCore
 
-public struct LogicLoweringRequest: XcircuiteEngineRequest {
+public struct LogicLoweringRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
     public var schemaVersion: Int
     public var runID: String
-    public var inputs: [XcircuiteFileReference]
-    public var design: LogicDesignReference
+    public var inputs: [ArtifactReference]
+    public var design: LogicFoundationDesignReference
     public var artifactDirectory: String?
 
     public init(
         runID: String,
-        inputs: [XcircuiteFileReference],
-        design: LogicDesignReference,
+        inputs: [ArtifactReference],
+        design: LogicFoundationDesignReference,
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion

@@ -7,7 +7,7 @@ public struct LogicUnboundedTemporalEquivalenceFoundationResult: Sendable, Hasha
 {
     public let schemaVersion: SchemaVersion
     public let runID: String
-    public let status: LogicExecutionStatus
+    public let status: LogicEngineCore.LogicExecutionStatus
     public let payload: LogicUnboundedTemporalEquivalenceFoundationPayload
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
@@ -15,7 +15,7 @@ public struct LogicUnboundedTemporalEquivalenceFoundationResult: Sendable, Hasha
 
     public init(
         runID: String,
-        status: LogicExecutionStatus,
+        status: LogicEngineCore.LogicExecutionStatus,
         payload: LogicUnboundedTemporalEquivalenceFoundationPayload,
         artifacts: [ArtifactReference] = [],
         diagnostics: [DesignDiagnostic] = [],

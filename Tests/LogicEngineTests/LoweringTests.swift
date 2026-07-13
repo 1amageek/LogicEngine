@@ -346,7 +346,7 @@ struct LoweringTests {
 
         #expect(nonBlockingElaborated.status == .completed)
         #expect(nonBlockingResult.status == .blocked)
-        #expect(nonBlockingResult.diagnostics.contains { $0.code == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
+        #expect(nonBlockingResult.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
     }
 
     @Test("lowers a generic explicit sensitivity-list process")
@@ -426,7 +426,7 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .failed)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_WIDTH_MISMATCH" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_WIDTH_MISMATCH" })
     }
 
     @Test("lowers concatenation and static vector projections")
@@ -539,7 +539,7 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .blocked)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
     }
 
     @Test("lowers a positive-edge sequential process to a DFF")
@@ -604,7 +604,7 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .blocked)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
     }
 
     @Test("rejects multiple drivers during RTL lowering")
@@ -628,7 +628,7 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .failed)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_MULTIPLE_DRIVER" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_MULTIPLE_DRIVER" })
     }
 
     @Test("lowers synchronous reset into a data-path mux before the DFF")
@@ -724,7 +724,7 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .failed)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_WIDTH_MISMATCH" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_WIDTH_MISMATCH" })
     }
 
     @Test("lowers unsigned and signed arithmetic with explicit signedness")
@@ -874,6 +874,6 @@ struct LoweringTests {
         let result = NativeLogicDesignLowering().lower(snapshot)
 
         #expect(result.status == .blocked)
-        #expect(result.diagnostics.contains { $0.code == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_LOWERING_UNSUPPORTED_RTL" })
     }
 }

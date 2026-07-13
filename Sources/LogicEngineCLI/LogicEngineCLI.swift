@@ -7,7 +7,6 @@ import LogicLowering
 import LogicQualification
 import LogicSimulation
 import LogicSynthesis
-import XcircuitePackage
 
 @main
 struct LogicEngineCLI {
@@ -75,7 +74,7 @@ struct LogicEngineCLI {
                 defaultOutputDirectory: options.outputURL
             )
             let engine = NativeLogicLoweringFoundationEngine(
-                legacyEngine: NativeLogicLoweringEngine(artifactStore: store)
+                engine: NativeLogicLoweringEngine(artifactStore: store)
             )
             let result = try await engine.execute(request)
             printJSON(result)
@@ -114,7 +113,7 @@ struct LogicEngineCLI {
                 defaultOutputDirectory: options.outputURL
             )
             let engine = NativeLogicSimulationFoundationEngine(
-                legacyEngine: NativeLogicSimulationEngine(artifactStore: store)
+                engine: NativeLogicSimulationEngine(artifactStore: store)
             )
             let result = try await engine.execute(request)
             printJSON(result)
@@ -145,7 +144,7 @@ struct LogicEngineCLI {
                 defaultOutputDirectory: options.outputURL
             )
             let engine = NativeLogicSynthesisFoundationEngine(
-                legacyEngine: NativeLogicSynthesisEngine(artifactStore: store)
+                engine: NativeLogicSynthesisEngine(artifactStore: store)
             )
             let result = try await engine.execute(request)
             printJSON(result)
@@ -188,7 +187,7 @@ struct LogicEngineCLI {
                 defaultOutputDirectory: options.outputURL
             )
             let engine = NativeLogicBoundedTemporalEquivalenceFoundationEngine(
-                legacyEngine: NativeLogicBoundedTemporalEquivalenceEngine(artifactStore: store)
+                engine: NativeLogicBoundedTemporalEquivalenceEngine(artifactStore: store)
             )
             let result = try await engine.execute(request)
             printJSON(result)
@@ -304,10 +303,6 @@ struct LogicEngineCLI {
             printUsage()
             return 2
         }
-    }
-
-    private static func exitCode(for status: XcircuiteEngineExecutionStatus) -> Int32 {
-        status == .completed ? 0 : 1
     }
 
     private static func exitCode(for status: LogicExecutionStatus) -> Int32 {

@@ -7,7 +7,7 @@
       "caseID": "unbounded-and-gate",
       "observation": {
         "status": "completed",
-        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_proved"],
+        "diagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_PROVED"],
         "artifactIDs": [
           "logic-unbounded-temporal-equivalence-certificate",
           "logic-unbounded-temporal-equivalence-report"
@@ -18,7 +18,7 @@
       "caseID": "unbounded-counterexample",
       "observation": {
         "status": "failed",
-        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_counterexample"],
+        "diagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_COUNTEREXAMPLE"],
         "artifactIDs": [
           "logic-unbounded-temporal-counterexample",
           "logic-unbounded-temporal-equivalence-report"
@@ -29,7 +29,7 @@
       "caseID": "unbounded-limit",
       "observation": {
         "status": "blocked",
-        "diagnosticCodes": ["logic.unbounded.logic_prerequisite_missing"],
+        "diagnosticCodes": ["LOGIC_PREREQUISITE_MISSING"],
         "artifactIDs": []
       }
     },
@@ -37,7 +37,7 @@
       "caseID": "unbounded-timeout",
       "observation": {
         "status": "blocked",
-        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_timeout"],
+        "diagnosticCodes": ["LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_TIMEOUT"],
         "artifactIDs": []
       }
     },
@@ -45,7 +45,7 @@
       "caseID": "unbounded-unsupported-semantics",
       "observation": {
         "status": "blocked",
-        "diagnosticCodes": ["logic.unbounded.logic_semantics_unsupported"],
+        "diagnosticCodes": ["LOGIC_SEMANTICS_UNSUPPORTED"],
         "artifactIDs": []
       }
     }

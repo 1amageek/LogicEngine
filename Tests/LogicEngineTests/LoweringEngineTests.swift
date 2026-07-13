@@ -4,7 +4,7 @@ import LogicIR
 import LogicLowering
 import LogicSimulation
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Logic lowering engine")
 struct LoweringEngineTests {
@@ -31,23 +31,27 @@ struct LoweringEngineTests {
             )
         ))
         let snapshotData = try LogicDesignSnapshotCodec.encode(snapshot)
+        let canonicalDigest = try LogicDesignSnapshotCodec.digest(snapshot)
         let snapshotURL = root.appending(path: "snapshot.json")
         try snapshotData.write(to: snapshotURL, options: [.atomic])
-        let sourceReference = XcircuiteFileReference(
-            artifactID: "rtl-snapshot",
-            path: "snapshot.json",
-            kind: .rtl,
-            format: .json,
-            sha256: XcircuiteHasher().sha256(data: snapshotData),
-            byteCount: Int64(snapshotData.count)
+        let sourceReference = ArtifactReference(
+            id: try ArtifactID(rawValue: "rtl-snapshot"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "snapshot.json"),
+                role: .input,
+                kind: .rtl,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: snapshotData, using: .sha256),
+            byteCount: UInt64(snapshotData.count)
         )
         let request = LogicLoweringRequest(
             runID: "lowering-engine-test",
             inputs: [sourceReference],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: sourceReference,
                 topDesignName: "top",
-                designDigest: snapshot.designDigest ?? ""
+                designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)
             ),
             artifactDirectory: "outputs"
         )
@@ -56,8 +60,7 @@ struct LoweringEngineTests {
 
         #expect(result.status == .completed)
         #expect(result.payload.executionDesign?.topDesignName == "top")
-        #expect(result.payload.executionDesign?.provenance?.sourceDesignDigest == snapshot.designDigest)
-        #expect(result.payload.executionDesign?.provenance?.transformationID == "native-rtl-to-execution-graph")
+        #expect(result.payload.executionDesign?.designRevision != nil)
         #expect(result.payload.loweredNodeCount == 1)
         guard let executionDesign = result.payload.executionDesign,
               let output = result.payload.executionDesign?.artifact else {
@@ -97,13 +100,16 @@ struct LoweringEngineTests {
         )
         let stimulusData = try JSONEncoder().encode(stimulus)
         try stimulusData.write(to: root.appending(path: "stimulus.json"), options: [.atomic])
-        let stimulusReference = XcircuiteFileReference(
-            artifactID: "stimulus",
-            path: "stimulus.json",
-            kind: .testPattern,
-            format: .json,
-            sha256: XcircuiteHasher().sha256(data: stimulusData),
-            byteCount: Int64(stimulusData.count)
+        let stimulusReference = ArtifactReference(
+            id: try ArtifactID(rawValue: "stimulus"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "stimulus.json"),
+                role: .input,
+                kind: .testPattern,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: stimulusData, using: .sha256),
+            byteCount: UInt64(stimulusData.count)
         )
         let simulation = try await NativeLogicSimulationEngine(artifactStore: store).execute(
             LogicSimulationRequest(

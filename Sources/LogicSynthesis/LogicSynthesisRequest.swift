@@ -1,19 +1,20 @@
+import CircuiteFoundation
 import Foundation
-import XcircuitePackage
 import LogicIR
 import PowerIntent
 import TimingCore
 import PDKCore
 import LogicEngineCore
+import CircuiteFoundation
 
-public struct LogicSynthesisRequest: XcircuiteEngineRequest {
+public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
     public var schemaVersion: Int
     public var runID: String
-    public var inputs: [XcircuiteFileReference]
+    public var inputs: [ArtifactReference]
 
-    public var design: LogicDesignReference
+    public var design: LogicFoundationDesignReference
     public var libraries: [TimingLibraryReference]
     public var constraints: TimingConstraintReference
     public var pdk: PDKReference
@@ -22,8 +23,8 @@ public struct LogicSynthesisRequest: XcircuiteEngineRequest {
 
     public init(
         runID: String,
-        inputs: [XcircuiteFileReference],
-        design: LogicDesignReference,
+        inputs: [ArtifactReference],
+        design: LogicFoundationDesignReference,
         libraries: [TimingLibraryReference],
         constraints: TimingConstraintReference,
         pdk: PDKReference,
@@ -57,8 +58,8 @@ public struct LogicSynthesisRequest: XcircuiteEngineRequest {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
         runID = try container.decode(String.self, forKey: .runID)
-        inputs = try container.decode([XcircuiteFileReference].self, forKey: .inputs)
-        design = try container.decode(LogicDesignReference.self, forKey: .design)
+        inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
+        design = try container.decode(LogicFoundationDesignReference.self, forKey: .design)
         libraries = try container.decode([TimingLibraryReference].self, forKey: .libraries)
         constraints = try container.decode(TimingConstraintReference.self, forKey: .constraints)
         pdk = try container.decode(PDKReference.self, forKey: .pdk)

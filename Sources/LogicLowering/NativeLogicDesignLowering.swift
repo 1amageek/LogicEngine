@@ -1,7 +1,7 @@
 import Foundation
+import CircuiteFoundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
 
 public struct NativeLogicDesignLowering: LogicDesignLowering {
     public let implementationVersion: String
@@ -23,11 +23,11 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
             return LogicLoweringResult(
                 status: .completed,
                 document: document,
-                diagnostics: [XcircuiteEngineDiagnostic(
-                    severity: .info,
-                    code: "LOGIC_LOWERING_COMPLETED",
-                    message: "Lowered RTL snapshot \(snapshot.rtl.topModuleName) into the LogicEngine execution graph.",
-                    entity: snapshot.rtl.topModuleName
+                diagnostics: [DesignDiagnostic(
+                    code: .trusted("logic.lowering.completed"),
+                    severity: .information,
+                    summary: "Lowered RTL snapshot \(snapshot.rtl.topModuleName) into the LogicEngine execution graph.",
+                    suggestedActions: []
                 )]
             )
         } catch let error as LogicLoweringError {
@@ -40,44 +40,56 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
         } catch {
             return LogicLoweringResult(
                 status: .failed,
-                diagnostics: [XcircuiteEngineDiagnostic(
+                diagnostics: [DesignDiagnostic(
+                    code: .trusted("logic.lowering.failed"),
                     severity: .error,
-                    code: "LOGIC_LOWERING_FAILED",
-                    message: error.localizedDescription,
-                    suggestedActions: ["inspect_rtl_snapshot", "rerun_logic_design_validation"]
+                    summary: error.localizedDescription,
+                    suggestedActions: [
+                        SuggestedAction(code: "logic.lowering.inspect-snapshot", summary: "inspect_rtl_snapshot"),
+                        SuggestedAction(code: "logic.lowering.validate", summary: "rerun_logic_design_validation")
+                    ]
                 )]
             )
         }
     }
 
     private func result(for error: LogicLoweringError) -> LogicLoweringResult {
-        let diagnostic: XcircuiteEngineDiagnostic
-        let status: XcircuiteEngineExecutionStatus
+        let diagnostic: DesignDiagnostic
+        let status: LogicEngineCore.LogicExecutionStatus
         switch error {
         case .missingTopModule:
             status = .failed
-            diagnostic = XcircuiteEngineDiagnostic(
+            diagnostic = DesignDiagnostic(
+                code: .trusted(code(for: error)),
                 severity: .error,
-                code: "LOGIC_LOWERING_TOP_MISSING",
-                message: error.localizedDescription,
-                suggestedActions: ["select_an_existing_top_module", "rerun_rtl_elaboration"]
+                summary: error.localizedDescription,
+                suggestedActions: [
+                    SuggestedAction(code: "logic.lowering.select-top", summary: "select_an_existing_top_module"),
+                    SuggestedAction(code: "logic.lowering.elaborate", summary: "rerun_rtl_elaboration")
+                ]
             )
         case .unsupported(let entity, _):
             status = .blocked
-            diagnostic = XcircuiteEngineDiagnostic(
+            diagnostic = DesignDiagnostic(
+                code: .trusted(code(for: error)),
                 severity: .error,
-                code: "LOGIC_LOWERING_UNSUPPORTED_RTL",
-                message: error.localizedDescription,
-                entity: entity,
-                suggestedActions: ["rewrite_into_supported_rtl_subset", "select_a_backend_with_required_semantics"]
+                summary: error.localizedDescription,
+                detail: "entity=\(entity)",
+                suggestedActions: [
+                    SuggestedAction(code: "logic.lowering.rewrite", summary: "rewrite_into_supported_rtl_subset"),
+                    SuggestedAction(code: "logic.lowering.backend", summary: "select_a_backend_with_required_semantics")
+                ]
             )
         case .invalidDesign, .widthMismatch, .multipleDriver:
             status = .failed
-            diagnostic = XcircuiteEngineDiagnostic(
+            diagnostic = DesignDiagnostic(
+                code: .trusted(code(for: error)),
                 severity: .error,
-                code: code(for: error),
-                message: error.localizedDescription,
-                suggestedActions: ["inspect_rtl_validation_diagnostics", "repair_design_and_reelaborate"]
+                summary: error.localizedDescription,
+                suggestedActions: [
+                    SuggestedAction(code: "logic.lowering.inspect", summary: "inspect_rtl_validation_diagnostics"),
+                    SuggestedAction(code: "logic.lowering.repair", summary: "repair_design_and_reelaborate")
+                ]
             )
         }
         return LogicLoweringResult(status: status, diagnostics: [diagnostic])

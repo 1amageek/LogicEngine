@@ -1,63 +1,55 @@
+import CircuiteFoundation
+import Foundation
 import LogicEngineCore
 import LogicIR
-import XcircuitePackage
 
-/// Package-owned compatibility boundary for the existing native simulator.
 public struct NativeLogicSimulationFoundationEngine: LogicSimulationFoundationEngine {
-    public let legacyEngine: any LogicSimulationExecuting
+    public let engine: any LogicSimulationExecuting
 
     public init(
-        legacyEngine: any LogicSimulationExecuting = NativeLogicSimulationEngine()
+        engine: any LogicSimulationExecuting = NativeLogicSimulationEngine()
     ) {
-        self.legacyEngine = legacyEngine
+        self.engine = engine
     }
 
     public func execute(
         _ request: LogicSimulationFoundationRequest
     ) async throws -> LogicSimulationFoundationResult {
         try request.validate()
-        let legacyRequest = try makeLegacyRequest(request)
-        let legacyResult = try await legacyEngine.execute(legacyRequest)
-        return try LogicSimulationFoundationResult(
-            legacy: legacyResult,
-            request: request
-        )
-    }
-
-    private func makeLegacyRequest(
-        _ request: LogicSimulationFoundationRequest
-    ) throws -> LogicSimulationRequest {
-        let bridge = LogicFoundationArtifactBridge()
-        let designArtifact = try bridge.legacyReference(
-            from: request.design.artifact,
+        let legacyRequest = LogicSimulationRequest(
             runID: request.runID,
-            kind: .rtl,
-            format: .json
-        )
-        let legacyInputs = try request.inputs.map {
-            try bridge.legacyReference(from: $0, runID: request.runID)
-        }
-        let stimulus = try request.stimulus.map {
-            try bridge.legacyReference(
-                from: $0,
-                runID: request.runID,
-                kind: .testPattern,
-                format: .json
-            )
-        }
-        return LogicSimulationRequest(
-            runID: request.runID,
-            inputs: legacyInputs,
-            design: LogicDesignReference(
-                artifact: designArtifact,
-                topDesignName: request.design.topDesignName,
-                designDigest: request.design.designRevision?.hexadecimalValue
-                    ?? request.design.artifact.digest.hexadecimalValue
-            ),
-            stimulus: stimulus,
+            inputs: request.inputs,
+            design: request.design,
+            stimulus: request.stimulus,
             seed: request.seed,
             waveformFormat: request.waveformFormat,
             artifactDirectory: request.artifactDirectory
+        )
+        let result = try await engine.execute(legacyRequest)
+        let producer = try ProducerIdentity(kind: .engine, identifier: "LogicSimulation", version: "1")
+        let provenance = try ExecutionProvenance(
+            producer: producer,
+            inputs: request.inputs,
+            designRevision: request.design.designRevision ?? request.design.artifact.digest,
+            randomSeed: request.seed,
+            startedAt: Date(),
+            completedAt: Date()
+        )
+        return LogicSimulationFoundationResult(
+            runID: request.runID,
+            status: result.status,
+            payload: LogicSimulationFoundationPayload(
+                traceCount: result.payload.traceCount,
+                assertionFailureCount: result.payload.assertionFailureCount,
+                eventCount: result.payload.eventCount,
+                waveform: result.payload.waveform,
+                assertionReport: result.payload.assertionReport,
+                cancellationRecord: result.payload.cancellationRecord,
+                finalValues: result.payload.finalValues
+            ),
+            artifacts: result.artifacts,
+            diagnostics: result.diagnostics,
+            provenance: provenance
         )
     }
 }

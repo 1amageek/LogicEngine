@@ -74,9 +74,10 @@ resume bookkeeping.
 domain implementations. Their
 Foundation-native counterparts conform directly to the Foundation engine
 protocols, accept `LogicFoundationDesignReference` artifacts, and project
-results through `LogicFoundationArtifactBridge`. The default filesystem store
-still verifies SHA-256 and byte-count provenance on reads and writes immutable
-run-scoped output references.
+results as Foundation-native records containing `ArtifactReference`,
+`DesignDiagnostic`, and `EvidenceManifest` values. The default filesystem
+store still verifies SHA-256 and byte-count provenance on reads and writes
+immutable run-scoped output references.
 
 The execution graph schema is versioned by `LogicDesignDocument`. Supported node
 kinds are `and`, `or`, `xor`, `nand`, `nor`, `xnor`, `not`, `buffer`, `constant`,
@@ -127,11 +128,11 @@ flowchart TD
 - Preserve cancellation as `cancelled`.
 - Do not swallow parser, process or persistence failures.
 
-## Xcircuite adapter
+## flow integration
 
 The adapter must:
 
-1. resolve project-relative references through XcircuitePackage;
+1. resolve project-relative references through the injected Xcircuite workspace store;
 2. verify input digests;
 3. evaluate ToolQualification requirements;
 4. invoke the injected engine protocol;

@@ -3,7 +3,7 @@ import Foundation
 import LogicEngineCore
 import LogicSynthesis
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Unbounded temporal equivalence")
 struct UnboundedTemporalEquivalenceTests {
@@ -42,7 +42,9 @@ struct UnboundedTemporalEquivalenceTests {
         try report.validate()
         try certificate.validateBinding(
             requestDigest: report.requestDigest,
-            reportDigest: XcircuiteHasher().sha256(data: reportData)
+            reportDigest: try SHA256ContentDigester()
+                .digest(data: reportData, using: .sha256)
+                .hexadecimalValue
         )
         #expect(certificate.complete)
     }
@@ -71,7 +73,7 @@ struct UnboundedTemporalEquivalenceTests {
         #expect(result.payload.proofStatus == .counterexample)
         #expect(result.payload.counterexample != nil)
         #expect(result.payload.proofCertificate == nil)
-        #expect(result.diagnostics.contains { $0.code.rawValue.contains("counterexample") })
+        #expect(result.diagnostics.contains { $0.code.rawValue.lowercased().contains("counterexample") })
     }
 
     @Test("blocks a relation whose finite input space exceeds the declared limit")
@@ -107,7 +109,7 @@ struct UnboundedTemporalEquivalenceTests {
 
         #expect(result.status == LogicExecutionStatus.blocked)
         #expect(result.payload.proofStatus == LogicUnboundedTemporalEquivalenceStatus.blocked)
-        #expect(result.diagnostics.contains { $0.code.rawValue.contains("prerequisite") })
+        #expect(result.diagnostics.contains { $0.code.rawValue.lowercased().contains("prerequisite") })
     }
 
     @Test("covers sequential state and clock contexts without a trace bound")
@@ -214,7 +216,7 @@ struct UnboundedTemporalEquivalenceTests {
 
         #expect(result.status == LogicExecutionStatus.blocked)
         #expect(result.payload.proofStatus == LogicUnboundedTemporalEquivalenceStatus.timeout)
-        #expect(result.diagnostics.contains { $0.code.rawValue.contains("timeout") })
+        #expect(result.diagnostics.contains { $0.code.rawValue.lowercased().contains("timeout") })
     }
 
     @Test("certificate binding rejects tampered report identity")
@@ -239,8 +241,8 @@ struct UnboundedTemporalEquivalenceTests {
 
     private func makeRequest(
         runID: String,
-        reference: XcircuiteFileReference,
-        implementation: XcircuiteFileReference,
+        reference: ArtifactReference,
+        implementation: ArtifactReference,
         topName: String,
         outputSignals: [String],
         valueDomain: LogicUnboundedTemporalEquivalenceDomain = .twoState,
@@ -249,17 +251,14 @@ struct UnboundedTemporalEquivalenceTests {
         transitionLimit: Int = 4,
         timeoutNanoseconds: UInt64 = 30_000_000_000
     ) throws -> LogicUnboundedTemporalEquivalenceFoundationRequest {
-        let bridge = LogicFoundationArtifactBridge()
-        let referenceArtifact = try bridge.foundationReference(from: reference)
-        let implementationArtifact = try bridge.foundationReference(from: implementation)
         return LogicUnboundedTemporalEquivalenceFoundationRequest(
             runID: runID,
             referenceDesign: LogicFoundationDesignReference(
-                artifact: referenceArtifact,
+                artifact: reference,
                 topDesignName: topName
             ),
             implementationDesign: LogicFoundationDesignReference(
-                artifact: implementationArtifact,
+                artifact: implementation,
                 topDesignName: topName
             ),
             outputSignals: outputSignals,
@@ -268,7 +267,7 @@ struct UnboundedTemporalEquivalenceTests {
             transitionLimit: transitionLimit,
             timeoutNanoseconds: timeoutNanoseconds,
             clockSignal: clockSignal,
-            inputs: [referenceArtifact, implementationArtifact],
+            inputs: [reference, implementation],
             artifactDirectory: "outputs"
         )
     }
@@ -381,20 +380,23 @@ struct UnboundedTemporalEquivalenceTests {
         _ value: T,
         name: String,
         root: URL,
-        kind: XcircuiteFileKind
-    ) throws -> XcircuiteFileReference {
+        kind: ArtifactKind
+    ) throws -> ArtifactReference {
         let url = root.appending(path: name)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: url, options: .atomic)
-        return XcircuiteFileReference(
-            artifactID: name,
-            path: name,
-            kind: kind,
-            format: .json,
-            sha256: XcircuiteHasher().sha256(data: data),
-            byteCount: Int64(data.count)
+        return ArtifactReference(
+            id: try ArtifactID(rawValue: name),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: name),
+                role: .input,
+                kind: kind,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count)
         )
     }
 

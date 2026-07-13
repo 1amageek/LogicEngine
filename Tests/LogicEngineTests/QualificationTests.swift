@@ -5,7 +5,7 @@ import LogicQualification
 import LogicSimulation
 import LogicSynthesis
 import Testing
-import XcircuitePackage
+import CircuiteFoundation
 
 @Suite("Logic qualification contracts")
 struct QualificationTests {
@@ -339,11 +339,11 @@ struct QualificationTests {
             default: throw LogicExecutionError.invalidArtifact("unknown process fixture input \(artifactID)")
             }
             let data = try Data(contentsOf: try LogicEngineTestFixture.url(named: fixtureName))
-            #expect(XcircuiteHasher().sha256(data: data) == digest)
+            #expect(try SHA256ContentDigester().digest(data: data, using: .sha256).hexadecimalValue == digest)
         }
         let processOutput = try Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-qualification-process-output"))
         #expect(
-            XcircuiteHasher().sha256(data: processOutput)
+            try SHA256ContentDigester().digest(data: processOutput, using: .sha256).hexadecimalValue
                 == processEvidence.outputArtifactDigests["logic-qualification-process-output"]
         )
 
@@ -407,18 +407,21 @@ struct QualificationTests {
 
     @Test("retained corpus runner records matching and mismatched cases", .timeLimit(.minutes(1)))
     func retainedCorpusRunner() async throws {
-        let artifact = XcircuiteFileReference(
-            artifactID: "design",
-            path: "design.json",
-            kind: .netlist,
-            format: .json,
-            sha256: "design-digest",
+        let artifact = ArtifactReference(
+            id: try ArtifactID(rawValue: "design"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "design.json"),
+                role: .input,
+                kind: .netlist,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: Data([0]), using: .sha256),
             byteCount: 1
         )
-        let design = LogicDesignReference(
+        let design = LogicFoundationDesignReference(
             artifact: artifact,
             topDesignName: "top",
-            designDigest: "design-digest"
+            designRevision: artifact.digest
         )
         let passingRequest = LogicQualificationRequest.simulation(LogicSimulationRequest(
             runID: "qualification-pass",
@@ -465,18 +468,24 @@ struct QualificationTests {
 
     @Test("qualification suite rejects duplicate case identity")
     func duplicateCaseIdentityIsRejected() throws {
-        let artifact = XcircuiteFileReference(
-            path: "design.json",
-            kind: .netlist,
-            format: .json
+        let artifact = ArtifactReference(
+            id: try ArtifactID(rawValue: "duplicate-design"),
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "design.json"),
+                role: .input,
+                kind: .netlist,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: Data([0]), using: .sha256),
+            byteCount: 1
         )
         let request = LogicQualificationRequest.simulation(LogicSimulationRequest(
             runID: "duplicate-case",
             inputs: [artifact],
-            design: LogicDesignReference(
+            design: LogicFoundationDesignReference(
                 artifact: artifact,
                 topDesignName: "top",
-                designDigest: "digest"
+                designRevision: artifact.digest
             )
         ))
         let suite = LogicQualificationSuite(
