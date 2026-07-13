@@ -1,0 +1,47 @@
+{
+  "assertions": [
+    {
+      "id": "signed-sum",
+      "expected": "1101",
+      "signal": "sum",
+      "time": 0
+    },
+    {
+      "id": "arithmetic-shift",
+      "expected": "1110",
+      "signal": "shifted",
+      "time": 0
+    },
+    {
+      "id": "signed-unknown-sum",
+      "expected": "XXXX",
+      "signal": "sum",
+      "time": 1
+    },
+    {
+      "id": "signed-unknown-shift",
+      "expected": "XXXX",
+      "signal": "shifted",
+      "time": 1
+    }
+  ],
+  "endTime": 1,
+  "events": [
+    {
+      "assignments": {
+        "a": "1100",
+        "amount": "1",
+        "b": "01"
+      },
+      "time": 0
+    },
+    {
+      "assignments": {
+        "a": "1X00"
+      },
+      "time": 1
+    }
+  ],
+  "schemaVersion": 1,
+  "timeUnit": "ns"
+}

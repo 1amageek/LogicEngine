@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "fixture": "vector-logical"
+  },
+  "nodes": [
+    {
+      "id": "logical-and",
+      "inputs": ["a", "b"],
+      "kind": "logical_and",
+      "outputs": ["and"],
+      "parameters": {}
+    },
+    {
+      "id": "logical-or",
+      "inputs": ["a", "b"],
+      "kind": "logical_or",
+      "outputs": ["or"],
+      "parameters": {}
+    },
+    {
+      "id": "logical-not",
+      "inputs": ["a"],
+      "kind": "logical_not",
+      "outputs": ["not"],
+      "parameters": {}
+    }
+  ],
+  "ports": [
+    {
+      "direction": "input",
+      "name": "a",
+      "width": 2
+    },
+    {
+      "direction": "input",
+      "name": "b",
+      "width": 2
+    },
+    {
+      "direction": "output",
+      "name": "and",
+      "width": 1
+    },
+    {
+      "direction": "output",
+      "name": "or",
+      "width": 1
+    },
+    {
+      "direction": "output",
+      "name": "not",
+      "width": 1
+    }
+  ],
+  "schemaVersion": 1,
+  "signals": [
+    {
+      "name": "a",
+      "width": 2
+    },
+    {
+      "name": "b",
+      "width": 2
+    },
+    {
+      "name": "and",
+      "width": 1
+    },
+    {
+      "name": "or",
+      "width": 1
+    },
+    {
+      "name": "not",
+      "width": 1
+    }
+  ],
+  "topDesignName": "vector_logical_top"
+}

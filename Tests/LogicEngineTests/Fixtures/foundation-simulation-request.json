@@ -1,0 +1,57 @@
+{
+  "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+  "runID": "foundation-simulation-cli",
+  "inputs": [
+    {
+      "id": "and-design",
+      "locator": {
+        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "kind": "netlist",
+        "format": "json"
+      },
+      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "byteCount": 663,
+      "producer": null
+    },
+    {
+      "id": "and-stimulus",
+      "locator": {
+        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"},
+        "kind": "evidence",
+        "format": "json"
+      },
+      "digest": {"algorithm": "sha256", "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"},
+      "byteCount": 650,
+      "producer": null
+    }
+  ],
+  "design": {
+    "artifact": {
+      "id": "and-design",
+      "locator": {
+        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "kind": "netlist",
+        "format": "json"
+      },
+      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "byteCount": 663,
+      "producer": null
+    },
+    "topDesignName": "and_top",
+    "designRevision": null
+  },
+  "stimulus": {
+    "id": "and-stimulus",
+    "locator": {
+      "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"},
+      "kind": "evidence",
+      "format": "json"
+    },
+    "digest": {"algorithm": "sha256", "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"},
+    "byteCount": 650,
+    "producer": null
+  },
+  "seed": 7,
+  "waveformFormat": "vcd",
+  "artifactDirectory": "outputs/foundation-simulation"
+}

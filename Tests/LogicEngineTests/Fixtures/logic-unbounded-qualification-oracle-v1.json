@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "oracleImplementationID": "reference-unbounded-equivalence",
+  "oracleImplementationVersion": "1",
+  "observations": [
+    {
+      "caseID": "unbounded-and-gate",
+      "observation": {
+        "status": "completed",
+        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_proved"],
+        "artifactIDs": [
+          "logic-unbounded-temporal-equivalence-certificate",
+          "logic-unbounded-temporal-equivalence-report"
+        ]
+      }
+    },
+    {
+      "caseID": "unbounded-counterexample",
+      "observation": {
+        "status": "failed",
+        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_counterexample"],
+        "artifactIDs": [
+          "logic-unbounded-temporal-counterexample",
+          "logic-unbounded-temporal-equivalence-report"
+        ]
+      }
+    },
+    {
+      "caseID": "unbounded-limit",
+      "observation": {
+        "status": "blocked",
+        "diagnosticCodes": ["logic.unbounded.logic_prerequisite_missing"],
+        "artifactIDs": []
+      }
+    },
+    {
+      "caseID": "unbounded-timeout",
+      "observation": {
+        "status": "blocked",
+        "diagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_timeout"],
+        "artifactIDs": []
+      }
+    },
+    {
+      "caseID": "unbounded-unsupported-semantics",
+      "observation": {
+        "status": "blocked",
+        "diagnosticCodes": ["logic.unbounded.logic_semantics_unsupported"],
+        "artifactIDs": []
+      }
+    }
+  ]
+}

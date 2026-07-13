@@ -1,0 +1,47 @@
+{
+  "metadata": {
+    "fixture": "and-gate"
+  },
+  "nodes": [
+    {
+      "id": "and0",
+      "inputs": ["a", "b"],
+      "kind": "and",
+      "outputs": ["y"],
+      "parameters": {}
+    }
+  ],
+  "ports": [
+    {
+      "direction": "input",
+      "name": "a",
+      "width": 1
+    },
+    {
+      "direction": "input",
+      "name": "b",
+      "width": 1
+    },
+    {
+      "direction": "output",
+      "name": "y",
+      "width": 1
+    }
+  ],
+  "schemaVersion": 1,
+  "signals": [
+    {
+      "name": "a",
+      "width": 1
+    },
+    {
+      "name": "b",
+      "width": 1
+    },
+    {
+      "name": "y",
+      "width": 1
+    }
+  ],
+  "topDesignName": "and_top"
+}

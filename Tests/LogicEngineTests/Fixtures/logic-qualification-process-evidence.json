@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "qualificationID": "logic-native-process-v1",
+  "suiteID": "logic-native-fixture-v1",
+  "processID": "logic-fixture",
+  "pdkID": "pdk-manifest",
+  "pdkDigest": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12",
+  "toolImplementationID": "native-logic-engine",
+  "toolImplementationVersion": "1",
+  "environmentIdentity": "swift-native-local-fixture",
+  "inputArtifactIDs": [
+    "pdk-manifest",
+    "logic-qualification-suite",
+    "logic-qualification-oracle-v1"
+  ],
+  "outputArtifactIDs": ["logic-qualification-process-output"],
+  "inputArtifactDigests": {
+    "pdk-manifest": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12",
+    "logic-qualification-suite": "53dc744705198ae913d4d2c5ea3661e0d91e4b2047913068b76160b18f5ba078",
+    "logic-qualification-oracle-v1": "1f0f650a76ffc1e2530560d858822c302eda7e7df8c6637ab7b20b7d1f645a9e"
+  },
+  "outputArtifactDigests": {
+    "logic-qualification-process-output": "9da108bdfa293eb58a4aa3e993cb66c35cce1efe1f98e2dfc1ee90c168351681"
+  },
+  "metrics": {
+    "caseCount": 4,
+    "oracleMatchedCaseCount": 4,
+    "processArtifactCount": 4
+  },
+  "failures": [],
+  "qualified": true,
+  "checkedAt": 805625017
+}

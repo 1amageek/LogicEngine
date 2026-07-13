@@ -1,0 +1,6 @@
+import CircuiteFoundation
+import Foundation
+
+public protocol LogicUnboundedTemporalEquivalenceFoundationEngine:
+    Engine<LogicUnboundedTemporalEquivalenceFoundationRequest, LogicUnboundedTemporalEquivalenceFoundationResult>
+{}

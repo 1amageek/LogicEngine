@@ -1,0 +1,23 @@
+{
+  "designDigest": "94b1dd9daf7866fcf3ff34ae08d365bed9904e140d6a755ed4067a67900a272a",
+  "rtl": {
+    "modules": [
+      {
+        "assignments": [],
+        "generateBlocks": [],
+        "id": "module-top",
+        "instances": [],
+        "memories": [],
+        "name": "top",
+        "parameters": [],
+        "ports": [],
+        "processes": [],
+        "signals": []
+      }
+    ],
+    "schemaVersion": 1,
+    "sourceFiles": [],
+    "topModuleName": "top"
+  },
+  "schemaVersion": 1
+}

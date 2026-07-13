@@ -1,0 +1,84 @@
+{
+  "assertions": [
+    {
+      "id": "zero-and-unknown",
+      "expected": "0",
+      "signal": "and",
+      "time": 0
+    },
+    {
+      "id": "zero-or-unknown",
+      "expected": "X",
+      "signal": "or",
+      "time": 0
+    },
+    {
+      "id": "zero-not",
+      "expected": "1",
+      "signal": "not",
+      "time": 0
+    },
+    {
+      "id": "one-and-unknown",
+      "expected": "X",
+      "signal": "and",
+      "time": 1
+    },
+    {
+      "id": "one-or-unknown",
+      "expected": "1",
+      "signal": "or",
+      "time": 1
+    },
+    {
+      "id": "one-not",
+      "expected": "0",
+      "signal": "not",
+      "time": 1
+    },
+    {
+      "id": "unknown-and-zero",
+      "expected": "0",
+      "signal": "and",
+      "time": 2
+    },
+    {
+      "id": "unknown-or-zero",
+      "expected": "X",
+      "signal": "or",
+      "time": 2
+    },
+    {
+      "id": "unknown-not",
+      "expected": "X",
+      "signal": "not",
+      "time": 2
+    }
+  ],
+  "endTime": 2,
+  "events": [
+    {
+      "assignments": {
+        "a": "00",
+        "b": "0X"
+      },
+      "time": 0
+    },
+    {
+      "assignments": {
+        "a": "01",
+        "b": "0X"
+      },
+      "time": 1
+    },
+    {
+      "assignments": {
+        "a": "0X",
+        "b": "00"
+      },
+      "time": 2
+    }
+  ],
+  "schemaVersion": 1,
+  "timeUnit": "ns"
+}

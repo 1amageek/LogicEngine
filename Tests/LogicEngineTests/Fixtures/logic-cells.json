@@ -1,0 +1,15 @@
+{
+  "cells": [
+    {
+      "area": 1.0,
+      "driveStrength": 1,
+      "inputCount": 2,
+      "kind": "and",
+      "name": "AND2_X1",
+      "power": 0.1,
+      "qualified": true
+    }
+  ],
+  "libraryName": "logic-fixture",
+  "schemaVersion": 1
+}

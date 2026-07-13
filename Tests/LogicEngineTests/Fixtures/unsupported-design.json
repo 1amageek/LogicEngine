@@ -1,0 +1,36 @@
+{
+  "metadata": {},
+  "nodes": [
+    {
+      "id": "unsupported0",
+      "inputs": ["a"],
+      "kind": "vendor_black_box",
+      "outputs": ["y"],
+      "parameters": {}
+    }
+  ],
+  "ports": [
+    {
+      "direction": "input",
+      "name": "a",
+      "width": 1
+    },
+    {
+      "direction": "output",
+      "name": "y",
+      "width": 1
+    }
+  ],
+  "schemaVersion": 1,
+  "signals": [
+    {
+      "name": "a",
+      "width": 1
+    },
+    {
+      "name": "y",
+      "width": 1
+    }
+  ],
+  "topDesignName": "unsupported_top"
+}

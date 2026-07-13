@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "suiteID": "logic-native-unbounded-v1",
+  "implementationID": "native-logic-engine",
+  "implementationVersion": "1",
+  "cases": [
+    {
+      "caseID": "unbounded-and-gate",
+      "request": {
+        "kind": "unbounded",
+        "value": {
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "runID": "logic-qualification-unbounded",
+          "inputs": [
+            {
+              "id": "and-design",
+              "locator": {
+                "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+              "byteCount": 663,
+              "producer": null
+            }
+          ],
+          "referenceDesign": {
+            "artifact": {
+              "id": "and-design",
+              "locator": {
+                "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+              "byteCount": 663,
+              "producer": null
+            },
+            "topDesignName": "and_top",
+            "designRevision": null
+          },
+          "implementationDesign": {
+            "artifact": {
+              "id": "and-design",
+              "locator": {
+                "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+              "byteCount": 663,
+              "producer": null
+            },
+            "topDesignName": "and_top",
+            "designRevision": null
+          },
+          "outputSignals": ["y"],
+          "valueDomain": "twoState",
+          "stateSpaceLimit": 1,
+          "transitionLimit": 4,
+          "timeoutNanoseconds": 30000000000,
+          "clockSignal": null,
+          "artifactDirectory": "outputs/logic-qualification-unbounded"
+        }
+      },
+      "expectation": {
+        "expectedStatus": "completed",
+        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_proved"],
+        "forbiddenDiagnosticCodes": []
+      }
+    },
+    {
+      "caseID": "unbounded-counterexample",
+      "request": {
+        "kind": "unbounded",
+        "value": {
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "runID": "logic-qualification-unbounded-counterexample",
+          "inputs": [
+            {
+              "id": "and-design",
+              "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"},
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+              "byteCount": 663,
+              "producer": null
+            },
+            {
+              "id": "constant-design",
+              "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/constant-design.json"}, "kind": "netlist", "format": "json"},
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "ae81227a2d6fe71d7260625259cf32f0abe775c7077e6b267f5837bc24fb44a7"},
+              "byteCount": 700,
+              "producer": null
+            }
+          ],
+          "referenceDesign": {
+            "artifact": {
+              "id": "and-design",
+              "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"},
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+              "byteCount": 663,
+              "producer": null
+            },
+            "topDesignName": "and_top",
+            "designRevision": null
+          },
+          "implementationDesign": {
+            "artifact": {
+              "id": "constant-design",
+              "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/constant-design.json"}, "kind": "netlist", "format": "json"},
+              "digest": {"algorithm": "sha256", "hexadecimalValue": "ae81227a2d6fe71d7260625259cf32f0abe775c7077e6b267f5837bc24fb44a7"},
+              "byteCount": 700,
+              "producer": null
+            },
+            "topDesignName": "and_top",
+            "designRevision": null
+          },
+          "outputSignals": ["y"],
+          "valueDomain": "twoState",
+          "stateSpaceLimit": 1,
+          "transitionLimit": 4,
+          "timeoutNanoseconds": 30000000000,
+          "clockSignal": null,
+          "artifactDirectory": "outputs/logic-qualification-unbounded-counterexample"
+        }
+      },
+      "expectation": {
+        "expectedStatus": "failed",
+        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_counterexample"],
+        "forbiddenDiagnosticCodes": []
+      }
+    },
+    {
+      "caseID": "unbounded-limit",
+      "request": {
+        "kind": "unbounded",
+        "value": {
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "runID": "logic-qualification-unbounded-limit",
+          "inputs": [{"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}],
+          "referenceDesign": {"artifact": {"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}, "topDesignName": "and_top", "designRevision": null},
+          "implementationDesign": {"artifact": {"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}, "topDesignName": "and_top", "designRevision": null},
+          "outputSignals": ["y"],
+          "valueDomain": "twoState",
+          "stateSpaceLimit": 1,
+          "transitionLimit": 1,
+          "timeoutNanoseconds": 30000000000,
+          "clockSignal": null,
+          "artifactDirectory": "outputs/logic-qualification-unbounded-limit"
+        }
+      },
+      "expectation": {
+        "expectedStatus": "blocked",
+        "requiredDiagnosticCodes": ["logic.unbounded.logic_prerequisite_missing"],
+        "forbiddenDiagnosticCodes": []
+      }
+    },
+    {
+      "caseID": "unbounded-timeout",
+      "request": {
+        "kind": "unbounded",
+        "value": {
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "runID": "logic-qualification-unbounded-timeout",
+          "inputs": [{"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}],
+          "referenceDesign": {"artifact": {"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}, "topDesignName": "and_top", "designRevision": null},
+          "implementationDesign": {"artifact": {"id": "and-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"}, "byteCount": 663, "producer": null}, "topDesignName": "and_top", "designRevision": null},
+          "outputSignals": ["y"],
+          "valueDomain": "twoState",
+          "stateSpaceLimit": 1,
+          "transitionLimit": 4,
+          "timeoutNanoseconds": 1,
+          "clockSignal": null,
+          "artifactDirectory": "outputs/logic-qualification-unbounded-timeout"
+        }
+      },
+      "expectation": {
+        "expectedStatus": "blocked",
+        "requiredDiagnosticCodes": ["logic.unbounded.logic_unbounded_temporal_equivalence_timeout"],
+        "forbiddenDiagnosticCodes": []
+      }
+    },
+    {
+      "caseID": "unbounded-unsupported-semantics",
+      "request": {
+        "kind": "unbounded",
+        "value": {
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "runID": "logic-qualification-unbounded-unsupported",
+          "inputs": [{"id": "unsupported-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/unsupported-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "b3d13d9342c3989cc17757057095abbcec31483a6a5fb4b34d2269d984798b69"}, "byteCount": 532, "producer": null}],
+          "referenceDesign": {"artifact": {"id": "unsupported-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/unsupported-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "b3d13d9342c3989cc17757057095abbcec31483a6a5fb4b34d2269d984798b69"}, "byteCount": 532, "producer": null}, "topDesignName": "unsupported_top", "designRevision": null},
+          "implementationDesign": {"artifact": {"id": "unsupported-design", "locator": {"location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/unsupported-design.json"}, "kind": "netlist", "format": "json"}, "digest": {"algorithm": "sha256", "hexadecimalValue": "b3d13d9342c3989cc17757057095abbcec31483a6a5fb4b34d2269d984798b69"}, "byteCount": 532, "producer": null}, "topDesignName": "unsupported_top", "designRevision": null},
+          "outputSignals": ["y"],
+          "valueDomain": "twoState",
+          "stateSpaceLimit": 1,
+          "transitionLimit": 4,
+          "timeoutNanoseconds": 30000000000,
+          "clockSignal": null,
+          "artifactDirectory": "outputs/logic-qualification-unbounded-unsupported"
+        }
+      },
+      "expectation": {
+        "expectedStatus": "blocked",
+        "requiredDiagnosticCodes": ["logic.unbounded.logic_semantics_unsupported"],
+        "forbiddenDiagnosticCodes": []
+      }
+    }
+  ]
+}

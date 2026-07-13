@@ -1,0 +1,57 @@
+{
+  "artifactDirectory": "outputs/bounded-temporal",
+  "implementationDesign": {
+    "artifact": {
+      "artifactID": "and-design",
+      "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
+      "kind": "netlist",
+      "format": "JSON",
+      "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
+      "byteCount": 663
+    },
+    "topDesignName": "and_top",
+    "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+  },
+  "inputs": [
+    {
+      "artifactID": "and-design",
+      "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
+      "kind": "netlist",
+      "format": "JSON",
+      "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
+      "byteCount": 663
+    },
+    {
+      "artifactID": "and-stimulus",
+      "path": "Tests/LogicEngineTests/Fixtures/and-stimulus.json",
+      "kind": "testPattern",
+      "format": "JSON",
+      "sha256": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d",
+      "byteCount": 650
+    }
+  ],
+  "outputSignals": ["y"],
+  "referenceDesign": {
+    "artifact": {
+      "artifactID": "and-design",
+      "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
+      "kind": "netlist",
+      "format": "JSON",
+      "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
+      "byteCount": 663
+    },
+    "topDesignName": "and_top",
+    "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+  },
+  "runID": "logic-bounded-temporal-cli",
+  "sampleLimit": 8,
+  "schemaVersion": 1,
+  "stimulus": {
+    "artifactID": "and-stimulus",
+    "path": "Tests/LogicEngineTests/Fixtures/and-stimulus.json",
+    "kind": "testPattern",
+    "format": "JSON",
+    "sha256": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d",
+    "byteCount": 650
+  }
+}

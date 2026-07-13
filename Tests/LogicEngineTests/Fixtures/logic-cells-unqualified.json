@@ -1,0 +1,15 @@
+{
+  "cells": [
+    {
+      "area": 1.0,
+      "driveStrength": 1,
+      "inputCount": 2,
+      "kind": "and",
+      "name": "AND2_UNQUALIFIED",
+      "power": 0.1,
+      "qualified": false
+    }
+  ],
+  "libraryName": "logic-fixture-unqualified",
+  "schemaVersion": 1
+}

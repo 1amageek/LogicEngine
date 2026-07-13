@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "qualificationID": "logic-native-unbounded-process-v1",
+  "suiteID": "logic-native-unbounded-v1",
+  "processID": "logic-fixture",
+  "pdkID": "pdk-manifest",
+  "result": "qualified",
+  "toolImplementationID": "native-logic-engine",
+  "toolImplementationVersion": "1"
+}

@@ -1,0 +1,80 @@
+{
+  "metadata": {
+    "fixture": "signed-arithmetic"
+  },
+  "nodes": [
+    {
+      "id": "signed-add",
+      "inputs": ["a", "b"],
+      "kind": "add",
+      "outputs": ["sum"],
+      "parameters": {
+        "signed": "true"
+      }
+    },
+    {
+      "id": "arithmetic-shift-right",
+      "inputs": ["a", "amount"],
+      "kind": "shift_right",
+      "outputs": ["shifted"],
+      "parameters": {
+        "signed": "true"
+      }
+    }
+  ],
+  "ports": [
+    {
+      "direction": "input",
+      "name": "a",
+      "width": 4
+    },
+    {
+      "direction": "input",
+      "name": "b",
+      "width": 2
+    },
+    {
+      "direction": "input",
+      "name": "amount",
+      "width": 1
+    },
+    {
+      "direction": "output",
+      "name": "sum",
+      "width": 4
+    },
+    {
+      "direction": "output",
+      "name": "shifted",
+      "width": 4
+    }
+  ],
+  "schemaVersion": 1,
+  "signals": [
+    {
+      "isSigned": true,
+      "name": "a",
+      "width": 4
+    },
+    {
+      "isSigned": true,
+      "name": "b",
+      "width": 2
+    },
+    {
+      "name": "amount",
+      "width": 1
+    },
+    {
+      "isSigned": true,
+      "name": "sum",
+      "width": 4
+    },
+    {
+      "isSigned": true,
+      "name": "shifted",
+      "width": 4
+    }
+  ],
+  "topDesignName": "signed_arithmetic_top"
+}

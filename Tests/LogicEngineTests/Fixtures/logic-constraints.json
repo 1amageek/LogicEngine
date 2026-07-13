@@ -1,0 +1,7 @@
+{
+  "maximumArea": 2.0,
+  "maximumLogicDepth": 2,
+  "maximumPower": 1.0,
+  "schemaVersion": 1,
+  "targetClockPeriod": null
+}

@@ -1,0 +1,46 @@
+{
+  "assertions": [
+    {
+      "id": "y-at-zero",
+      "expected": "0",
+      "signal": "y",
+      "time": 0
+    },
+    {
+      "id": "y-after-a",
+      "expected": "0",
+      "signal": "y",
+      "time": 5
+    },
+    {
+      "id": "y-after-b",
+      "expected": "1",
+      "signal": "y",
+      "time": 10
+    }
+  ],
+  "endTime": 10,
+  "events": [
+    {
+      "assignments": {
+        "a": "0",
+        "b": "0"
+      },
+      "time": 0
+    },
+    {
+      "assignments": {
+        "a": "1"
+      },
+      "time": 5
+    },
+    {
+      "assignments": {
+        "b": "1"
+      },
+      "time": 10
+    }
+  ],
+  "schemaVersion": 1,
+  "timeUnit": "ns"
+}

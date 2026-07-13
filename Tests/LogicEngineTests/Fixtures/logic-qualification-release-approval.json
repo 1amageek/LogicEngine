@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "approvalID": "logic-native-release-approval-v1",
+  "suiteID": "logic-native-fixture-v1",
+  "qualificationID": "logic-native-process-v1",
+  "approverIdentity": "human-review-fixture",
+  "rationale": "Reviewed retained corpus, independent oracle correlation, process evidence, and artifact digests.",
+  "approved": true,
+  "approvedAt": 805625017
+}
