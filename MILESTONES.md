@@ -107,7 +107,7 @@ Current implementation slice:
   and structural combinational cycles, including cycles with stable unknown
   values.
 - Simulation cancellation persists a run-scoped structured cancellation record
-  alongside the cancelled envelope.
+  alongside the cancelled result.
 
 ## Milestone 3: Synthesis correctness and acceptance
 
@@ -220,7 +220,7 @@ Depends on: Milestones 4–6.
 
 Scope:
 
-- Bind a native exhaustive implementation to the typed Foundation request and
+- Bind a native exhaustive implementation to the typed execution request and
   immutable request/report/certificate digests. An external solver can be
   attached later through `RTLVerificationEngine` without changing the artifact
   contract.

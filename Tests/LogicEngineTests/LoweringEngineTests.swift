@@ -48,7 +48,7 @@ struct LoweringEngineTests {
         let request = LogicLoweringRequest(
             runID: "lowering-engine-test",
             inputs: [sourceReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: sourceReference,
                 topDesignName: "top",
                 designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)

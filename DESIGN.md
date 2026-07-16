@@ -19,7 +19,7 @@ This package owns the schemas and engine protocols listed in its public products
 ```text
 CircuiteFoundation artifact/evidence contract
                  ↓
-LogicEngine Foundation-native typed requests/results
+LogicEngine canonical typed requests/results
                  ↓
 native or external-tool backends
                  ↓
@@ -31,7 +31,7 @@ DesignFlowKernel and .xcircuite artifacts
 Backends may depend on lower-level data packages. This package must never import
 `Xcircuite` or `circuit-studio`. Flow and project storage are supplied by
 `DesignFlowKernel` and the injected Xcircuite workspace store; they are not
-part of the Foundation-native public contract.
+part of the canonical public contract.
 
 ## Trust model
 

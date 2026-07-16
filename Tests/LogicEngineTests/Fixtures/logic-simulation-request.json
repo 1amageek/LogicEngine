@@ -1,27 +1,6 @@
 {
-  "artifactDirectory": "outputs/bounded-temporal",
-  "implementationDesign": {
-    "artifact": {
-      "id": "and-design",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
-        },
-        "role": "input",
-        "kind": "netlist",
-        "format": "json"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
-      },
-      "byteCount": 663,
-      "producer": null
-    },
-    "topDesignName": "and_top",
-    "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
-  },
+  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "runID": "logic-simulation-cli",
   "inputs": [
     {
       "id": "and-design",
@@ -30,15 +9,15 @@
           "storage": "workspaceRelative",
           "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
         },
-        "role": "input",
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     {
@@ -48,9 +27,9 @@
           "storage": "workspaceRelative",
           "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
         },
-        "role": "input",
-        "kind": "test-pattern",
-        "format": "json"
+        "kind": "evidence",
+        "format": "json",
+        "role": "input"
       },
       "digest": {
         "algorithm": "sha256",
@@ -60,10 +39,7 @@
       "producer": null
     }
   ],
-  "outputSignals": [
-    "y"
-  ],
-  "referenceDesign": {
+  "design": {
     "artifact": {
       "id": "and-design",
       "locator": {
@@ -71,23 +47,20 @@
           "storage": "workspaceRelative",
           "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
         },
-        "role": "input",
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     "topDesignName": "and_top",
-    "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+    "designRevision": null
   },
-  "runID": "logic-bounded-temporal-cli",
-  "sampleLimit": 8,
-  "schemaVersion": 1,
   "stimulus": {
     "id": "and-stimulus",
     "locator": {
@@ -95,9 +68,9 @@
         "storage": "workspaceRelative",
         "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
       },
-      "role": "input",
-      "kind": "test-pattern",
-      "format": "json"
+      "kind": "evidence",
+      "format": "json",
+      "role": "input"
     },
     "digest": {
       "algorithm": "sha256",
@@ -105,5 +78,8 @@
     },
     "byteCount": 650,
     "producer": null
-  }
+  },
+  "seed": 7,
+  "waveformFormat": "vcd",
+  "artifactDirectory": "outputs/logic-simulation"
 }

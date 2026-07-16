@@ -3,14 +3,13 @@ import Foundation
 import LogicEngineCore
 import LogicIR
 
-/// Lowering output projected onto the Foundation evidence contracts.
-public struct LogicLoweringFoundationResult: Sendable, Hashable, Codable,
+public struct LogicUnboundedTemporalEquivalenceResult: Sendable, Hashable, Codable,
     ArtifactProducing, DiagnosticReporting, EvidenceProviding
 {
     public let schemaVersion: SchemaVersion
     public let runID: String
     public let status: LogicIR.LogicExecutionStatus
-    public let payload: LogicLoweringFoundationPayload
+    public let payload: LogicUnboundedTemporalEquivalencePayload
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
     public let evidence: EvidenceManifest
@@ -18,7 +17,7 @@ public struct LogicLoweringFoundationResult: Sendable, Hashable, Codable,
     public init(
         runID: String,
         status: LogicIR.LogicExecutionStatus,
-        payload: LogicLoweringFoundationPayload,
+        payload: LogicUnboundedTemporalEquivalencePayload,
         artifacts: [ArtifactReference] = [],
         diagnostics: [DesignDiagnostic] = [],
         provenance: ExecutionProvenance,
@@ -32,5 +31,4 @@ public struct LogicLoweringFoundationResult: Sendable, Hashable, Codable,
         self.diagnostics = diagnostics
         self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
     }
-
 }

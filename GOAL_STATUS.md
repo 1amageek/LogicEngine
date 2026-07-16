@@ -13,12 +13,12 @@ foundry-specific qualification remain external scopes.**
 |---|---|---|
 | Responsibility boundary | Complete | README.md and DESIGN.md |
 | Public package products | Implemented | Package.swift |
-| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | Foundation-native requests/results and canonical payloads, direct `Engine` conformance, artifact and evidence tests |
+| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | One canonical request/result pair per domain, direct `Engine` conformance, artifact and evidence tests |
 | Artifact persistence trust boundary | Implemented | Output paths are root-bounded after symlink resolution; publication is atomic and immutable collisions produce typed errors; focused filesystem regressions cover absolute escape, symlink escape and idempotent replay |
 | Contract build | Passed | swift build |
 | Contract test | Passed | timeout-bounded `xcodebuild test -scheme LogicEngine-Package -destination 'platform=macOS' -parallel-testing-enabled NO` through the workspace verifier |
 | Domain implementation | Native graph profile plus deterministic lowering, generic combinational processes, vector/NBA/reset/topology, scalar/vector logical operations, comparisons, signed arithmetic, division/modulo, arithmetic-shift semantics, both clock edges, asynchronous reset, and level-sensitive latch semantics | `NativeLogicDesignLowering`, shared `LogicExecutionGraphEvaluator`, simulation, synthesis, exhaustive equivalence |
-| CLI implementation | Implemented | Domain commands plus Foundation-native `foundation-lower`, `foundation-simulate`, `foundation-synthesize`, `foundation-bounded-equivalence`, `foundation-unbounded-equivalence`, and `assess-evidence` |
+| CLI implementation | Implemented | `lower`, `simulate`, `synthesize`, `bounded-equivalence`, `unbounded-equivalence`, and `assess-evidence` execute the canonical domain contracts |
 | Fixture corpus | Retained native and exhaustive-proof corpus runner and CLI baseline | `Tests/LogicEngineTests/Fixtures`, retained suites, evidence tests, and persisted `logic-evidence-report.json` artifacts |
 | Oracle correlation | Verified for retained native fixture profile | Independent observation fixtures can advance `LogicEvidenceReport` to `oracleCorrelated` |
 | Tool/process qualification | External | ToolQualification consumes LogicEngine observations and owns trust evaluation |
@@ -38,7 +38,7 @@ foundry-specific qualification remain external scopes.**
 | Synthesis provenance | Contract defined | Transformation, digest provenance, typed equivalence request, and pending acceptance state | Provenance/equivalence-request artifact test | Equivalence still required |
 | Synthesis acceptance gate | Contract defined | Matching proved evidence can advance to accepted; mismatched/unproved evidence is rejected | Acceptance evaluator regression | No process qualification |
 | Bounded temporal equivalence | Contract defined | Same finite stimulus is simulated against two execution designs; output traces are compared within an explicit sample bound and digest-bearing reports/counterexamples are persisted | Native tests plus CLI fixture execution | Bounded native profile |
-| Exhaustive finite-state temporal equivalence | Foundation contract defined | Exact two-state/four-state enumeration of combinational, DFF, and latch transition relations with state/transition/timeout limits, report, certificate, counterexample, and structured blocked results | Native tests, retained unbounded corpus, and CLI evidence assessment | Native evidence available; trust external |
+| Exhaustive finite-state temporal equivalence | Contract defined | Exact two-state/four-state enumeration of combinational, DFF, and latch transition relations with state/transition/timeout limits, report, certificate, counterexample, and structured blocked results | Native tests, retained unbounded corpus, and CLI evidence assessment | Native evidence available; trust external |
 | Evidence assessment | Contract defined | `unassessed → corpusChecked → oracleCorrelated` with report and independent-observation validation | Evidence tests, retained suites, and CLI report artifact | ToolQualification owns later trust decisions |
 | External backends | Protocol extension point defined | Implementations conform directly to the domain protocol | Contract tests | External backend not selected |
 
@@ -62,7 +62,7 @@ flow-owned release policy
 
 ## Completion definition
 
-The narrow native execution graph and Foundation-native execution boundary are
+The narrow native execution graph and canonical execution boundary are
 complete for the retained product set. The broader LogicEngine
 platform goal is complete only when the milestones in `MILESTONES.md` have
 passed their implementation, corpus, integration, equivalence, and evidence

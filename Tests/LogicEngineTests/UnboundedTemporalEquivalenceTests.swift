@@ -22,7 +22,7 @@ struct UnboundedTemporalEquivalenceTests {
             outputSignals: ["y"]
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -65,7 +65,7 @@ struct UnboundedTemporalEquivalenceTests {
             outputSignals: ["y"]
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -90,7 +90,7 @@ struct UnboundedTemporalEquivalenceTests {
             topName: "formal_top",
             outputSignals: ["y"]
         )
-        request = LogicUnboundedTemporalEquivalenceFoundationRequest(
+        request = LogicUnboundedTemporalEquivalenceRequest(
             runID: request.runID,
             referenceDesign: request.referenceDesign,
             implementationDesign: request.implementationDesign,
@@ -103,7 +103,7 @@ struct UnboundedTemporalEquivalenceTests {
             artifactDirectory: request.artifactDirectory
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -130,7 +130,7 @@ struct UnboundedTemporalEquivalenceTests {
             transitionLimit: 16
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -157,7 +157,7 @@ struct UnboundedTemporalEquivalenceTests {
             transitionLimit: 8
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -184,7 +184,7 @@ struct UnboundedTemporalEquivalenceTests {
             transitionLimit: 4
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -210,7 +210,7 @@ struct UnboundedTemporalEquivalenceTests {
             timeoutNanoseconds: 1
         )
 
-        let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+        let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
@@ -250,14 +250,14 @@ struct UnboundedTemporalEquivalenceTests {
         stateSpaceLimit: Int = 1,
         transitionLimit: Int = 4,
         timeoutNanoseconds: UInt64 = 30_000_000_000
-    ) throws -> LogicUnboundedTemporalEquivalenceFoundationRequest {
-        return LogicUnboundedTemporalEquivalenceFoundationRequest(
+    ) throws -> LogicUnboundedTemporalEquivalenceRequest {
+        return LogicUnboundedTemporalEquivalenceRequest(
             runID: runID,
-            referenceDesign: LogicFoundationDesignReference(
+            referenceDesign: LogicDesignArtifact(
                 artifact: reference,
                 topDesignName: topName
             ),
-            implementationDesign: LogicFoundationDesignReference(
+            implementationDesign: LogicDesignArtifact(
                 artifact: implementation,
                 topDesignName: topName
             ),

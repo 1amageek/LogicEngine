@@ -1,7 +1,6 @@
 import Foundation
+import CircuiteFoundation
 
-public protocol LogicBoundedTemporalEquivalenceExecuting: Sendable {
-    func execute(
-        _ request: LogicBoundedTemporalEquivalenceRequest
-    ) async throws -> LogicBoundedTemporalEquivalenceResult
-}
+public protocol LogicBoundedTemporalEquivalenceExecuting: Engine
+where Request == LogicBoundedTemporalEquivalenceRequest,
+      Output == LogicBoundedTemporalEquivalenceResult {}

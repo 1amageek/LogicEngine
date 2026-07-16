@@ -24,10 +24,12 @@
   "schemaVersion": 1,
   "signals": [
     {
+      "isSigned": false,
       "name": "a",
       "width": 1
     },
     {
+      "isSigned": false,
       "name": "y",
       "width": 1
     }

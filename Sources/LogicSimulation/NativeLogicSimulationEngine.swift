@@ -71,15 +71,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
     }
 
     private func validate(_ request: LogicSimulationRequest) throws {
-        guard request.schemaVersion == LogicSimulationRequest.currentSchemaVersion else {
-            throw LogicExecutionError.invalidArtifact("unsupported request schema version \(request.schemaVersion)")
-        }
-        guard !request.runID.isEmpty else {
-            throw LogicExecutionError.invalidArtifact("run ID is empty")
-        }
-        guard request.design.topDesignName.isEmpty == false else {
-            throw LogicExecutionError.invalidDesign("top design name is empty")
-        }
+        try request.validate()
     }
 
     private func decodeDesign(_ data: Data) throws -> LogicDesignDocument {
@@ -90,7 +82,9 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         } catch let error as LogicExecutionError {
             throw error
         } catch {
-            throw LogicExecutionError.invalidArtifact("design JSON could not be decoded: \(error.localizedDescription)")
+            throw LogicExecutionError.invalidArtifact(
+                "design JSON could not be decoded: \(String(reflecting: error))"
+            )
         }
     }
 
@@ -562,10 +556,12 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             finalValues: result.finalValues
         )
         return LogicSimulationResult(
+            runID: request.runID,
             status: status,
             payload: payload,
             artifacts: [waveformReference, reportReference],
-            diagnostics: diagnostics
+            diagnostics: diagnostics,
+            provenance: try makeProvenance(request: request, startedAt: startedAt)
         )
     }
 
@@ -605,6 +601,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             cancellationReference = nil
         }
         return LogicSimulationResult(
+            runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             payload: LogicSimulationPayload(
                 traceCount: 0,
@@ -612,7 +609,26 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 cancellationRecord: cancellationReference
             ),
             artifacts: cancellationReference.map { [$0] } ?? [],
-            diagnostics: [diagnostic]
+            diagnostics: [diagnostic],
+            provenance: try makeProvenance(request: request, startedAt: startedAt)
+        )
+    }
+
+    private func makeProvenance(
+        request: LogicSimulationRequest,
+        startedAt: Date
+    ) throws -> ExecutionProvenance {
+        try ExecutionProvenance(
+            producer: ProducerIdentity(
+                kind: .engine,
+                identifier: "LogicSimulation",
+                version: implementationVersion
+            ),
+            inputs: request.inputs,
+            designRevision: request.design.designRevision ?? request.design.artifact.digest,
+            randomSeed: request.seed,
+            startedAt: startedAt,
+            completedAt: Date()
         )
     }
 

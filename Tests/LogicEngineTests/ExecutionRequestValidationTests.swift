@@ -6,19 +6,19 @@ import LogicSimulation
 import LogicSynthesis
 import Testing
 
-@Suite("LogicEngine Foundation request validation")
-struct FoundationRequestValidationTests {
+@Suite("LogicEngine execution request validation")
+struct ExecutionRequestValidationTests {
     @Test
     func loweringRejectsBlankRunID() throws {
-        let request = LogicLoweringFoundationRequest(
+        let request = LogicLoweringRequest(
             runID: " \n",
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: try artifact(id: "design"),
                 topDesignName: "top"
             )
         )
 
-        #expect(throws: LogicFoundationBoundaryError.self) {
+        #expect(throws: LogicExecutionContractError.self) {
             try request.validate()
         }
     }
@@ -27,9 +27,9 @@ struct FoundationRequestValidationTests {
     func simulationRejectsStimulusMissingFromInputs() throws {
         let design = try artifact(id: "design")
         let stimulus = try artifact(id: "stimulus")
-        let request = LogicSimulationFoundationRequest(
+        let request = LogicSimulationRequest(
             runID: "simulation",
-            design: LogicFoundationDesignReference(artifact: design, topDesignName: "top"),
+            design: LogicDesignArtifact(artifact: design, topDesignName: "top"),
             stimulus: stimulus
         )
         let encodedRequest = try JSONEncoder().encode(request)
@@ -40,26 +40,26 @@ struct FoundationRequestValidationTests {
             with: JSONEncoder().encode([design])
         )
         let invalidRequest = try JSONDecoder().decode(
-            LogicSimulationFoundationRequest.self,
+            LogicSimulationRequest.self,
             from: JSONSerialization.data(withJSONObject: object)
         )
 
-        #expect(throws: LogicFoundationBoundaryError.self) {
+        #expect(throws: LogicExecutionContractError.self) {
             try invalidRequest.validate()
         }
     }
 
     @Test
     func boundedEquivalenceRejectsDuplicateOutputSignals() throws {
-        let reference = LogicFoundationDesignReference(
+        let reference = LogicDesignArtifact(
             artifact: try artifact(id: "reference"),
             topDesignName: "top"
         )
-        let implementation = LogicFoundationDesignReference(
+        let implementation = LogicDesignArtifact(
             artifact: try artifact(id: "implementation"),
             topDesignName: "top"
         )
-        let request = LogicBoundedTemporalEquivalenceFoundationRequest(
+        let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "equivalence",
             referenceDesign: reference,
             implementationDesign: implementation,
@@ -68,7 +68,7 @@ struct FoundationRequestValidationTests {
             sampleLimit: 1
         )
 
-        #expect(throws: LogicFoundationBoundaryError.self) {
+        #expect(throws: LogicExecutionContractError.self) {
             try request.validate()
         }
     }
@@ -77,10 +77,10 @@ struct FoundationRequestValidationTests {
     func requestInitializersCanonicalizeArtifactInputs() throws {
         let design = try artifact(id: "design")
         let stimulus = try artifact(id: "stimulus")
-        let request = LogicSimulationFoundationRequest(
+        let request = LogicSimulationRequest(
             runID: "simulation",
-            design: LogicFoundationDesignReference(artifact: design, topDesignName: "top"),
             inputs: [design, stimulus, design],
+            design: LogicDesignArtifact(artifact: design, topDesignName: "top"),
             stimulus: stimulus
         )
 

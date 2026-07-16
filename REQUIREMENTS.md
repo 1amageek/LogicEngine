@@ -30,8 +30,9 @@ Provide independently qualifiable functional simulation and logic synthesis over
 - Inputs and outputs use immutable CircuiteFoundation `ArtifactReference`
   artifacts.
 - The native lowering, simulation, synthesis, and bounded-equivalence engines
-  conform directly to Foundation-refining protocols.
-- Integration uses only the canonical Foundation and domain request/result types; Xcircuite does not define parallel request or envelope types.
+  conform directly to their Foundation-refining domain protocols.
+- Integration uses one canonical domain request/result pair per operation;
+  Xcircuite does not define parallel request or result types.
 - Diagnostics contain a stable code, severity, affected entity and suggested actions.
 - Unsupported semantics and missing prerequisites produce blocked results.
 - Native and external-tool backends conform to identical request and payload schemas.
@@ -42,7 +43,7 @@ Provide independently qualifiable functional simulation and logic synthesis over
 - Xcircuite owns flow construction, artifact persistence, qualification gates, repair loops, approval and resume.
 - The package never imports the Xcircuite runtime or circuit-studio. The
   workspace persistence dependency is restricted to the explicit,
-  package-owned flow boundary and never appears in Foundation-native
+  package-owned flow boundary and never appears in canonical
   request or result payloads.
 
 ## Required developer surfaces

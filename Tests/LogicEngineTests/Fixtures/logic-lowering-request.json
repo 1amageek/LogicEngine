@@ -1,17 +1,13 @@
 {
-  "schemaVersion": {
-    "major": 1,
-    "minor": 0,
-    "patch": 0
-  },
-  "runID": "foundation-lowering-cli",
+  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "runID": "logic-lowering-cli",
   "inputs": [
     {
       "id": "rtl-snapshot",
       "locator": {
         "location": {
           "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"
+          "value": "Tests/LogicEngineTests/Fixtures/logic-lowering-snapshot.json"
         },
         "kind": "netlist",
         "format": "json",
@@ -31,7 +27,7 @@
       "locator": {
         "location": {
           "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"
+          "value": "Tests/LogicEngineTests/Fixtures/logic-lowering-snapshot.json"
         },
         "kind": "netlist",
         "format": "json",
@@ -47,5 +43,5 @@
     "topDesignName": "top",
     "designRevision": null
   },
-  "artifactDirectory": "outputs/foundation-lowering"
+  "artifactDirectory": "outputs/logic-lowering"
 }

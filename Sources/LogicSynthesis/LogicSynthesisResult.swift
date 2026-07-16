@@ -3,8 +3,10 @@ import Foundation
 import LogicEngineCore
 import LogicIR
 
-public struct LogicSynthesisResult: Sendable, Hashable, Codable {
-    public let schemaVersion: Int
+public struct LogicSynthesisResult: Sendable, Hashable, Codable, ArtifactProducing,
+    DiagnosticReporting, EvidenceProviding
+{
+    public let schemaVersion: SchemaVersion
     public let runID: String
     public let status: LogicIR.LogicExecutionStatus
     public let diagnostics: [DesignDiagnostic]
@@ -12,8 +14,12 @@ public struct LogicSynthesisResult: Sendable, Hashable, Codable {
     public let provenance: ExecutionProvenance
     public let payload: LogicSynthesisPayload
 
+    public var evidence: EvidenceManifest {
+        EvidenceManifest(provenance: provenance, artifacts: artifacts)
+    }
+
     public init(
-        schemaVersion: Int,
+        schemaVersion: SchemaVersion,
         runID: String,
         status: LogicIR.LogicExecutionStatus,
         diagnostics: [DesignDiagnostic],

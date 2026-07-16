@@ -4,14 +4,14 @@ import LogicIR
 import LogicEngineCore
 
 public struct LogicLoweringPayload: Sendable, Hashable, Codable {
-    public var sourceDesignDigest: String?
-    public var executionDesign: LogicFoundationDesignReference?
+    public var sourceDesignDigest: ContentDigest?
+    public var executionDesign: LogicDesignArtifact?
     public var loweredSignalCount: Int
     public var loweredNodeCount: Int
 
     public init(
-        sourceDesignDigest: String? = nil,
-        executionDesign: LogicFoundationDesignReference? = nil,
+        sourceDesignDigest: ContentDigest? = nil,
+        executionDesign: LogicDesignArtifact? = nil,
         loweredSignalCount: Int = 0,
         loweredNodeCount: Int = 0
     ) {

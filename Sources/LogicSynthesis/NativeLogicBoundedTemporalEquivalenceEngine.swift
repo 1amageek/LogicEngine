@@ -262,7 +262,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
 
     private func simulate(
         request: LogicBoundedTemporalEquivalenceRequest,
-        design: LogicFoundationDesignReference,
+        design: LogicDesignArtifact,
         role: String,
         outputDirectory: String
     ) async throws -> LogicSimulationResult {

@@ -2,7 +2,7 @@ import CircuiteFoundation
 import Foundation
 import LogicEngineCore
 
-public struct LogicUnboundedTemporalEquivalenceFoundationPayload: Sendable, Hashable, Codable {
+public struct LogicUnboundedTemporalEquivalencePayload: Sendable, Hashable, Codable {
     public let proofStatus: LogicUnboundedTemporalEquivalenceStatus
     public let exploredStateCount: Int
     public let exploredTransitionCount: Int

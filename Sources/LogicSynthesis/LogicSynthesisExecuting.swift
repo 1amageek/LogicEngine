@@ -1,11 +1,9 @@
 import Foundation
+import CircuiteFoundation
 import LogicIR
 import PowerIntent
 import TimingCore
 import PDKCore
 
-public protocol LogicSynthesisExecuting: Sendable {
-    func execute(
-        _ request: LogicSynthesisRequest
-    ) async throws -> LogicSynthesisResult
-}
+public protocol LogicSynthesisExecuting: Engine
+where Request == LogicSynthesisRequest, Output == LogicSynthesisResult {}

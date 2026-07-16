@@ -9,7 +9,7 @@
       "request": {
         "kind": "simulation",
         "value": {
-          "schemaVersion": 1,
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
           "runID": "logic-qualification-simulation",
           "inputs": [
             {
@@ -103,7 +103,7 @@
       "request": {
         "kind": "synthesis",
         "value": {
-          "schemaVersion": 1,
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
           "runID": "logic-qualification-synthesis",
           "inputs": [
             {
@@ -287,7 +287,7 @@
       "request": {
         "kind": "simulation",
         "value": {
-          "schemaVersion": 1,
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
           "runID": "logic-qualification-signed-arithmetic",
           "inputs": [
             {
@@ -385,7 +385,7 @@
       "request": {
         "kind": "simulation",
         "value": {
-          "schemaVersion": 1,
+          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
           "runID": "logic-qualification-vector-logical",
           "inputs": [
             {

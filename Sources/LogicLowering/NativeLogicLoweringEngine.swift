@@ -46,11 +46,16 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
             }
             let lowering = lowerer.lower(snapshot)
             guard lowering.status == .completed, let document = lowering.document else {
-                return result(
+                return try result(
                     request: request,
                     status: lowering.status,
                     diagnostics: lowering.diagnostics,
-                    payload: LogicLoweringPayload(sourceDesignDigest: canonicalDesignDigest),
+                    payload: LogicLoweringPayload(
+                        sourceDesignDigest: try ContentDigest(
+                            algorithm: .sha256,
+                            hexadecimalValue: canonicalDesignDigest
+                        )
+                    ),
                     document: nil,
                     startedAt: startedAt
                 )
@@ -66,18 +71,21 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 format: .json
             )
             let executionDesignDigest = output.digest.hexadecimalValue
-            let designReference = LogicFoundationDesignReference(
+            let designReference = LogicDesignArtifact(
                 artifact: output,
                 topDesignName: document.topDesignName,
                 designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
             )
-            return result(
+            return try result(
                 request: request,
                 status: .completed,
                 diagnostics: lowering.diagnostics,
                 artifacts: [output],
                 payload: LogicLoweringPayload(
-                    sourceDesignDigest: canonicalDesignDigest,
+                    sourceDesignDigest: try ContentDigest(
+                        algorithm: .sha256,
+                        hexadecimalValue: canonicalDesignDigest
+                    ),
                     executionDesign: designReference,
                     loweredSignalCount: document.signals.count,
                     loweredNodeCount: document.nodes.count
@@ -86,7 +94,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 startedAt: startedAt
             )
         } catch let error as LogicExecutionError {
-            return result(
+            return try result(
                 request: request,
                 status: LogicDiagnosticFactory.status(for: error),
                 diagnostics: [LogicDiagnosticFactory.make(for: error)],
@@ -100,15 +108,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
     }
 
     private func validate(_ request: LogicLoweringRequest) throws {
-        guard request.schemaVersion == LogicLoweringRequest.currentSchemaVersion else {
-            throw LogicExecutionError.invalidArtifact("unsupported lowering request schema version \(request.schemaVersion)")
-        }
-        guard !request.runID.isEmpty else {
-            throw LogicExecutionError.invalidArtifact("run ID is empty")
-        }
-        guard !request.design.topDesignName.isEmpty else {
-            throw LogicExecutionError.invalidDesign("top design name is empty")
-        }
+        try request.validate()
     }
 
     private func encode(_ document: LogicDesignDocument) throws -> Data {
@@ -129,13 +129,25 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
         payload: LogicLoweringPayload,
         document: LogicDesignDocument?,
         startedAt: Date
-    ) -> LogicLoweringResult {
+    ) throws -> LogicLoweringResult {
         LogicLoweringResult(
+            runID: request.runID,
             status: status,
             document: document,
             payload: payload,
             artifacts: artifacts,
-            diagnostics: diagnostics
+            diagnostics: diagnostics,
+            provenance: try ExecutionProvenance(
+                producer: ProducerIdentity(
+                    kind: .engine,
+                    identifier: "LogicLowering",
+                    version: implementationVersion
+                ),
+                inputs: request.inputs,
+                designRevision: request.design.designRevision ?? request.design.artifact.digest,
+                startedAt: startedAt,
+                completedAt: Date()
+            )
         )
     }
 }

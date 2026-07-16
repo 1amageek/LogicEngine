@@ -11,8 +11,8 @@ import LogicSimulation
 /// the selected two-state or four-state domain, every declared state, and every
 /// clock context is explored. Limits and the complete traversal counts are
 /// persisted in the report and certificate.
-public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
-    LogicUnboundedTemporalEquivalenceFoundationEngine
+public struct NativeLogicUnboundedTemporalEquivalenceEngine:
+    LogicUnboundedTemporalEquivalenceExecuting
 {
     public let artifactStore: any LogicArtifactStoring
     public let implementationVersion: String
@@ -26,8 +26,8 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     public func execute(
-        _ request: LogicUnboundedTemporalEquivalenceFoundationRequest
-    ) async throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
+        _ request: LogicUnboundedTemporalEquivalenceRequest
+    ) async throws -> LogicUnboundedTemporalEquivalenceResult {
         let startedAt = Date()
         try request.validate()
         do {
@@ -69,7 +69,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func loadDesignPair(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest
+        request: LogicUnboundedTemporalEquivalenceRequest
     ) throws -> DesignPair {
         let reference = try decodeDesign(
             artifact: request.referenceDesign.artifact,
@@ -158,7 +158,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func validatePair(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         reference: LogicDesignDocument,
         implementation: LogicDesignDocument
     ) throws {
@@ -198,7 +198,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func clockSignal(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         reference: LogicDesignDocument,
         implementation: LogicDesignDocument,
         sequential: Bool
@@ -287,7 +287,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func requestedOutputSignals(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         reference: LogicDesignDocument,
         implementation: LogicDesignDocument
     ) throws -> [String] {
@@ -317,7 +317,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func prove(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         pair: DesignPair,
         startedAt: Date
     ) throws -> ProofOutcome {
@@ -727,12 +727,12 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func materialize(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         requestDigest: String,
         pair: DesignPair,
         outcome: ProofOutcome,
         startedAt: Date
-    ) throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
+    ) throws -> LogicUnboundedTemporalEquivalenceResult {
         let report = LogicUnboundedTemporalEquivalenceReport(
             runID: request.runID,
             requestDigest: requestDigest,
@@ -824,7 +824,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             for: outcome.status,
             exploredTransitionCount: outcome.exploredTransitionCount
         )
-        let payload = LogicUnboundedTemporalEquivalenceFoundationPayload(
+        let payload = LogicUnboundedTemporalEquivalencePayload(
             proofStatus: outcome.status,
             exploredStateCount: outcome.exploredStateCount,
             exploredTransitionCount: outcome.exploredTransitionCount,
@@ -847,10 +847,10 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func failureResult(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
+    ) throws -> LogicUnboundedTemporalEquivalenceResult {
         let producer = try producerIdentity()
         let designDiagnostic: DesignDiagnostic
         if case .timedOut = error {
@@ -877,7 +877,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             executionStatus = .failed
             proofStatus = .blocked
         }
-        let payload = LogicUnboundedTemporalEquivalenceFoundationPayload(proofStatus: proofStatus)
+        let payload = LogicUnboundedTemporalEquivalencePayload(proofStatus: proofStatus)
         return try makeResult(
             request: request,
             status: executionStatus,
@@ -932,14 +932,14 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func makeResult(
-        request: LogicUnboundedTemporalEquivalenceFoundationRequest,
+        request: LogicUnboundedTemporalEquivalenceRequest,
         status: LogicIR.LogicExecutionStatus,
-        payload: LogicUnboundedTemporalEquivalenceFoundationPayload,
+        payload: LogicUnboundedTemporalEquivalencePayload,
         artifacts: [ArtifactReference],
         diagnostics: [DesignDiagnostic],
         producer: ProducerIdentity,
         startedAt: Date
-    ) throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
+    ) throws -> LogicUnboundedTemporalEquivalenceResult {
         let provenance = try ExecutionProvenance(
             producer: producer,
             inputs: request.inputs,
@@ -948,7 +948,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             startedAt: startedAt,
             completedAt: Date()
         )
-        return LogicUnboundedTemporalEquivalenceFoundationResult(
+        return LogicUnboundedTemporalEquivalenceResult(
             runID: request.runID,
             status: status,
             payload: payload,
@@ -968,7 +968,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
     }
 
     private func digest(
-        of request: LogicUnboundedTemporalEquivalenceFoundationRequest
+        of request: LogicUnboundedTemporalEquivalenceRequest
     ) throws -> String {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]

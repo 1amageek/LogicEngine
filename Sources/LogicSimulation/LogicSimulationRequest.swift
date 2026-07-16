@@ -4,13 +4,13 @@ import LogicIR
 import LogicEngineCore
 
 public struct LogicSimulationRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = SchemaVersion.v1
 
-    public var schemaVersion: Int
+    public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
 
-    public var design: LogicFoundationDesignReference
+    public var design: LogicDesignArtifact
     public var stimulus: ArtifactReference?
     public var seed: UInt64?
     public var waveformFormat: LogicWaveformFormat
@@ -18,8 +18,8 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
 
     public init(
         runID: String,
-        inputs: [ArtifactReference],
-        design: LogicFoundationDesignReference,
+        inputs: [ArtifactReference] = [],
+        design: LogicDesignArtifact,
         stimulus: ArtifactReference? = nil,
         seed: UInt64? = nil,
         waveformFormat: LogicWaveformFormat = .vcd,
@@ -27,12 +27,43 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
-        self.inputs = inputs
+        var allInputs: [ArtifactReference] = []
+        for artifact in [design.artifact] + inputs where !allInputs.contains(artifact) {
+            allInputs.append(artifact)
+        }
+        if let stimulus, !allInputs.contains(stimulus) {
+            allInputs.append(stimulus)
+        }
+        self.inputs = allInputs
         self.design = design
         self.stimulus = stimulus
         self.seed = seed
         self.waveformFormat = waveformFormat
         self.artifactDirectory = artifactDirectory
+    }
+
+    public func validate() throws {
+        guard schemaVersion == Self.currentSchemaVersion else {
+            throw LogicExecutionContractError.invalidRequest(
+                "unsupported simulation request schema version \(schemaVersion)"
+            )
+        }
+        guard !runID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw LogicExecutionContractError.invalidRequest("run ID is empty")
+        }
+        guard !design.topDesignName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw LogicExecutionContractError.invalidRequest("top design name is empty")
+        }
+        guard inputs.contains(design.artifact) else {
+            throw LogicExecutionContractError.invalidRequest(
+                "design artifact is missing from the input set"
+            )
+        }
+        if let stimulus, !inputs.contains(stimulus) {
+            throw LogicExecutionContractError.invalidRequest(
+                "stimulus artifact is missing from the input set"
+            )
+        }
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -48,7 +79,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        schemaVersion = try container.decode(SchemaVersion.self, forKey: .schemaVersion)
         guard schemaVersion == Self.currentSchemaVersion else {
             throw LogicExecutionError.invalidArtifact(
                 "unsupported simulation request schema version \(schemaVersion)"
@@ -56,7 +87,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
         }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
-        design = try container.decode(LogicFoundationDesignReference.self, forKey: .design)
+        design = try container.decode(LogicDesignArtifact.self, forKey: .design)
         stimulus = try container.decodeIfPresent(ArtifactReference.self, forKey: .stimulus)
         seed = try container.decodeIfPresent(UInt64.self, forKey: .seed)
         waveformFormat = try container.decode(LogicWaveformFormat.self, forKey: .waveformFormat)

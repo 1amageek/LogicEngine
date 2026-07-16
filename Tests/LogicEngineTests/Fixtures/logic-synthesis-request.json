@@ -1,10 +1,6 @@
 {
-  "schemaVersion": {
-    "major": 1,
-    "minor": 0,
-    "patch": 0
-  },
-  "runID": "foundation-synthesis-cli",
+  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "runID": "logic-synthesis-cli",
   "inputs": [
     {
       "id": "and-design",
@@ -19,9 +15,9 @@
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     {
@@ -93,9 +89,9 @@
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     "topDesignName": "and_top",
@@ -127,51 +123,49 @@
     }
   ],
   "constraints": {
-    "id": "logic-constraints",
-    "locator": {
-      "location": {
-        "storage": "workspaceRelative",
-        "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
+    "artifact": {
+      "id": "logic-constraints",
+      "locator": {
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
+        },
+        "kind": "constraints",
+        "format": "json",
+        "role": "input"
       },
-      "kind": "constraints",
-      "format": "json",
-      "role": "input"
-    },
-    "digest": {
-      "algorithm": "sha256",
-      "hexadecimalValue": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92"
-    },
-    "byteCount": 125,
-    "producer": null
-  },
-  "constraintModeIDs": [
-    "default"
-  ],
-  "pdkManifest": {
-    "id": "pdk-manifest",
-    "locator": {
-      "location": {
-        "storage": "workspaceRelative",
-        "value": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json"
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92"
       },
-      "kind": "technology",
-      "format": "json",
-      "role": "input"
+      "byteCount": 125,
+      "producer": null
     },
-    "digest": {
-      "algorithm": "sha256",
-      "hexadecimalValue": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
-    },
-    "byteCount": 53,
-    "producer": null
+    "modeIDs": ["default"]
   },
-  "processID": "logic-fixture",
-  "pdkVersion": "1",
-  "pdkDigest": {
-    "algorithm": "sha256",
-    "hexadecimalValue": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
+  "pdk": {
+    "manifest": {
+      "id": "pdk-manifest",
+      "locator": {
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json"
+        },
+        "kind": "technology",
+        "format": "json",
+        "role": "input"
+      },
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
+      },
+      "byteCount": 53,
+      "producer": null
+    },
+    "processID": "logic-fixture",
+    "version": "1",
+    "digest": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
   },
   "powerIntent": null,
-  "powerIntentDesignRevision": null,
-  "artifactDirectory": "outputs/foundation-synthesis"
+  "artifactDirectory": "outputs/logic-synthesis"
 }

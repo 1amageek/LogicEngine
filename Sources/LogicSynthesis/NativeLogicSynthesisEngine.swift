@@ -48,17 +48,17 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             let constraintsResult = try loadConstraints(request.constraints.artifact)
             let pdkDigest = try loadAndValidatePDK(request.pdk)
             if let powerIntent = request.powerIntent {
-                guard let powerIntentReference = request.inputs.first(where: {
-                    $0.locator == powerIntent.artifact
-                }) else {
+                guard request.inputs.contains(powerIntent.artifact) else {
                     throw LogicExecutionError.missingPrerequisite(
                         "power intent artifact is missing from the input set"
                     )
                 }
-                let powerIntentData = try artifactStore.read(powerIntentReference)
+                let powerIntentData = try artifactStore.read(powerIntent.artifact)
                 let powerIntentDigest = try digestHex(powerIntentData)
                 guard powerIntent.designDigest.isEmpty || powerIntent.designDigest == designDigest else {
-                    throw LogicExecutionError.artifactDigestMismatch(powerIntent.artifact.path)
+                    throw LogicExecutionError.artifactDigestMismatch(
+                        powerIntent.artifact.locator.location.value
+                    )
                 }
                 guard !powerIntentData.isEmpty else {
                     throw LogicExecutionError.invalidArtifact("power intent artifact is empty")
@@ -106,7 +106,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 kind: .report,
                 format: .json
             )
-            let mappedFoundationDesign = LogicFoundationDesignReference(
+            let mappedDesignArtifact = LogicDesignArtifact(
                 artifact: mappedReference,
                 topDesignName: mapped.design.topDesignName,
                 designRevision: try ContentDigest(
@@ -115,7 +115,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 )
             )
             let mappedDesign = LogicDesignReference(
-                artifact: mappedReference.locator,
+                artifact: mappedReference,
                 topDesignName: mapped.design.topDesignName,
                 designDigest: outputDesignDigest,
                 provenance: LogicDesignProvenance(
@@ -131,7 +131,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 runID: request.runID,
                 topDesignName: mapped.design.topDesignName,
                 sourceDesign: LogicDesignReference(
-                    artifact: request.design.artifact.locator,
+                    artifact: request.design.artifact,
                     topDesignName: request.design.topDesignName,
                     designDigest: designDigest
                 ),
@@ -170,7 +170,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 ))
             }
             let payload = LogicSynthesisPayload(
-                mappedDesign: mappedFoundationDesign,
+                mappedDesign: mappedDesignArtifact,
                 mappedCellCount: mapped.cellCount,
                 loweredNodeCount: loweredNodeCount,
                 optimizedNodeCount: optimization.design.nodes.count,
@@ -212,20 +212,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     }
 
     private func validate(_ request: LogicSynthesisRequest) throws {
-        guard request.schemaVersion == LogicSynthesisRequest.currentSchemaVersion else {
-            throw LogicExecutionError.invalidArtifact("unsupported request schema version \(request.schemaVersion)")
-        }
-        guard !request.runID.isEmpty else {
-            throw LogicExecutionError.invalidArtifact("run ID is empty")
-        }
-        guard !request.libraries.isEmpty else {
-            throw LogicExecutionError.missingPrerequisite("at least one timing library is required")
-        }
-        do {
-            try request.pdk.validate()
-        } catch {
-            throw LogicExecutionError.invalidArtifact("PDK reference is invalid: \(error.localizedDescription)")
-        }
+        try request.validate()
     }
 
     private func decodeDesign(_ data: Data) throws -> LogicDesignDocument {
@@ -236,7 +223,9 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         } catch let error as LogicExecutionError {
             throw error
         } catch {
-            throw LogicExecutionError.invalidArtifact("design JSON could not be decoded: \(error.localizedDescription)")
+            throw LogicExecutionError.invalidArtifact(
+                "design JSON could not be decoded: \(String(reflecting: error))"
+            )
         }
     }
 

@@ -86,12 +86,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "extended-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "extended-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "extended-semantics-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "extended_top",
                 designRevision: designReference.digest
@@ -100,8 +100,11 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(
+            result.status == .completed,
+            "Diagnostics: \(result.diagnostics)"
+        )
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("evaluates unsigned arithmetic and propagates unknown operands")
@@ -148,12 +151,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "arithmetic-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "arithmetic-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "arithmetic_top",
                 designRevision: designReference.digest
@@ -162,8 +165,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("evaluates vector logical operators with four-state truth semantics")
@@ -230,12 +233,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "vector-logical-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "vector-logical-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "vector-logical-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "vector_logical_top",
                 designRevision: designReference.digest
@@ -244,8 +247,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("evaluates signed arithmetic, sign extension, and arithmetic right shift")
@@ -314,12 +317,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "signed-arithmetic-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "signed-arithmetic-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "signed-arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "signed_arithmetic_top",
                 designRevision: designReference.digest
@@ -335,8 +338,8 @@ struct SimulationTests {
                 "Signed arithmetic assertion \(assertion.assertionID) observed \(assertion.observed?.description ?? "nil") expected \(assertion.expected.description)."
             )
         }
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("applies synchronous reset through the lowered data path")
@@ -395,12 +398,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "reset-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "reset-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "reset_top",
                 designRevision: designReference.digest
@@ -409,8 +412,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("applies an explicit DFF reset only on a rising edge")
@@ -473,12 +476,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "dff-reset-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "dff-reset-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "dff-reset-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "dff_reset_top",
                 designRevision: designReference.digest
@@ -487,8 +490,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("applies an asynchronous reset without requiring a clock edge")
@@ -566,12 +569,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "async-reset-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "async-reset-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "async-reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "async_reset_top",
                 designRevision: designReference.digest
@@ -580,8 +583,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("evaluates exact case matching without treating unknowns as wildcards")
@@ -635,7 +638,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "case-equality-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "case_top",
                 designRevision: designReference.digest
@@ -643,12 +646,12 @@ struct SimulationTests {
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
         )
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("samples sequential inputs before applying non-blocking updates")
@@ -707,7 +710,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "sequential-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "sequential_top",
                 designRevision: designReference.digest
@@ -715,12 +718,12 @@ struct SimulationTests {
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
         )
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("updates a negative-edge DFF only on a falling clock transition")
@@ -784,12 +787,12 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "negative-edge-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "negative-edge-stimulus.json", root: root, kind: .testPattern)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "negative-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "negative_edge_top",
                 designRevision: designReference.digest
@@ -798,8 +801,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
     }
 
     @Test("evaluates concatenation and static slice nodes")
@@ -870,7 +873,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "vector-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "vector_top",
                 designRevision: designReference.digest
@@ -878,16 +881,16 @@ struct SimulationTests {
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
         )
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(request)
         let expectedPair = try LogicVector(string: "10")
         let expectedBit = try LogicVector(string: "1")
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.assertionFailureCount == 0)
-        #expect(envelope.payload.finalValues["pair"] == expectedPair)
-        #expect(envelope.payload.finalValues["bit"] == expectedBit)
+        #expect(result.status == .completed)
+        #expect(result.payload.assertionFailureCount == 0)
+        #expect(result.payload.finalValues["pair"] == expectedPair)
+        #expect(result.payload.finalValues["bit"] == expectedBit)
     }
 
     @Test("runs deterministic four-state simulation and writes review artifacts")
@@ -904,15 +907,18 @@ struct SimulationTests {
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
-        let envelope = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
+        let result = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.traceCount == 3)
-        #expect(envelope.payload.assertionFailureCount == 0)
+        #expect(
+            result.status == .completed,
+            "Diagnostics: \(result.diagnostics)"
+        )
+        #expect(result.payload.traceCount == 3)
+        #expect(result.payload.assertionFailureCount == 0)
         let one = try LogicVector(string: "1")
-        #expect(envelope.payload.finalValues["y"] == one)
-        #expect(envelope.artifacts.count == 2)
-        guard let waveform = envelope.payload.waveform else {
+        #expect(result.payload.finalValues["y"] == one)
+        #expect(result.artifacts.count == 2)
+        guard let waveform = result.payload.waveform else {
             Issue.record("waveform artifact is missing")
             return
         }
@@ -930,11 +936,14 @@ struct SimulationTests {
             design: design
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
-        let envelope = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
+        let result = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
 
-        #expect(envelope.status == .blocked)
-        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_SEMANTICS_UNSUPPORTED")
-        #expect(envelope.payload.traceCount == 0)
+        #expect(
+            result.status == .blocked,
+            "Diagnostics: \(result.diagnostics)"
+        )
+        #expect(result.diagnostics.first?.code.rawValue == "LOGIC_SEMANTICS_UNSUPPORTED")
+        #expect(result.payload.traceCount == 0)
     }
 
     @Test("persists a structured cancellation record")
@@ -970,10 +979,10 @@ struct SimulationTests {
             ).execute(request)
         }
         task.cancel()
-        let envelope = try await task.value
+        let result = try await task.value
 
-        #expect(envelope.status == .cancelled)
-        guard let cancellation = envelope.payload.cancellationRecord else {
+        #expect(result.status == .cancelled)
+        guard let cancellation = result.payload.cancellationRecord else {
             Issue.record("cancellation record is missing")
             return
         }
@@ -1011,12 +1020,12 @@ struct SimulationTests {
             ]
         )
         let designReference = try writeJSON(design, name: "cycle-design.json", root: root, kind: .netlist)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "cycle-simulation",
             inputs: [designReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "cycle_top",
                 designRevision: designReference.digest
@@ -1024,8 +1033,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .failed)
-        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_COMBINATIONAL_CYCLE")
+        #expect(result.status == .failed)
+        #expect(result.diagnostics.first?.code.rawValue == "LOGIC_COMBINATIONAL_CYCLE")
     }
 
     @Test("rejects multiple output drivers before simulation")
@@ -1055,12 +1064,12 @@ struct SimulationTests {
             ]
         )
         let designReference = try writeJSON(design, name: "multiple-driver-design.json", root: root, kind: .netlist)
-        let envelope = try await NativeLogicSimulationEngine(
+        let result = try await NativeLogicSimulationEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "multiple-driver-simulation",
             inputs: [designReference],
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: designReference,
                 topDesignName: "multiple_driver_top",
                 designRevision: designReference.digest
@@ -1068,8 +1077,8 @@ struct SimulationTests {
             artifactDirectory: "outputs"
         ))
 
-        #expect(envelope.status == .failed)
-        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_DESIGN_INVALID")
+        #expect(result.status == .failed)
+        #expect(result.diagnostics.first?.code.rawValue == "LOGIC_DESIGN_INVALID")
     }
 
     private func writeJSON<T: Encodable>(

@@ -6,12 +6,12 @@ import LogicSynthesis
 public struct NativeLogicEvidenceExecutor: LogicEvidenceExecuting {
     public let simulation: any LogicSimulationExecuting
     public let synthesis: any LogicSynthesisExecuting
-    public let unbounded: (any LogicUnboundedTemporalEquivalenceFoundationEngine)?
+    public let unbounded: (any LogicUnboundedTemporalEquivalenceExecuting)?
 
     public init(
         simulation: any LogicSimulationExecuting,
         synthesis: any LogicSynthesisExecuting,
-        unbounded: (any LogicUnboundedTemporalEquivalenceFoundationEngine)? = nil
+        unbounded: (any LogicUnboundedTemporalEquivalenceExecuting)? = nil
     ) {
         self.simulation = simulation
         self.synthesis = synthesis
@@ -24,18 +24,18 @@ public struct NativeLogicEvidenceExecutor: LogicEvidenceExecuting {
         try request.validate()
         switch request {
         case .simulation(let simulationRequest):
-            let envelope = try await simulation.execute(simulationRequest)
+            let result = try await simulation.execute(simulationRequest)
             return LogicEvidenceObservation(
-                status: envelope.status,
-                diagnosticCodes: envelope.diagnostics.map { $0.code.rawValue },
-                artifactIDs: envelope.artifacts.compactMap(\.artifactID)
+                status: result.status,
+                diagnosticCodes: result.diagnostics.map { $0.code.rawValue },
+                artifactIDs: result.artifacts.compactMap(\.artifactID)
             )
         case .synthesis(let synthesisRequest):
-            let envelope = try await synthesis.execute(synthesisRequest)
+            let result = try await synthesis.execute(synthesisRequest)
             return LogicEvidenceObservation(
-                status: envelope.status,
-                diagnosticCodes: envelope.diagnostics.map { $0.code.rawValue },
-                artifactIDs: envelope.artifacts.compactMap(\.artifactID)
+                status: result.status,
+                diagnosticCodes: result.diagnostics.map { $0.code.rawValue },
+                artifactIDs: result.artifacts.compactMap(\.artifactID)
             )
         case .unbounded(let unboundedRequest):
             guard let unbounded else {

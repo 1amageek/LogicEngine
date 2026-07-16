@@ -5,7 +5,7 @@ import LogicSynthesis
 public enum LogicEvidenceRequest: Sendable, Hashable, Codable {
     case simulation(LogicSimulationRequest)
     case synthesis(LogicSynthesisRequest)
-    case unbounded(LogicUnboundedTemporalEquivalenceFoundationRequest)
+    case unbounded(LogicUnboundedTemporalEquivalenceRequest)
 
     public var runID: String {
         switch self {
@@ -44,7 +44,7 @@ public enum LogicEvidenceRequest: Sendable, Hashable, Codable {
             self = .synthesis(try container.decode(LogicSynthesisRequest.self, forKey: .value))
         case .unbounded:
             self = .unbounded(try container.decode(
-                LogicUnboundedTemporalEquivalenceFoundationRequest.self,
+                LogicUnboundedTemporalEquivalenceRequest.self,
                 forKey: .value
             ))
         }

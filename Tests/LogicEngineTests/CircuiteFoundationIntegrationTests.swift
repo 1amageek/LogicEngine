@@ -7,10 +7,10 @@ import LogicSimulation
 import LogicSynthesis
 import Testing
 
-@Suite("LogicEngine CircuiteFoundation boundary")
+@Suite("LogicEngine CircuiteFoundation contract")
 struct CircuiteFoundationIntegrationTests {
     @Test
-    func simulationFoundationEnginePreservesArtifactIdentityAndProvenance() async throws {
+    func simulationEnginePreservesArtifactIdentityAndProvenance() async throws {
         let digest = try ContentDigest(
             algorithm: .sha256,
             hexadecimalValue: String(repeating: "a", count: 64)
@@ -41,6 +41,7 @@ struct CircuiteFoundationIntegrationTests {
             byteCount: 2
         )
         let fixedResult = LogicSimulationResult(
+            runID: "run-1",
             status: .completed,
             payload: LogicSimulationPayload(
                 traceCount: 1,
@@ -48,14 +49,24 @@ struct CircuiteFoundationIntegrationTests {
                 waveform: output
             ),
             artifacts: [output],
-            diagnostics: []
+            diagnostics: [],
+            provenance: try ExecutionProvenance(
+                producer: ProducerIdentity(
+                    kind: .engine,
+                    identifier: "LogicSimulation",
+                    version: "1"
+                ),
+                inputs: [design],
+                designRevision: design.digest,
+                randomSeed: 7,
+                startedAt: Date(),
+                completedAt: Date()
+            )
         )
-        let engine = NativeLogicSimulationFoundationEngine(
-            engine: FixedSimulationEngine(result: fixedResult)
-        )
-        let request = LogicSimulationFoundationRequest(
+        let engine: any LogicSimulationExecuting = FixedSimulationEngine(result: fixedResult)
+        let request = LogicSimulationRequest(
             runID: "run-1",
-            design: LogicFoundationDesignReference(
+            design: LogicDesignArtifact(
                 artifact: design,
                 topDesignName: "top"
             ),
@@ -74,15 +85,15 @@ struct CircuiteFoundationIntegrationTests {
     }
 
     @Test
-    func loweringFoundationEngineUsesCanonicalRevisionWhenProvidedAndDoesNotConfuseFileDigest() async throws {
+    func loweringEngineUsesCanonicalRevisionWhenProvidedAndDoesNotConfuseFileDigest() async throws {
         let root = FileManager.default.temporaryDirectory
-            .appending(path: "logic-foundation-lowering-\(UUID().uuidString)")
+            .appending(path: "logic-logic-lowering-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer {
             do {
                 try FileManager.default.removeItem(at: root)
             } catch {
-                Issue.record("Failed to remove lowering Foundation test root: \(error)")
+                Issue.record("Failed to remove lowering test root: \(error)")
             }
         }
 
@@ -124,17 +135,16 @@ struct CircuiteFoundationIntegrationTests {
             digest: fileDigest,
             byteCount: UInt64(snapshotData.count)
         )
-        let request = LogicLoweringFoundationRequest(
-            runID: "foundation-lowering",
-            design: LogicFoundationDesignReference(
+        let request = LogicLoweringRequest(
+            runID: "canonical-lowering",
+            design: LogicDesignArtifact(
                 artifact: artifact,
                 topDesignName: "top"
             )
         )
-        let domainEngine = NativeLogicLoweringEngine(
+        let engine: any LogicLoweringExecuting = NativeLogicLoweringEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         )
-        let engine = NativeLogicLoweringFoundationEngine(engine: domainEngine)
 
         let result = try await engine.execute(request)
 
@@ -145,7 +155,7 @@ struct CircuiteFoundationIntegrationTests {
     }
 
     @Test
-    func boundedEquivalenceFoundationEnginePreservesProofArtifacts() async throws {
+    func boundedEquivalenceEnginePreservesProofArtifacts() async throws {
         let digest = try ContentDigest(
             algorithm: .sha256,
             hexadecimalValue: String(repeating: "d", count: 64)
@@ -198,7 +208,7 @@ struct CircuiteFoundationIntegrationTests {
             byteCount: 4
         )
         let fixedResult = LogicBoundedTemporalEquivalenceResult(
-            schemaVersion: 1,
+            schemaVersion: .v1,
             runID: "run-2",
             status: .completed,
             diagnostics: [],
@@ -210,6 +220,7 @@ struct CircuiteFoundationIntegrationTests {
                     version: "1",
                     build: "native"
                 ),
+                inputs: [reference, implementation, stimulus],
                 invocation: ExecutionInvocation.inProcess(entryPoint: "test"),
                 startedAt: Date(),
                 completedAt: Date()
@@ -222,16 +233,16 @@ struct CircuiteFoundationIntegrationTests {
                 equivalenceReport: output
             )
         )
-        let engine = NativeLogicBoundedTemporalEquivalenceFoundationEngine(
-            engine: FixedBoundedEquivalenceEngine(result: fixedResult)
-        )
-        let request = LogicBoundedTemporalEquivalenceFoundationRequest(
+        let engine: any LogicBoundedTemporalEquivalenceExecuting =
+            FixedBoundedEquivalenceEngine(result: fixedResult)
+        let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "run-2",
-            referenceDesign: LogicFoundationDesignReference(
+            inputs: [reference, implementation, stimulus],
+            referenceDesign: LogicDesignArtifact(
                 artifact: reference,
                 topDesignName: "top"
             ),
-            implementationDesign: LogicFoundationDesignReference(
+            implementationDesign: LogicDesignArtifact(
                 artifact: implementation,
                 topDesignName: "top"
             ),

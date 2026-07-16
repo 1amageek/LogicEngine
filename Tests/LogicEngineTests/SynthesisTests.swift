@@ -14,18 +14,21 @@ struct SynthesisTests {
         let outputDirectory = try LogicEngineTestFixture.temporaryOutputDirectory()
         let request = try LogicEngineTestFixture.synthesisRequest(outputDirectory: outputDirectory)
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
-        let envelope = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
+        let result = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
 
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.mappedCellCount == 1)
-        #expect(envelope.payload.loweredNodeCount == 1)
-        #expect(envelope.payload.optimizedNodeCount == 1)
-        #expect(envelope.payload.totalArea == 1)
-        #expect(envelope.payload.equivalenceRequired)
-        #expect(envelope.payload.acceptanceState == .pendingEquivalence)
-        #expect(envelope.payload.equivalenceRequest != nil)
-        #expect(envelope.diagnostics.contains { $0.code.rawValue == "LOGIC_EQUIVALENCE_REQUIRED" })
-        guard let mappedDesign = envelope.payload.mappedDesign else {
+        #expect(
+            result.status == .completed,
+            "Diagnostics: \(result.diagnostics)"
+        )
+        #expect(result.payload.mappedCellCount == 1)
+        #expect(result.payload.loweredNodeCount == 1)
+        #expect(result.payload.optimizedNodeCount == 1)
+        #expect(result.payload.totalArea == 1)
+        #expect(result.payload.equivalenceRequired)
+        #expect(result.payload.acceptanceState == .pendingEquivalence)
+        #expect(result.payload.equivalenceRequest != nil)
+        #expect(result.diagnostics.contains { $0.code.rawValue == "LOGIC_EQUIVALENCE_REQUIRED" })
+        guard let mappedDesign = result.payload.mappedDesign else {
             Issue.record("mapped design is missing")
             return
         }
@@ -33,8 +36,8 @@ struct SynthesisTests {
         let mappedData = try Data(contentsOf: URL(fileURLWithPath: mappedDesign.artifact.path))
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: mappedData)
         #expect(document.nodes.first?.parameters["mappedCell"] == "AND2_X1")
-        #expect(envelope.payload.provenance != nil)
-        guard let equivalenceRequest = envelope.payload.equivalenceRequest else {
+        #expect(result.payload.provenance != nil)
+        guard let equivalenceRequest = result.payload.equivalenceRequest else {
             Issue.record("equivalence request artifact is missing")
             return
         }
@@ -61,9 +64,12 @@ struct SynthesisTests {
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
-        let envelope = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
-        #expect(envelope.status == .completed)
-        #expect(envelope.payload.mappedCellCount == 1)
+        let result = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
+        #expect(
+            result.status == .completed,
+            "Diagnostics: \(result.diagnostics)"
+        )
+        #expect(result.payload.mappedCellCount == 1)
     }
 
     @Test("accepts only matching proved equivalence evidence")
@@ -73,12 +79,12 @@ struct SynthesisTests {
         let proof = try artifact(id: "proof", path: "proof.json", kind: .report)
         let provenance = try artifact(id: "provenance", path: "provenance.json", kind: .report)
         let sourceDesign = LogicDesignReference(
-            artifact: sourceArtifact.locator,
+            artifact: sourceArtifact,
             topDesignName: "top",
             designDigest: sourceArtifact.sha256
         )
         let mappedDesign = LogicDesignReference(
-            artifact: mappedArtifact.locator,
+            artifact: mappedArtifact,
             topDesignName: "top",
             designDigest: mappedArtifact.sha256
         )

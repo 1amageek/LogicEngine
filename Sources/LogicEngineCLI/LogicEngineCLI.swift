@@ -41,9 +41,9 @@ struct LogicEngineCLI {
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let envelope = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
-            printJSON(envelope)
-            return exitCode(for: envelope.status)
+            let result = try await NativeLogicSimulationEngine(artifactStore: store).execute(request)
+            printJSON(result)
+            return exitCode(for: result.status)
         case "lower":
             let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
             let requestData = try Data(contentsOf: options.requestURL)
@@ -55,29 +55,7 @@ struct LogicEngineCLI {
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let envelope = try await NativeLogicLoweringEngine(artifactStore: store).execute(request)
-            printJSON(envelope)
-            return exitCode(for: envelope.status)
-        case "foundation-lower":
-            let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
-            let requestData = try Data(contentsOf: options.requestURL)
-            var request = try JSONDecoder().decode(LogicLoweringFoundationRequest.self, from: requestData)
-            if let outputPath = options.outputPath {
-                request = LogicLoweringFoundationRequest(
-                    runID: request.runID,
-                    design: request.design,
-                    inputs: request.inputs,
-                    artifactDirectory: outputPath
-                )
-            }
-            let store = FileSystemLogicArtifactStore(
-                rootDirectory: options.rootURL,
-                defaultOutputDirectory: options.outputURL
-            )
-            let engine = NativeLogicLoweringFoundationEngine(
-                engine: NativeLogicLoweringEngine(artifactStore: store)
-            )
-            let result = try await engine.execute(request)
+            let result = try await NativeLogicLoweringEngine(artifactStore: store).execute(request)
             printJSON(result)
             return exitCode(for: result.status)
         case "synthesize":
@@ -91,63 +69,7 @@ struct LogicEngineCLI {
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let envelope = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
-            printJSON(envelope)
-            return exitCode(for: envelope.status)
-        case "foundation-simulate":
-            let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
-            let requestData = try Data(contentsOf: options.requestURL)
-            var request = try JSONDecoder().decode(LogicSimulationFoundationRequest.self, from: requestData)
-            if let outputPath = options.outputPath {
-                request = LogicSimulationFoundationRequest(
-                    runID: request.runID,
-                    design: request.design,
-                    inputs: request.inputs,
-                    stimulus: request.stimulus,
-                    seed: request.seed,
-                    waveformFormat: request.waveformFormat,
-                    artifactDirectory: outputPath
-                )
-            }
-            let store = FileSystemLogicArtifactStore(
-                rootDirectory: options.rootURL,
-                defaultOutputDirectory: options.outputURL
-            )
-            let engine = NativeLogicSimulationFoundationEngine(
-                engine: NativeLogicSimulationEngine(artifactStore: store)
-            )
-            let result = try await engine.execute(request)
-            printJSON(result)
-            return exitCode(for: result.status)
-        case "foundation-synthesize":
-            let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
-            let requestData = try Data(contentsOf: options.requestURL)
-            var request = try JSONDecoder().decode(LogicSynthesisFoundationRequest.self, from: requestData)
-            if let outputPath = options.outputPath {
-                request = LogicSynthesisFoundationRequest(
-                    runID: request.runID,
-                    design: request.design,
-                    libraries: request.libraries,
-                    constraints: request.constraints,
-                    pdkManifest: request.pdkManifest,
-                    processID: request.processID,
-                    pdkVersion: request.pdkVersion,
-                    pdkDigest: request.pdkDigest,
-                    constraintModeIDs: request.constraintModeIDs,
-                    powerIntent: request.powerIntent,
-                    powerIntentDesignRevision: request.powerIntentDesignRevision,
-                    inputs: request.inputs,
-                    artifactDirectory: outputPath
-                )
-            }
-            let store = FileSystemLogicArtifactStore(
-                rootDirectory: options.rootURL,
-                defaultOutputDirectory: options.outputURL
-            )
-            let engine = NativeLogicSynthesisFoundationEngine(
-                engine: NativeLogicSynthesisEngine(artifactStore: store)
-            )
-            let result = try await engine.execute(request)
+            let result = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
             printJSON(result)
             return exitCode(for: result.status)
         case "bounded-equivalence":
@@ -161,47 +83,18 @@ struct LogicEngineCLI {
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let envelope = try await NativeLogicBoundedTemporalEquivalenceEngine(artifactStore: store).execute(request)
-            printJSON(envelope)
-            return exitCode(for: envelope.status)
-        case "foundation-bounded-equivalence":
-            let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
-            let requestData = try Data(contentsOf: options.requestURL)
-            var request = try JSONDecoder().decode(
-                LogicBoundedTemporalEquivalenceFoundationRequest.self,
-                from: requestData
-            )
-            if let outputPath = options.outputPath {
-                request = LogicBoundedTemporalEquivalenceFoundationRequest(
-                    runID: request.runID,
-                    referenceDesign: request.referenceDesign,
-                    implementationDesign: request.implementationDesign,
-                    stimulus: request.stimulus,
-                    outputSignals: request.outputSignals,
-                    sampleLimit: request.sampleLimit,
-                    inputs: request.inputs,
-                    artifactDirectory: outputPath
-                )
-            }
-            let store = FileSystemLogicArtifactStore(
-                rootDirectory: options.rootURL,
-                defaultOutputDirectory: options.outputURL
-            )
-            let engine = NativeLogicBoundedTemporalEquivalenceFoundationEngine(
-                engine: NativeLogicBoundedTemporalEquivalenceEngine(artifactStore: store)
-            )
-            let result = try await engine.execute(request)
+            let result = try await NativeLogicBoundedTemporalEquivalenceEngine(artifactStore: store).execute(request)
             printJSON(result)
             return exitCode(for: result.status)
-        case "foundation-unbounded-equivalence":
+        case "unbounded-equivalence":
             let options = try CLIOptions(arguments: Array(arguments.dropFirst()))
             let requestData = try Data(contentsOf: options.requestURL)
             var request = try JSONDecoder().decode(
-                LogicUnboundedTemporalEquivalenceFoundationRequest.self,
+                LogicUnboundedTemporalEquivalenceRequest.self,
                 from: requestData
             )
             if let outputPath = options.outputPath {
-                request = LogicUnboundedTemporalEquivalenceFoundationRequest(
+                request = LogicUnboundedTemporalEquivalenceRequest(
                     runID: request.runID,
                     referenceDesign: request.referenceDesign,
                     implementationDesign: request.implementationDesign,
@@ -219,7 +112,7 @@ struct LogicEngineCLI {
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let result = try await NativeLogicUnboundedTemporalEquivalenceFoundationEngine(
+            let result = try await NativeLogicUnboundedTemporalEquivalenceEngine(
                 artifactStore: store
             ).execute(request)
             printJSON(result)
@@ -235,7 +128,7 @@ struct LogicEngineCLI {
             let executor = NativeLogicEvidenceExecutor(
                 simulation: NativeLogicSimulationEngine(artifactStore: store),
                 synthesis: NativeLogicSynthesisEngine(artifactStore: store),
-                unbounded: NativeLogicUnboundedTemporalEquivalenceFoundationEngine(artifactStore: store)
+                unbounded: NativeLogicUnboundedTemporalEquivalenceEngine(artifactStore: store)
             )
             var report = try await NativeLogicEvidenceRunner(executor: executor).evaluate(suite)
             if let oracleURL = options.oracleURL {
@@ -318,7 +211,7 @@ struct LogicEngineCLI {
     }
 
     private static func printUsage() {
-        print("Usage: logic-engine <capabilities|lower|simulate|synthesize|bounded-equivalence|foundation-lower|foundation-simulate|foundation-synthesize|foundation-bounded-equivalence|foundation-unbounded-equivalence|assess-evidence> [--request PATH|--suite PATH] [--oracle PATH] [--root PATH] [--output PATH]")
+        print("Usage: logic-engine <capabilities|lower|simulate|synthesize|bounded-equivalence|unbounded-equivalence|assess-evidence> [--request PATH|--suite PATH] [--oracle PATH] [--root PATH] [--output PATH]")
     }
 
     private static func evidenceRunID(for suiteID: String) -> String {

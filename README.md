@@ -29,7 +29,7 @@ rejection, atomic publication and immutable collision detection.
 
 ## Contract
 
-Every design execution product exposes a Foundation-native boundary:
+Every design execution product exposes a canonical boundary:
 
 - a typed `Codable`, `Hashable`, `Sendable` request using `ArtifactReference`;
 - a typed result conforming to `ArtifactProducing`, `DiagnosticReporting`, and
@@ -37,9 +37,9 @@ Every design execution product exposes a Foundation-native boundary:
 - a domain protocol refining `CircuiteFoundation.Engine`;
 - explicit blocked, failed, and cancelled states with `ExecutionProvenance`.
 
-The Foundation-native domain engines are the public execution boundary. Flow
+The canonical domain engines are the public execution boundary. Flow
 and project storage are injected by `DesignFlowKernel` and `Xcircuite`; this
-package does not expose a compatibility envelope or storage facade.
+package does not expose a compatibility facade or parallel result type.
 `LogicEvidence` emits raw corpus and oracle-correlation evidence. Its maturity
 ends at `oracleCorrelated`; it does not decide process qualification or release
 eligibility. ToolQualification evaluates implementation trust and the composing
@@ -72,7 +72,7 @@ Native implementations:
   an explicit sample bound, persists uniquely identified reports and counterexamples,
   and returns `proved`, `counterexample`, or `blocked`. This is bounded trace
   evidence and is separate from the exhaustive proof product.
-- `NativeLogicUnboundedTemporalEquivalenceFoundationEngine` exhausts every
+- `NativeLogicUnboundedTemporalEquivalenceEngine` exhausts every
   declared input/state assignment in the selected two-state or four-state
   domain for combinational, DFF, and level-sensitive latch graphs. It enforces
   state/transition/timeout limits, persists a request/report-bound proof
@@ -85,18 +85,16 @@ Native implementations:
   verification stage supplies acceptance evidence.
 - FST output and unsupported node semantics return structured `blocked` results.
 
-Foundation-native entry points are available as
-`NativeLogicLoweringFoundationEngine`,
-`NativeLogicSimulationFoundationEngine`,
-`NativeLogicSynthesisFoundationEngine`, and
-`NativeLogicBoundedTemporalEquivalenceFoundationEngine`, and
-`NativeLogicUnboundedTemporalEquivalenceFoundationEngine`. They preserve the
-domain metrics while projecting artifact identity, diagnostics, and provenance
-to canonical Foundation types at the public cross-domain boundary.
+The canonical entry points are `NativeLogicLoweringEngine`,
+`NativeLogicSimulationEngine`, `NativeLogicSynthesisEngine`,
+`NativeLogicBoundedTemporalEquivalenceEngine`, and
+`NativeLogicUnboundedTemporalEquivalenceEngine`. Each implementation conforms
+directly to its domain execution protocol and returns its domain result with
+Foundation artifact identity, diagnostics, evidence, and provenance.
 
 ## Xcircuite integration
 
-Xcircuite may compose the package's public Foundation protocols with flow-stage
+Xcircuite may compose the package's public domain protocols with flow-stage
 execution. Synthesis remains `pendingEquivalence` until an orchestrator consumes
 its typed request, invokes an independently qualified mapped-execution proof,
 and persists matching evidence plus an acceptance record. These stages share
@@ -104,7 +102,7 @@ canonical artifacts but never collapse result schemas or qualification claims.
 
 The bounded and exhaustive temporal APIs are independently CLI-operable through
 `logic-engine bounded-equivalence` and
-`logic-engine foundation-unbounded-equivalence`. Flow orchestration and a
+`logic-engine unbounded-equivalence`. Flow orchestration and a
 general RTL/DFT solver remain separate external boundaries.
 
 The library does not depend on the Xcircuite runtime. A flow consumer conforms
@@ -126,21 +124,15 @@ swift run logic-engine lower --request path/to/lowering-request.json --root path
 swift run logic-engine simulate --request path/to/simulation-request.json --root path/to/project
 swift run logic-engine synthesize --request path/to/synthesis-request.json --root path/to/project
 swift run logic-engine bounded-equivalence --request path/to/bounded-equivalence-request.json --root path/to/project
-swift run logic-engine foundation-lower --request path/to/foundation-lowering-request.json --root path/to/project
-swift run logic-engine foundation-simulate --request path/to/foundation-simulation-request.json --root path/to/project
-swift run logic-engine foundation-synthesize --request path/to/foundation-synthesis-request.json --root path/to/project
-swift run logic-engine foundation-bounded-equivalence --request path/to/foundation-equivalence-request.json --root path/to/project
-swift run logic-engine foundation-unbounded-equivalence --request path/to/foundation-unbounded-equivalence-request.json --root path/to/project
+swift run logic-engine unbounded-equivalence --request path/to/unbounded-equivalence-request.json --root path/to/project
 ```
 
-The first group exposes LogicEngine's domain requests. The `foundation-*`
-commands decode and execute the cross-package Foundation-native request types and print the
-typed Foundation result, including artifact references, diagnostics, evidence,
-and provenance. The retained Foundation fixtures under
-`Tests/LogicEngineTests/Fixtures/foundation-*-request.json` are directly
-executable from the package root. Both groups print sorted-key JSON. A
-non-completed result
-returns a non-zero exit status.
+Each command decodes the canonical domain request and prints the domain result,
+including artifact references, diagnostics, evidence, and provenance. The
+retained `logic-*-request.json` fixtures under
+`Tests/LogicEngineTests/Fixtures` are directly executable from the package
+root. Commands print sorted-key JSON, and a non-completed result returns a
+non-zero exit status.
 
 Evidence assessment uses a versioned suite and may attach an independently
 generated observation set. A passing suite reports `corpusChecked`; a matching

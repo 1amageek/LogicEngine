@@ -1,10 +1,6 @@
 {
-  "schemaVersion": {
-    "major": 1,
-    "minor": 0,
-    "patch": 0
-  },
-  "runID": "foundation-simulation-cli",
+  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "runID": "logic-bounded-equivalence-cli",
   "inputs": [
     {
       "id": "and-design",
@@ -19,9 +15,9 @@
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     {
@@ -43,7 +39,7 @@
       "producer": null
     }
   ],
-  "design": {
+  "referenceDesign": {
     "artifact": {
       "id": "and-design",
       "locator": {
@@ -57,13 +53,41 @@
       },
       "digest": {
         "algorithm": "sha256",
-        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
       },
-      "byteCount": 663,
+      "byteCount": 738,
       "producer": null
     },
     "topDesignName": "and_top",
-    "designRevision": null
+    "designRevision": {
+      "algorithm": "sha256",
+      "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
+    }
+  },
+  "implementationDesign": {
+    "artifact": {
+      "id": "and-design",
+      "locator": {
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
+        "kind": "netlist",
+        "format": "json",
+        "role": "input"
+      },
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
+      },
+      "byteCount": 738,
+      "producer": null
+    },
+    "topDesignName": "and_top",
+    "designRevision": {
+      "algorithm": "sha256",
+      "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
+    }
   },
   "stimulus": {
     "id": "and-stimulus",
@@ -83,7 +107,9 @@
     "byteCount": 650,
     "producer": null
   },
-  "seed": 7,
-  "waveformFormat": "vcd",
-  "artifactDirectory": "outputs/foundation-simulation"
+  "outputSignals": [
+    "y"
+  ],
+  "sampleLimit": 8,
+  "artifactDirectory": "outputs/logic-bounded-temporal"
 }

@@ -10,7 +10,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
         self.implementationVersion = implementationVersion
     }
 
-    public func lower(_ snapshot: LogicDesignSnapshot) -> LogicLoweringResult {
+    public func lower(_ snapshot: LogicDesignSnapshot) -> LogicLoweringOutcome {
         do {
             let sourceDigest = try LogicDesignSnapshotCodec.digest(snapshot)
             var builder = try Builder(
@@ -20,7 +20,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
             )
             let document = try builder.build()
             try document.validate()
-            return LogicLoweringResult(
+            return LogicLoweringOutcome(
                 status: .completed,
                 document: document,
                 diagnostics: [DesignDiagnostic(
@@ -33,12 +33,12 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
         } catch let error as LogicLoweringError {
             return result(for: error)
         } catch let error as LogicExecutionError {
-            return LogicLoweringResult(
+            return LogicLoweringOutcome(
                 status: .failed,
                 diagnostics: [LogicDiagnosticFactory.make(for: error)]
             )
         } catch {
-            return LogicLoweringResult(
+            return LogicLoweringOutcome(
                 status: .failed,
                 diagnostics: [DesignDiagnostic(
                     code: .trusted("logic.lowering.failed"),
@@ -53,7 +53,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
         }
     }
 
-    private func result(for error: LogicLoweringError) -> LogicLoweringResult {
+    private func result(for error: LogicLoweringError) -> LogicLoweringOutcome {
         let diagnostic: DesignDiagnostic
         let status: LogicIR.LogicExecutionStatus
         switch error {
@@ -92,7 +92,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
                 ]
             )
         }
-        return LogicLoweringResult(status: status, diagnostics: [diagnostic])
+        return LogicLoweringOutcome(status: status, diagnostics: [diagnostic])
     }
 
     private func code(for error: LogicLoweringError) -> String {

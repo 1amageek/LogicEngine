@@ -2,13 +2,10 @@
 
 ## Common shape
 
-```swift
-public protocol DomainFoundationEngine: CircuiteFoundation.Engine {}
-```
-
-Foundation-native requests carry a schema version, run ID, and digest-bearing
-`ArtifactReference` values. Results expose typed Foundation payloads carrying
-domain metrics while conforming to `ArtifactProducing`, `DiagnosticReporting`, and
+Each execution protocol refines `CircuiteFoundation.Engine` with one domain
+request and result pair. Canonical requests carry a `SchemaVersion`, run ID,
+and digest-bearing `ArtifactReference` values. Results keep domain metrics while
+conforming directly to `ArtifactProducing`, `DiagnosticReporting`, and
 `EvidenceProviding`.
 
 ## Products
@@ -63,11 +60,10 @@ resume bookkeeping.
 
 `NativeLogicDesignLowering`, `NativeLogicSimulationEngine`,
 `NativeLogicSynthesisEngine`, and
-`NativeLogicUnboundedTemporalEquivalenceFoundationEngine` remain the native
-domain implementations. Their
-Foundation-native counterparts conform directly to the Foundation engine
-protocols, accept `LogicFoundationDesignReference` artifacts, and project
-results as Foundation-native records containing `ArtifactReference`,
+`NativeLogicUnboundedTemporalEquivalenceEngine` are the native domain
+implementations. They conform directly to their Foundation-refining domain
+protocols, accept `LogicDesignArtifact` values, and return canonical records
+containing `ArtifactReference`,
 `DesignDiagnostic`, and `EvidenceManifest` values. The default filesystem
 store still verifies SHA-256 and byte-count provenance on reads and writes
 immutable run-scoped output references.
@@ -95,7 +91,7 @@ Every successful native synthesis result also emits a
 `acceptanceState=pendingEquivalence`; the mapped design is not a release
 acceptance claim until a later verification stage resolves that request.
 
-`NativeLogicUnboundedTemporalEquivalenceFoundationEngine` is exact for the
+`NativeLogicUnboundedTemporalEquivalenceEngine` is exact for the
 declared finite execution graph. It enumerates all two-state or four-state
 input/state assignments, compares current outputs and next-state values, and
 persists a report plus a certificate bound to the request and report digests.
@@ -105,9 +101,9 @@ scope is not a general SystemVerilog or DFT solver.
 
 ```mermaid
 flowchart TD
-    Request["Foundation-native request"] --> Verify["Reference digest + schema validation"]
+    Request["canonical request"] --> Verify["Reference digest + schema validation"]
     Verify --> Native["Conforming native domain engine"]
-    Native --> Result["Typed Foundation result + evidence + provenance"]
+    Native --> Result["Typed domain result + evidence + provenance"]
 ```
 
 

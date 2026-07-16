@@ -1,8 +1,6 @@
 import Foundation
 import LogicIR
+import CircuiteFoundation
 
-public protocol LogicSimulationExecuting: Sendable {
-    func execute(
-        _ request: LogicSimulationRequest
-    ) async throws -> LogicSimulationResult
-}
+public protocol LogicSimulationExecuting: Engine
+where Request == LogicSimulationRequest, Output == LogicSimulationResult {}
