@@ -20,16 +20,15 @@
    correlation and digest-bound reports/certificates. General RTL/DFT solver
    execution remains external.
 6. Xcircuite execution and human-in-the-loop — complete for the package-owned
-   typed adapters, review/audit artifact contracts, equivalence resume inputs,
-   and qualification report integrity boundaries. Orchestration and approval
-   policy remain Xcircuite-owned.
-7. Process qualification and release eligibility — complete for the retained
-   local native fixture process scope with PDK/input/output digest evidence and
-   separate human approval; foundry-specific qualification remains separate.
-8. Qualified unbounded temporal equivalence — complete for exact exhaustive
+   direct protocol and evidence boundaries. Orchestration, review, resume, and
+   approval policy remain outside LogicEngine.
+7. Evidence emission — complete for retained corpus execution and independent
+   oracle correlation. Process/tool trust is evaluated by ToolQualification and
+   release eligibility is evaluated by the composing flow.
+8. Unbounded temporal equivalence — complete for exact exhaustive
    two-state/four-state combinational, DFF, and latch execution graphs with
-   limit, timeout, counterexample, unsupported, certificate, and qualification
-   evidence paths. Arbitrary SystemVerilog and DFT proof views remain outside
+   limit, timeout, counterexample, unsupported, certificate, and raw evidence
+   paths. Arbitrary SystemVerilog and DFT proof views remain outside
    this native scope.
 
 ## Current implementation slice
@@ -54,11 +53,12 @@ adapters.
 - Every unsupported semantic produces a structured blocked result.
 - Native and external backends produce the same result schema.
 - No UI type enters a public contract.
-- No result claims foundry qualification without process-scoped oracle evidence.
-- Qualification reports are persisted as digest-bearing JSON artifacts and are
-  revalidated before a runtime stage can use them.
+- LogicEngine emits evidence observations and never claims tool/process trust or
+  release eligibility.
+- Evidence reports are persisted as digest-bearing JSON artifacts and are
+  revalidated before ToolQualification or a runtime policy consumes them.
 - Xcircuite can execute and persist the native equivalence handoff without
   circuit-studio; a valid persisted equivalence result can be resumed without
-  rerunning proof. Native exhaustive proof and local fixture release evidence
-  are independently reproducible; external solver trust and production repair
-  loops remain platform-level gates.
+  rerunning proof. Native exhaustive proof evidence is independently
+  reproducible; external solver trust and production repair loops remain
+  platform-level gates.

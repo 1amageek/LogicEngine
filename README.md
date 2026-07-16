@@ -18,7 +18,7 @@ qualification remain external scopes.
 | `LogicLowering` | Deterministic RTL snapshot to execution-graph lowering |
 | `LogicSimulation` | Event-driven RTL and gate simulation |
 | `LogicSynthesis` | Optimization and technology mapping |
-| `LogicEvidence` | Retained corpus execution, independent oracle correlation, process evidence, and promotion state |
+| `LogicEvidence` | Retained corpus execution and independent oracle correlation observations |
 | `LogicEngine` | Umbrella API without a combined execution protocol |
 | `LogicSynthesis` equivalence boundary | Bounded temporal trace comparison and exhaustive finite-state proof with digest-bearing reports, certificates, and counterexamples |
 
@@ -40,9 +40,10 @@ Every design execution product exposes a Foundation-native boundary:
 The Foundation-native domain engines are the public execution boundary. Flow
 and project storage are injected by `DesignFlowKernel` and `Xcircuite`; this
 package does not expose a compatibility envelope or storage facade.
-`LogicEvidence` remains the package-owned qualification lifecycle: it
-consumes execution observations and qualification evidence, but is not itself
-an execution engine or a Foundation replacement for the qualification schema.
+`LogicEvidence` emits raw corpus and oracle-correlation evidence. Its maturity
+ends at `oracleCorrelated`; it does not decide process qualification or release
+eligibility. ToolQualification evaluates implementation trust and the composing
+flow owns release policy and human approval.
 
 Native implementations:
 
@@ -141,33 +142,23 @@ executable from the package root. Both groups print sorted-key JSON. A
 non-completed result
 returns a non-zero exit status.
 
-Qualification runs use a versioned suite and may attach an independently
+Evidence assessment uses a versioned suite and may attach an independently
 generated observation set. A passing suite reports `corpusChecked`; a matching
-independent observation set promotes it to `oracleCorrelated`. The retained
-unbounded proof suite includes proved, counterexample, limit-blocked, timeout,
-and unsupported-semantics cases; certificate tampering is covered by the
-certificate validator tests.
-Process qualification and release approval are separate optional inputs. They
-must be bound to the suite and implementation; release eligibility is never
-inferred from the fixture corpus alone.
-Every qualification run also persists `logic-qualification-report.json` in the
-selected output directory. Runtime consumers call report validation before
-accepting a qualification state, so a forged release state cannot pass the
-qualification gate.
+independent observation set advances the raw evidence report to
+`oracleCorrelated`. The retained unbounded proof suite includes proved,
+counterexample, limit-blocked, timeout, and unsupported-semantics cases;
+certificate tampering is covered by the certificate validator tests.
+Every run persists `logic-evidence-report.json` in the selected output
+directory. The report is an observation artifact for ToolQualification and flow
+policy; it is not a process-qualified or release-eligible result.
 
 ```bash
-swift run logic-engine qualify \
+swift run logic-engine assess-evidence \
   --suite Tests/LogicEngineTests/Fixtures/logic-qualification-suite.json \
   --oracle Tests/LogicEngineTests/Fixtures/logic-qualification-oracle-v1.json \
   --root . \
-  --output /tmp/logic-engine-qualification
+  --output /tmp/logic-engine-evidence
 ```
-
-Attach process and approval artifacts with `--process PATH` and
-`--release-approval PATH` when those independently reviewed records exist.
-The retained unbounded fixture process evidence and approval can be replayed
-with `logic-unbounded-qualification-suite.json`, its oracle, process evidence,
-and release approval to reach `releaseEligible` for the local fixture process.
 
 ## Test
 
@@ -208,8 +199,9 @@ flowchart LR
     SynArtifacts --> Flow
     Flow --> Review["Review + audit + resumable evidence"]
     Corpus["LogicEvidence corpus"] --> Oracle["Independent oracle correlation"]
-    Oracle --> Promotion["Qualification promotion"]
+    Oracle --> Evidence["LogicEvidenceReport"]
+    Evidence --> Trust["ToolQualification policy"]
     Eq --> Certificate["Finite-state proof certificate"]
-    Certificate --> Promotion
+    Certificate --> Evidence
 ```
 ```

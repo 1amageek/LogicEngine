@@ -42,19 +42,12 @@ separately identified `LogicEvidenceOracleObservationSet`; missing cases,
 extra cases, status/code differences, or non-independent identities prevent
 promotion to `oracleCorrelated`.
 
-`LogicEvidenceProcessEvidence` is the process/PDK qualification boundary.
-It requires process and PDK identity, a SHA-256 PDK digest, tool and environment
-identity, input/output artifact IDs, digest coverage for every qualified
-artifact, metrics, and explicit failures. A qualified evidence record must bind
-one input artifact digest to the selected PDK digest. It can promote an
-oracle-correlated report to `processQualified` only when its identity matches
-the report. `LogicEvidenceReleaseApproval` is a separate human-in-the-loop
-artifact required for `releaseEligible`.
-
-Qualification intentionally remains a package-owned lifecycle contract rather
-than a `CircuiteFoundation.Engine`; it consumes execution observations and
-process/release evidence and does not define the simulation or synthesis
-execution boundary.
+`LogicEvidenceReport` records only `unassessed`, `corpusChecked`, and
+`oracleCorrelated` maturity. It validates suite, implementation, case, and
+independent-observation identity, but it cannot promote itself to process trust
+or release eligibility. ToolQualification consumes these retained observations
+with tool, environment, and process evidence. DesignFlowKernel and Xcircuite own
+release policy, approval, and resume.
 
 ## Native implementations
 

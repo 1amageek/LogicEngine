@@ -1,9 +1,9 @@
 # LogicEngine Milestones
 
-This roadmap treats LogicEngine as a digital-design execution and qualification
-boundary, not as a standalone gate simulator. The end state is a reproducible,
-reviewable path from canonical RTL and power intent to simulation, synthesis,
-equivalence, physical handoff, and release evidence.
+This roadmap treats LogicEngine as a digital-design execution and evidence
+producer, not as a standalone gate simulator or a qualification authority. The
+end state is a reproducible path from canonical RTL to simulation, synthesis,
+equivalence, and reviewable evidence for external trust and release policy.
 
 ```mermaid
 flowchart LR
@@ -13,8 +13,8 @@ flowchart LR
     Syn --> Eq["Equivalence"]
     Sim --> Corpus["Retained corpus"]
     Eq --> Corpus
-    Corpus --> PDK["PDK/process qualification"]
-    PDK --> Release["Release gate"]
+    Corpus --> Trust["ToolQualification"]
+    Trust --> Release["Flow-owned release policy"]
     Sim --> Flow["Xcircuite run ledger"]
     Syn --> Flow
     Eq --> Flow
@@ -33,8 +33,8 @@ Exit criteria:
 - RTLVerificationEngine owns lint, CDC/RDC, and equivalence protocols.
 - Xcircuite owns orchestration, trust gates, persistence, approval, resume, and
   repair loops.
-- Native implementation, corpus validation, oracle correlation, process
-  qualification, and release approval are reported separately.
+- Native implementation, corpus validation, oracle correlation, tool/process
+  trust, and release approval are reported separately.
 
 ## Milestone 1: Canonical execution contract and deterministic lowering
 
@@ -156,8 +156,9 @@ Exit criteria:
 - The native LogicEvidence CLI can attach independent observations and
   promote a corpus from `corpusChecked` to `oracleCorrelated` only when every
   case, status, diagnostic code, and implementation identity matches.
-- Qualification reports are persisted as JSON artifacts and validated before
-  Xcircuite uses their state; forged release states are rejected.
+- Evidence reports are persisted as JSON artifacts and validated before a
+  consumer uses their corpus or oracle-correlation observations. They contain
+  no process-qualified or release-eligible state.
 - Native bounded temporal trace comparison uses the same finite stimulus for
   reference and implementation execution graphs, enforces a sample bound,
   persists role-qualified reports/counterexamples, and reports the remaining
@@ -188,18 +189,13 @@ Exit criteria:
   LogicDesign, runtime specification, and RTL oracle lanes passed 7, 3, 35,
   and 6 tests respectively.
 
-## Milestone 6: Process qualification and release eligibility
+## Milestone 6: Evidence emission and external trust handoff
 
-Status: complete for the retained local native process profile. The package
-ships independent oracle, process/PDK, and human approval fixtures that the
-`logic-engine qualify` command can reproduce through `releaseEligible`.
-Foundry-specific qualification remains a separate process scope.
-
-Promotion beyond oracle correlation requires a typed process evidence artifact
-bound to the suite, implementation, SHA-256 PDK digest, digest-bearing
-input/output artifacts, metrics, failures, and environment identity. Release
-eligibility additionally requires a separate human approval artifact; neither
-gate is inferred from a passing fixture.
+Status: complete for the retained native corpus and independent-oracle profile.
+The package emits `LogicEvidenceReport` artifacts through
+`logic-engine assess-evidence`. Report maturity ends at `oracleCorrelated`.
+ToolQualification owns implementation/process trust; DesignFlowKernel and the
+composing runtime own release policy and human approval.
 
 Depends on: Milestones 1–5.
 
@@ -207,13 +203,14 @@ Exit criteria:
 
 - Versioned corpus coverage is retained for every P0 semantic, including
   positive, counterexample, limit, timeout, and unsupported-proof cases.
-- Oracle correlation and process/PDK qualification records include tool version,
-  inputs, outputs, metrics, failures, and environment identity.
-- Tool trust gates distinguish smoke-tested, qualified, and release-approved
-  results.
-- Release eligibility is reproducible from immutable run artifacts.
+- Oracle correlation records include implementation identity, case results,
+  mismatches, and independent observation provenance.
+- ToolQualification can consume the retained artifacts without LogicEngine
+  self-promoting their trust.
+- A composing flow can bind evidence, trust decisions, and approval in its own
+  immutable release records.
 
-## Milestone 7: Qualified unbounded temporal equivalence
+## Milestone 7: Unbounded temporal equivalence evidence
 
 Status: complete for the native exhaustive finite-state proof scope. No claim
 is made for arbitrary SystemVerilog, synthesized DFT, or symbolic solver
@@ -229,7 +226,7 @@ Scope:
   contract.
 - Require a digest-bearing proof certificate or counterexample, solver/tool
   identity, timeout/process diagnostics, assumptions, and exact request/result
-  digests before a result can be promoted.
+  digests before a proof observation can be consumed.
 - Preserve the same review, audit, approval, and resume contract as native
   equivalence; a bounded trace match cannot substitute for this gate.
 
@@ -238,18 +235,17 @@ Exit criteria:
 - A retained native corpus covers passing, counterexample, limit-blocked,
   timeout, unsupported-semantics, four-state, DFF, latch, and
   tampered-certificate cases.
-- The independent oracle, process/PDK evidence, and human approval fixtures
-  promote the native corpus through `releaseEligible` for the local fixture
-  process scope.
+- The independent oracle fixtures advance only the LogicEvidence maturity axis;
+  they do not claim process trust or release eligibility.
 - The result persists and revalidates request/report/certificate digests and
   exposes the proof scope explicitly for Xcircuite resume and review.
-- Release readiness remains blocked for any proof scope outside the declared
-  native finite-state profile or without a separately qualified process scope.
+- Release readiness remains a composing-flow decision and must reject proof
+  scopes or tool/process identities not accepted by ToolQualification policy.
 
 ## Promotion policy
 
 A milestone is not complete because source types exist or a happy-path test
 passes. Promotion requires implementation, structured failure behavior,
 retained corpus evidence, relevant integration evidence, and an explicit
-qualification boundary. A missing external oracle or PDK is a recorded gate,
-not a reason to claim completion.
+trust boundary. A missing external oracle or PDK is a recorded limitation, not
+a reason for LogicEngine to claim qualification.
