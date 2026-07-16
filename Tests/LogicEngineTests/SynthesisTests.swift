@@ -32,7 +32,7 @@ struct SynthesisTests {
             Issue.record("mapped design is missing")
             return
         }
-        #expect(mappedDesign.designRevision?.hexadecimalValue == mappedDesign.artifact.sha256)
+        #expect(mappedDesign.designRevision?.hexadecimalValue == mappedDesign.artifact.digest.hexadecimalValue)
         let mappedData = try Data(contentsOf: URL(fileURLWithPath: mappedDesign.artifact.path))
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: mappedData)
         #expect(document.nodes.first?.parameters["mappedCell"] == "AND2_X1")
@@ -44,7 +44,10 @@ struct SynthesisTests {
         let equivalenceData = try Data(contentsOf: URL(fileURLWithPath: equivalenceRequest.path))
         let equivalenceRequestPayload = try JSONDecoder().decode(LogicSynthesisEquivalenceRequest.self, from: equivalenceData)
         try equivalenceRequestPayload.validate()
-        #expect(equivalenceRequestPayload.mappedDesign.designDigest == mappedDesign.artifact.sha256)
+        #expect(
+            equivalenceRequestPayload.mappedDesign.designDigest
+                == mappedDesign.artifact.digest.hexadecimalValue
+        )
     }
 
     @Test("library membership controls mapping without caller-issued qualification")
@@ -60,7 +63,12 @@ struct SynthesisTests {
             design: design,
             libraries: [TimingLibraryReference(artifact: library, cornerIDs: ["typical"])],
             constraints: TimingConstraintReference(artifact: constraints, modeIDs: ["default"]),
-            pdk: PDKReference(manifest: pdk, processID: "logic-fixture", version: "1", digest: pdk.sha256),
+            pdk: PDKReference(
+                manifest: pdk,
+                processID: "logic-fixture",
+                version: "1",
+                digest: pdk.digest.hexadecimalValue
+            ),
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
@@ -81,12 +89,12 @@ struct SynthesisTests {
         let sourceDesign = LogicDesignReference(
             artifact: sourceArtifact,
             topDesignName: "top",
-            designDigest: sourceArtifact.sha256
+            designDigest: sourceArtifact.digest.hexadecimalValue
         )
         let mappedDesign = LogicDesignReference(
             artifact: mappedArtifact,
             topDesignName: "top",
-            designDigest: mappedArtifact.sha256
+            designDigest: mappedArtifact.digest.hexadecimalValue
         )
         let request = LogicSynthesisEquivalenceRequest(
             runID: "acceptance-run",

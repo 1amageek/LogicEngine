@@ -44,7 +44,7 @@ struct TemporalEquivalenceTests {
         let report = try JSONDecoder().decode(LogicBoundedTemporalEquivalenceReport.self, from: reportData)
         try report.validate()
         #expect(!report.requestDigest.isEmpty)
-        #expect(report.stimulusDigest == stimulusArtifact.sha256)
+        #expect(report.stimulusDigest == stimulusArtifact.digest.hexadecimalValue)
     }
 
     @Test("persists a counterexample for a bounded temporal mismatch")

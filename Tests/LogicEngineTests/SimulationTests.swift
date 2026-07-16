@@ -973,7 +973,7 @@ struct SimulationTests {
             }
             return try await NativeLogicSimulationEngine(
                 artifactStore: FileSystemLogicArtifactStore(
-                    rootDirectory: LogicEngineTestFixture.workspaceRootURL(),
+                    rootDirectory: outputDirectory,
                     defaultOutputDirectory: outputDirectory
                 )
             ).execute(request)
@@ -986,7 +986,10 @@ struct SimulationTests {
             Issue.record("cancellation record is missing")
             return
         }
-        let data = try Data(contentsOf: URL(fileURLWithPath: cancellation.path))
+        let cancellationURL = try cancellation.locator.location.resolvedFileURL(
+            relativeTo: outputDirectory
+        )
+        let data = try Data(contentsOf: cancellationURL)
         let record = try JSONDecoder().decode(LogicCancellationRecord.self, from: data)
         #expect(record.runID == request.runID)
         #expect(record.engineID == "LogicSimulation")

@@ -7,14 +7,6 @@ import TimingCore
 import CircuiteFoundation
 
 struct LogicEngineTestFixture {
-    static func workspaceRootURL() -> URL {
-        URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .deletingLastPathComponent()
-            .standardizedFileURL
-    }
-
     static func url(named name: String) throws -> URL {
         guard let url = Bundle.module.url(forResource: name, withExtension: "json", subdirectory: "Fixtures") else {
             throw LogicExecutionError.missingArtifact(name)
@@ -72,7 +64,12 @@ struct LogicEngineTestFixture {
             design: design,
             libraries: [TimingLibraryReference(artifact: libraryArtifact, cornerIDs: ["typical"])],
             constraints: TimingConstraintReference(artifact: constraintsArtifact, modeIDs: ["default"]),
-            pdk: PDKReference(manifest: pdkArtifact, processID: "logic-fixture", version: "1", digest: pdkArtifact.sha256),
+            pdk: PDKReference(
+                manifest: pdkArtifact,
+                processID: "logic-fixture",
+                version: "1",
+                digest: pdkArtifact.digest.hexadecimalValue
+            ),
             artifactDirectory: outputDirectory?.path(percentEncoded: false)
         )
     }
