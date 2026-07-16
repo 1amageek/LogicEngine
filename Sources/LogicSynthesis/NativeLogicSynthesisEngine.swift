@@ -31,7 +31,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
 
             let designData = try artifactStore.read(request.design.artifact)
             let designDigest = request.design.designRevision?.hexadecimalValue
-                ?? request.design.artifact.sha256
+                ?? request.design.artifact.digest.hexadecimalValue
             guard request.design.designRevision == nil
                 || request.design.designRevision?.hexadecimalValue == designDigest else {
                 throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
