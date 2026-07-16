@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 import LogicSimulation
 
 /// Native exhaustive proof engine for the finite-state execution-graph profile.
@@ -863,7 +864,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             designDiagnostic = LogicDiagnosticFactory.make(for: error)
         }
         let diagnostic = designDiagnostic
-        let executionStatus: LogicExecutionStatus
+        let executionStatus: LogicIR.LogicExecutionStatus
         let proofStatus: LogicUnboundedTemporalEquivalenceStatus
         switch error {
         case .timedOut:
@@ -932,7 +933,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
 
     private func makeResult(
         request: LogicUnboundedTemporalEquivalenceFoundationRequest,
-        status: LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         payload: LogicUnboundedTemporalEquivalenceFoundationPayload,
         artifacts: [ArtifactReference],
         diagnostics: [DesignDiagnostic],

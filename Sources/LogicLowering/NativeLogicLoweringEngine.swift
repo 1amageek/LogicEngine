@@ -123,7 +123,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
 
     private func result(
         request: LogicLoweringRequest,
-        status: LogicEngineCore.LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         diagnostics: [DesignDiagnostic],
         artifacts: [ArtifactReference] = [],
         payload: LogicLoweringPayload,

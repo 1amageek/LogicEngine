@@ -1,23 +1,24 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicSynthesisResult: Sendable, Hashable, Codable {
     public let schemaVersion: Int
     public let runID: String
-    public let status: LogicEngineCore.LogicExecutionStatus
+    public let status: LogicIR.LogicExecutionStatus
     public let diagnostics: [DesignDiagnostic]
     public let artifacts: [ArtifactReference]
-    public let metadata: LogicExecutionMetadata
+    public let provenance: ExecutionProvenance
     public let payload: LogicSynthesisPayload
 
     public init(
         schemaVersion: Int,
         runID: String,
-        status: LogicEngineCore.LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         diagnostics: [DesignDiagnostic],
         artifacts: [ArtifactReference],
-        metadata: LogicExecutionMetadata,
+        provenance: ExecutionProvenance,
         payload: LogicSynthesisPayload
     ) {
         self.schemaVersion = schemaVersion
@@ -25,7 +26,7 @@ public struct LogicSynthesisResult: Sendable, Hashable, Codable {
         self.status = status
         self.diagnostics = diagnostics
         self.artifacts = artifacts
-        self.metadata = metadata
+        self.provenance = provenance
         self.payload = payload
     }
 }

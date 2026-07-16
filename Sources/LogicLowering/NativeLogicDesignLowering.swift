@@ -55,7 +55,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
 
     private func result(for error: LogicLoweringError) -> LogicLoweringResult {
         let diagnostic: DesignDiagnostic
-        let status: LogicEngineCore.LogicExecutionStatus
+        let status: LogicIR.LogicExecutionStatus
         switch error {
         case .missingTopModule:
             status = .failed

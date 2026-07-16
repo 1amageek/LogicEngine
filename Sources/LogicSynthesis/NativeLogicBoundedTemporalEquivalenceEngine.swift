@@ -159,18 +159,25 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 status: differences.isEmpty ? .completed : .failed,
                 diagnostics: diagnostics,
                 artifacts: simulationArtifacts + [reportReference] + (counterexampleReference.map { [$0] } ?? []),
-                metadata: LogicExecutionMetadata(
-                    engineID: "LogicBoundedTemporalEquivalence",
-                    implementationID: "native-bounded-trace",
-                    implementationVersion: implementationVersion,
+                provenance: try ExecutionProvenance(
+                    producer: ProducerIdentity(
+                        kind: .engine,
+                        identifier: "LogicBoundedTemporalEquivalence",
+                        version: implementationVersion,
+                        build: "native-bounded-trace"
+                    ),
+                    inputs: request.inputs,
+                    invocation: ExecutionInvocation.inProcess(
+                        entryPoint: "NativeLogicBoundedTemporalEquivalenceEngine.execute"
+                    ),
+                    randomSeed: nil,
                     startedAt: startedAt,
-                    completedAt: Date(),
-                    seed: nil
+                    completedAt: Date()
                 ),
                 payload: payload
             )
         } catch let error as LogicExecutionError {
-            return failureEnvelope(request: request, error: error, startedAt: startedAt)
+            return try failureEnvelope(request: request, error: error, startedAt: startedAt)
         } catch {
             throw error
         }
@@ -351,20 +358,27 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         request: LogicBoundedTemporalEquivalenceRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) -> LogicBoundedTemporalEquivalenceResult {
+    ) throws -> LogicBoundedTemporalEquivalenceResult {
         LogicBoundedTemporalEquivalenceResult(
             schemaVersion: LogicBoundedTemporalEquivalenceRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
             artifacts: [],
-            metadata: LogicExecutionMetadata(
-                engineID: "LogicBoundedTemporalEquivalence",
-                implementationID: "native-bounded-trace",
-                implementationVersion: implementationVersion,
+            provenance: try ExecutionProvenance(
+                producer: ProducerIdentity(
+                    kind: .engine,
+                    identifier: "LogicBoundedTemporalEquivalence",
+                    version: implementationVersion,
+                    build: "native-bounded-trace"
+                ),
+                inputs: request.inputs,
+                invocation: ExecutionInvocation.inProcess(
+                    entryPoint: "NativeLogicBoundedTemporalEquivalenceEngine.execute"
+                ),
+                randomSeed: nil,
                 startedAt: startedAt,
-                completedAt: Date(),
-                seed: nil
+                completedAt: Date()
             ),
             payload: LogicBoundedTemporalEquivalencePayload(
                 proofStatus: .blocked,

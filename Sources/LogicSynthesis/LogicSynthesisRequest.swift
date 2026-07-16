@@ -5,7 +5,6 @@ import PowerIntent
 import TimingCore
 import PDKCore
 import LogicEngineCore
-import CircuiteFoundation
 
 public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
@@ -57,6 +56,11 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        guard schemaVersion == Self.currentSchemaVersion else {
+            throw LogicExecutionError.invalidArtifact(
+                "unsupported synthesis request schema version \(schemaVersion)"
+            )
+        }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
         design = try container.decode(LogicFoundationDesignReference.self, forKey: .design)

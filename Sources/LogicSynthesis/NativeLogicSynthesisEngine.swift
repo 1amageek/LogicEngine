@@ -187,18 +187,25 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 status: .completed,
                 diagnostics: diagnostics,
                 artifacts: [mappedReference, provenanceReference, equivalenceRequestReference],
-                metadata: LogicExecutionMetadata(
-                    engineID: "LogicSynthesis",
-                    implementationID: "native-lowering-optimization-mapping",
-                    implementationVersion: implementationVersion,
+                provenance: try ExecutionProvenance(
+                    producer: ProducerIdentity(
+                        kind: .engine,
+                        identifier: "LogicSynthesis",
+                        version: implementationVersion,
+                        build: "native-lowering-optimization-mapping"
+                    ),
+                    inputs: request.inputs,
+                    invocation: ExecutionInvocation.inProcess(
+                        entryPoint: "NativeLogicSynthesisEngine.execute"
+                    ),
+                    randomSeed: nil,
                     startedAt: startedAt,
-                    completedAt: Date(),
-                    seed: nil
+                    completedAt: Date()
                 ),
                 payload: payload
             )
         } catch let error as LogicExecutionError {
-            return failureEnvelope(request: request, error: error, startedAt: startedAt)
+            return try failureEnvelope(request: request, error: error, startedAt: startedAt)
         } catch {
             throw error
         }
@@ -486,17 +493,24 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         request: LogicSynthesisRequest,
         error: LogicExecutionError,
         startedAt: Date
-    ) -> LogicSynthesisResult {
+    ) throws -> LogicSynthesisResult {
         LogicSynthesisResult(
             schemaVersion: LogicSynthesisRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
             artifacts: [],
-            metadata: LogicExecutionMetadata(
-                engineID: "LogicSynthesis",
-                implementationID: "native-lowering-optimization-mapping",
-                implementationVersion: implementationVersion,
+            provenance: try ExecutionProvenance(
+                producer: ProducerIdentity(
+                    kind: .engine,
+                    identifier: "LogicSynthesis",
+                    version: implementationVersion,
+                    build: "native-lowering-optimization-mapping"
+                ),
+                inputs: request.inputs,
+                invocation: ExecutionInvocation.inProcess(
+                    entryPoint: "NativeLogicSynthesisEngine.execute"
+                ),
                 startedAt: startedAt,
                 completedAt: Date()
             ),

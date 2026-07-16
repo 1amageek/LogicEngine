@@ -1,9 +1,9 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 import LogicSynthesis
 import Testing
-import CircuiteFoundation
 
 @Suite("Unbounded temporal equivalence")
 struct UnboundedTemporalEquivalenceTests {

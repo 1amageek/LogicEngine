@@ -7,6 +7,7 @@ import LogicLowering
 import LogicEvidence
 import LogicSimulation
 import LogicSynthesis
+import LogicIR
 
 @main
 struct LogicEngineCLI {

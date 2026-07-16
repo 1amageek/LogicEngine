@@ -24,7 +24,7 @@ public struct LogicSignal: Sendable, Hashable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         name = try container.decode(String.self, forKey: .name)
         width = try container.decode(Int.self, forKey: .width)
-        isSigned = try container.decodeIfPresent(Bool.self, forKey: .isSigned) ?? false
+        isSigned = try container.decode(Bool.self, forKey: .isSigned)
         initialValue = try container.decodeIfPresent(LogicVector.self, forKey: .initialValue)
     }
 }

@@ -60,14 +60,13 @@ public struct LogicSynthesisPayload: Sendable, Hashable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mappedDesign = try container.decodeIfPresent(LogicFoundationDesignReference.self, forKey: .mappedDesign)
         mappedCellCount = try container.decode(Int.self, forKey: .mappedCellCount)
-        loweredNodeCount = try container.decodeIfPresent(Int.self, forKey: .loweredNodeCount) ?? mappedCellCount
-        optimizedNodeCount = try container.decodeIfPresent(Int.self, forKey: .optimizedNodeCount) ?? mappedCellCount
-        totalArea = try container.decodeIfPresent(Double.self, forKey: .totalArea) ?? 0
-        totalPower = try container.decodeIfPresent(Double.self, forKey: .totalPower) ?? 0
+        loweredNodeCount = try container.decode(Int.self, forKey: .loweredNodeCount)
+        optimizedNodeCount = try container.decode(Int.self, forKey: .optimizedNodeCount)
+        totalArea = try container.decode(Double.self, forKey: .totalArea)
+        totalPower = try container.decode(Double.self, forKey: .totalPower)
         provenance = try container.decodeIfPresent(ArtifactReference.self, forKey: .provenance)
         equivalenceRequest = try container.decodeIfPresent(ArtifactReference.self, forKey: .equivalenceRequest)
-        equivalenceRequired = try container.decodeIfPresent(Bool.self, forKey: .equivalenceRequired) ?? true
-        acceptanceState = try container.decodeIfPresent(LogicSynthesisAcceptanceState.self, forKey: .acceptanceState)
-            ?? .pendingEquivalence
+        equivalenceRequired = try container.decode(Bool.self, forKey: .equivalenceRequired)
+        acceptanceState = try container.decode(LogicSynthesisAcceptanceState.self, forKey: .acceptanceState)
     }
 }

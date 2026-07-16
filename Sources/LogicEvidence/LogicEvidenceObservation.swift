@@ -1,5 +1,6 @@
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicEvidenceObservation: Sendable, Hashable, Codable {
     public var status: LogicExecutionStatus

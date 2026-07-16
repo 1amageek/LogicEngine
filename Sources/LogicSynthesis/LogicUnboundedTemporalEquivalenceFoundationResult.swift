@@ -1,13 +1,14 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicUnboundedTemporalEquivalenceFoundationResult: Sendable, Hashable, Codable,
     ArtifactProducing, DiagnosticReporting, EvidenceProviding
 {
     public let schemaVersion: SchemaVersion
     public let runID: String
-    public let status: LogicEngineCore.LogicExecutionStatus
+    public let status: LogicIR.LogicExecutionStatus
     public let payload: LogicUnboundedTemporalEquivalenceFoundationPayload
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
@@ -15,7 +16,7 @@ public struct LogicUnboundedTemporalEquivalenceFoundationResult: Sendable, Hasha
 
     public init(
         runID: String,
-        status: LogicEngineCore.LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         payload: LogicUnboundedTemporalEquivalenceFoundationPayload,
         artifacts: [ArtifactReference] = [],
         diagnostics: [DesignDiagnostic] = [],

@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 /// Bounded equivalence output projected onto the Foundation evidence contracts.
 public struct LogicBoundedTemporalEquivalenceFoundationResult: Sendable, Hashable, Codable,
@@ -8,7 +9,7 @@ public struct LogicBoundedTemporalEquivalenceFoundationResult: Sendable, Hashabl
 {
     public let schemaVersion: SchemaVersion
     public let runID: String
-    public let status: LogicEngineCore.LogicExecutionStatus
+    public let status: LogicIR.LogicExecutionStatus
     public let payload: LogicBoundedTemporalEquivalenceFoundationPayload
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
@@ -16,7 +17,7 @@ public struct LogicBoundedTemporalEquivalenceFoundationResult: Sendable, Hashabl
 
     public init(
         runID: String,
-        status: LogicEngineCore.LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         payload: LogicBoundedTemporalEquivalenceFoundationPayload,
         artifacts: [ArtifactReference] = [],
         diagnostics: [DesignDiagnostic] = [],

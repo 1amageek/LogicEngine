@@ -534,7 +534,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             format: .json
         )
         let failureCount = result.report.assertions.filter { !$0.passed }.count
-        let status: LogicEngineCore.LogicExecutionStatus = failureCount == 0 ? .completed : .failed
+        let status: LogicIR.LogicExecutionStatus = failureCount == 0 ? .completed : .failed
         var diagnostics: [DesignDiagnostic] = [
             DesignDiagnostic(
                 code: .trusted("logic.simulation.completed"),

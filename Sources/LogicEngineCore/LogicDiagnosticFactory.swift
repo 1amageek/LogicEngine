@@ -1,4 +1,5 @@
 import CircuiteFoundation
+import LogicIR
 
 public enum LogicDiagnosticFactory {
     public static func make(

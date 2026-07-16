@@ -49,12 +49,17 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        guard schemaVersion == Self.currentSchemaVersion else {
+            throw LogicExecutionError.invalidArtifact(
+                "unsupported simulation request schema version \(schemaVersion)"
+            )
+        }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
         design = try container.decode(LogicFoundationDesignReference.self, forKey: .design)
         stimulus = try container.decodeIfPresent(ArtifactReference.self, forKey: .stimulus)
         seed = try container.decodeIfPresent(UInt64.self, forKey: .seed)
-        waveformFormat = try container.decodeIfPresent(LogicWaveformFormat.self, forKey: .waveformFormat) ?? .vcd
+        waveformFormat = try container.decode(LogicWaveformFormat.self, forKey: .waveformFormat)
         artifactDirectory = try container.decodeIfPresent(String.self, forKey: .artifactDirectory)
     }
 }

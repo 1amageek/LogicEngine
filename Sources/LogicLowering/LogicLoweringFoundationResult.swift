@@ -9,7 +9,7 @@ public struct LogicLoweringFoundationResult: Sendable, Hashable, Codable,
 {
     public let schemaVersion: SchemaVersion
     public let runID: String
-    public let status: LogicEngineCore.LogicExecutionStatus
+    public let status: LogicIR.LogicExecutionStatus
     public let payload: LogicLoweringFoundationPayload
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
@@ -17,7 +17,7 @@ public struct LogicLoweringFoundationResult: Sendable, Hashable, Codable,
 
     public init(
         runID: String,
-        status: LogicEngineCore.LogicExecutionStatus,
+        status: LogicIR.LogicExecutionStatus,
         payload: LogicLoweringFoundationPayload,
         artifacts: [ArtifactReference] = [],
         diagnostics: [DesignDiagnostic] = [],

@@ -24,6 +24,7 @@ let package = Package(
             name: "LogicEngineCore",
             dependencies: [
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "LogicIR", package: "LogicDesign"),
             ]
         ),
         .target(
@@ -63,6 +64,7 @@ let package = Package(
                 "LogicSynthesis",
                 "LogicEngineCore",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "LogicIR", package: "LogicDesign"),
             ]
         ),
         .target(
@@ -81,7 +83,7 @@ let package = Package(
         ),
         .executableTarget(
             name: "LogicEngineCLI",
-            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine"]
+            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine", .product(name: "LogicIR", package: "LogicDesign")]
         ),
     ]
 )

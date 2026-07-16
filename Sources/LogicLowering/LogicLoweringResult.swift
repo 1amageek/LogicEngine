@@ -1,6 +1,7 @@
 import Foundation
 import CircuiteFoundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicLoweringResult: Sendable, Hashable, Codable {
     public var status: LogicExecutionStatus

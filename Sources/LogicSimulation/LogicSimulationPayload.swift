@@ -44,10 +44,10 @@ public struct LogicSimulationPayload: Sendable, Hashable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         traceCount = try container.decode(Int.self, forKey: .traceCount)
         assertionFailureCount = try container.decode(Int.self, forKey: .assertionFailureCount)
-        eventCount = try container.decodeIfPresent(Int.self, forKey: .eventCount) ?? traceCount
+        eventCount = try container.decode(Int.self, forKey: .eventCount)
         waveform = try container.decodeIfPresent(ArtifactReference.self, forKey: .waveform)
         assertionReport = try container.decodeIfPresent(ArtifactReference.self, forKey: .assertionReport)
         cancellationRecord = try container.decodeIfPresent(ArtifactReference.self, forKey: .cancellationRecord)
-        finalValues = try container.decodeIfPresent([String: LogicVector].self, forKey: .finalValues) ?? [:]
+        finalValues = try container.decode([String: LogicVector].self, forKey: .finalValues)
     }
 }

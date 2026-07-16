@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 /// Simulation output projected onto the Foundation evidence contracts.
 public struct LogicSimulationFoundationResult: Sendable, Hashable, Codable,

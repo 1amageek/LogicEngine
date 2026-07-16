@@ -1,5 +1,6 @@
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicEvidenceExpectation: Sendable, Hashable, Codable {
     public var expectedStatus: LogicExecutionStatus

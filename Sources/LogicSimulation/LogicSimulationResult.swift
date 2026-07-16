@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 public struct LogicSimulationResult: Sendable, Hashable, Codable {
     public let status: LogicExecutionStatus

@@ -6,7 +6,6 @@ import LogicLowering
 import LogicSimulation
 import LogicSynthesis
 import Testing
-import CircuiteFoundation
 
 @Suite("LogicEngine CircuiteFoundation boundary")
 struct CircuiteFoundationIntegrationTests {
@@ -204,10 +203,14 @@ struct CircuiteFoundationIntegrationTests {
             status: .completed,
             diagnostics: [],
             artifacts: [output],
-            metadata: LogicExecutionMetadata(
-                engineID: "LogicBoundedTemporalEquivalence",
-                implementationID: "native",
-                implementationVersion: "1",
+            provenance: try ExecutionProvenance(
+                producer: ProducerIdentity(
+                    kind: .engine,
+                    identifier: "LogicBoundedTemporalEquivalence",
+                    version: "1",
+                    build: "native"
+                ),
+                invocation: ExecutionInvocation.inProcess(entryPoint: "test"),
                 startedAt: Date(),
                 completedAt: Date()
             ),
