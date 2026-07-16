@@ -15,7 +15,7 @@ Provide independently qualifiable functional simulation and logic synthesis over
 | Logic optimization | Perform semantics-preserving Boolean and sequential optimization. | P0 |
 | Technology mapping | Map logic to qualified library cells under timing, area and power constraints. | P0 |
 | Synthesis provenance | Record transformations, constraints, library and PDK digests. | P0 |
-| Compatibility backends | Retain current gate simulation and Boolean mapping as explicitly limited backends. | P1 |
+| Bounded native backends | Keep current gate simulation and Boolean mapping as explicitly limited native backends. | P1 |
 
 ## Required outcomes
 
@@ -31,7 +31,7 @@ Provide independently qualifiable functional simulation and logic synthesis over
   artifacts.
 - The native lowering, simulation, synthesis, and bounded-equivalence engines
   conform directly to Foundation-refining protocols.
-- The retained Xcircuite request/envelope types are compatibility inputs only.
+- Integration uses only the canonical Foundation and domain request/result types; Xcircuite does not define parallel request or envelope types.
 - Diagnostics contain a stable code, severity, affected entity and suggested actions.
 - Unsupported semantics and missing prerequisites produce blocked results.
 - Native and external-tool backends conform to identical request and payload schemas.
@@ -53,7 +53,7 @@ Provide independently qualifiable functional simulation and logic synthesis over
 - Contract and parser round-trip tests
 - Reference corpus
 - Capability and limitation report
-- Xcircuite stage adapter tests
+- Xcircuite stage composition tests using direct protocol conformance
 
 ## Native capability profile
 

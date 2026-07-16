@@ -132,10 +132,10 @@ struct CircuiteFoundationIntegrationTests {
                 topDesignName: "top"
             )
         )
-        let legacyEngine = NativeLogicLoweringEngine(
+        let domainEngine = NativeLogicLoweringEngine(
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         )
-        let engine = NativeLogicLoweringFoundationEngine(engine: legacyEngine)
+        let engine = NativeLogicLoweringFoundationEngine(engine: domainEngine)
 
         let result = try await engine.execute(request)
 

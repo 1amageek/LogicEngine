@@ -1,6 +1,6 @@
 import Foundation
 
-/// Errors raised when a legacy logic value cannot be projected into the
+/// Errors raised when a logic domain value cannot be projected into the
 /// CircuiteFoundation contract without losing integrity or provenance.
 public enum LogicFoundationBoundaryError: Error, Sendable, Equatable, Hashable, LocalizedError {
     case missingArtifactDigest(String)

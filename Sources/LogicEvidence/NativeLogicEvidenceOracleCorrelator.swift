@@ -1,12 +1,12 @@
 import Foundation
 
-public struct NativeLogicQualificationOracleCorrelator: Sendable {
+public struct NativeLogicEvidenceOracleCorrelator: Sendable {
     public init() {}
 
     public func correlate(
-        nativeReport: LogicQualificationReport,
-        oracle: LogicQualificationOracleObservationSet
-    ) throws -> LogicQualificationOracleCorrelationReport {
+        nativeReport: LogicEvidenceReport,
+        oracle: LogicEvidenceOracleObservationSet
+    ) throws -> LogicEvidenceOracleCorrelationReport {
         try oracle.validate()
         let independent = nativeReport.implementationID != oracle.oracleImplementationID
         var oracleByCaseID = Dictionary(uniqueKeysWithValues: oracle.observations.map { ($0.caseID, $0) })
@@ -34,12 +34,10 @@ public struct NativeLogicQualificationOracleCorrelator: Sendable {
         if !independent {
             mismatches.append("oracle_not_independent")
         }
-        return LogicQualificationOracleCorrelationReport(
+        return LogicEvidenceOracleCorrelationReport(
             suiteID: nativeReport.suiteID,
             nativeImplementationID: nativeReport.implementationID,
             oracleImplementationID: oracle.oracleImplementationID,
-            matched: mismatches.isEmpty,
-            independenceVerified: independent,
             matchedCaseIDs: matchedCaseIDs,
             mismatches: mismatches
         )

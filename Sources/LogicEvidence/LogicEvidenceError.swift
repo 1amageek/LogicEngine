@@ -1,12 +1,10 @@
 import Foundation
 
-public enum LogicQualificationError: Error, Sendable, Hashable, LocalizedError {
+public enum LogicEvidenceError: Error, Sendable, Hashable, LocalizedError {
     case invalidSuite(String)
     case duplicateCase(String)
     case unsupportedRequest(String)
     case invalidReport(String)
-    case invalidProcessEvidence(String)
-    case invalidReleaseApproval(String)
 
     public var errorDescription: String? {
         switch self {
@@ -18,10 +16,6 @@ public enum LogicQualificationError: Error, Sendable, Hashable, LocalizedError {
             "Unsupported logic qualification request: \(message)."
         case .invalidReport(let message):
             "Invalid logic qualification report: \(message)."
-        case .invalidProcessEvidence(let message):
-            "Invalid logic process qualification evidence: \(message)."
-        case .invalidReleaseApproval(let message):
-            "Invalid logic release approval: \(message)."
         }
     }
 }

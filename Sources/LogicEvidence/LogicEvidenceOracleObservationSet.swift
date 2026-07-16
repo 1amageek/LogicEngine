@@ -1,18 +1,18 @@
 import Foundation
 
-public struct LogicQualificationOracleObservationSet: Sendable, Hashable, Codable {
+public struct LogicEvidenceOracleObservationSet: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
     public var schemaVersion: Int
     public var oracleImplementationID: String
     public var oracleImplementationVersion: String
-    public var observations: [LogicQualificationOracleObservation]
+    public var observations: [LogicEvidenceOracleObservation]
 
     public init(
         oracleImplementationID: String,
         oracleImplementationVersion: String,
-        observations: [LogicQualificationOracleObservation],
-        schemaVersion: Int = LogicQualificationOracleObservationSet.currentSchemaVersion
+        observations: [LogicEvidenceOracleObservation],
+        schemaVersion: Int = LogicEvidenceOracleObservationSet.currentSchemaVersion
     ) {
         self.schemaVersion = schemaVersion
         self.oracleImplementationID = oracleImplementationID
@@ -22,21 +22,21 @@ public struct LogicQualificationOracleObservationSet: Sendable, Hashable, Codabl
 
     public func validate() throws {
         guard schemaVersion == Self.currentSchemaVersion else {
-            throw LogicQualificationError.invalidSuite("unsupported oracle observation schema version \(schemaVersion)")
+            throw LogicEvidenceError.invalidSuite("unsupported oracle observation schema version \(schemaVersion)")
         }
         guard !oracleImplementationID.isEmpty, !oracleImplementationVersion.isEmpty else {
-            throw LogicQualificationError.invalidSuite("oracle implementation identity is incomplete")
+            throw LogicEvidenceError.invalidSuite("oracle implementation identity is incomplete")
         }
         guard !observations.isEmpty else {
-            throw LogicQualificationError.invalidSuite("oracle observation set has no cases")
+            throw LogicEvidenceError.invalidSuite("oracle observation set has no cases")
         }
         var caseIDs: Set<String> = []
         for observation in observations {
             guard !observation.caseID.isEmpty else {
-                throw LogicQualificationError.invalidSuite("oracle observation has an empty case ID")
+                throw LogicEvidenceError.invalidSuite("oracle observation has an empty case ID")
             }
             guard caseIDs.insert(observation.caseID).inserted else {
-                throw LogicQualificationError.duplicateCase(observation.caseID)
+                throw LogicEvidenceError.duplicateCase(observation.caseID)
             }
         }
     }

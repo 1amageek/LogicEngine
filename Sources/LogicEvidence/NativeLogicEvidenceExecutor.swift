@@ -3,7 +3,7 @@ import LogicEngineCore
 import LogicSimulation
 import LogicSynthesis
 
-public struct NativeLogicQualificationExecutor: LogicQualificationExecuting {
+public struct NativeLogicEvidenceExecutor: LogicEvidenceExecuting {
     public let simulation: any LogicSimulationExecuting
     public let synthesis: any LogicSynthesisExecuting
     public let unbounded: (any LogicUnboundedTemporalEquivalenceFoundationEngine)?
@@ -19,30 +19,30 @@ public struct NativeLogicQualificationExecutor: LogicQualificationExecuting {
     }
 
     public func execute(
-        _ request: LogicQualificationRequest
-    ) async throws -> LogicQualificationObservation {
+        _ request: LogicEvidenceRequest
+    ) async throws -> LogicEvidenceObservation {
         try request.validate()
         switch request {
         case .simulation(let simulationRequest):
             let envelope = try await simulation.execute(simulationRequest)
-            return LogicQualificationObservation(
+            return LogicEvidenceObservation(
                 status: envelope.status,
                 diagnosticCodes: envelope.diagnostics.map { $0.code.rawValue },
                 artifactIDs: envelope.artifacts.compactMap(\.artifactID)
             )
         case .synthesis(let synthesisRequest):
             let envelope = try await synthesis.execute(synthesisRequest)
-            return LogicQualificationObservation(
+            return LogicEvidenceObservation(
                 status: envelope.status,
                 diagnosticCodes: envelope.diagnostics.map { $0.code.rawValue },
                 artifactIDs: envelope.artifacts.compactMap(\.artifactID)
             )
         case .unbounded(let unboundedRequest):
             guard let unbounded else {
-                throw LogicQualificationError.unsupportedRequest("unbounded equivalence executor is not configured")
+                throw LogicEvidenceError.unsupportedRequest("unbounded equivalence executor is not configured")
             }
             let result = try await unbounded.execute(unboundedRequest)
-            return LogicQualificationObservation(
+            return LogicEvidenceObservation(
                 status: result.status,
                 diagnosticCodes: result.diagnostics.map { $0.code.rawValue },
                 artifactIDs: result.artifacts.map { $0.id.rawValue }

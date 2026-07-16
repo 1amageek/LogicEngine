@@ -1,21 +1,21 @@
 import Foundation
 
-public struct NativeLogicQualificationRunner: Sendable {
-    public let executor: any LogicQualificationExecuting
+public struct NativeLogicEvidenceRunner: Sendable {
+    public let executor: any LogicEvidenceExecuting
 
-    public init(executor: any LogicQualificationExecuting) {
+    public init(executor: any LogicEvidenceExecuting) {
         self.executor = executor
     }
 
     public func evaluate(
-        _ suite: LogicQualificationSuite,
+        _ suite: LogicEvidenceSuite,
         checkedAt: Date = Date()
-    ) async throws -> LogicQualificationReport {
+    ) async throws -> LogicEvidenceReport {
         try suite.validate()
-        var evaluations: [LogicQualificationCaseEvaluation] = []
-        for qualificationCase in suite.cases.sorted(by: { $0.caseID < $1.caseID }) {
-            let observation = try await executor.execute(qualificationCase.request)
-            let expected = qualificationCase.expectation
+        var evaluations: [LogicEvidenceCaseEvaluation] = []
+        for evidenceCase in suite.cases.sorted(by: { $0.caseID < $1.caseID }) {
+            let observation = try await executor.execute(evidenceCase.request)
+            let expected = evidenceCase.expectation
             var mismatches: [String] = []
             if observation.status != expected.expectedStatus {
                 mismatches.append(
@@ -28,9 +28,8 @@ public struct NativeLogicQualificationRunner: Sendable {
             for code in expected.forbiddenDiagnosticCodes where observation.diagnosticCodes.contains(code) {
                 mismatches.append("forbidden diagnostic observed: \(code)")
             }
-            evaluations.append(LogicQualificationCaseEvaluation(
-                caseID: qualificationCase.caseID,
-                matched: mismatches.isEmpty,
+            evaluations.append(LogicEvidenceCaseEvaluation(
+                caseID: evidenceCase.caseID,
                 observedStatus: observation.status,
                 observedDiagnosticCodes: observation.diagnosticCodes,
                 observedArtifactIDs: observation.artifactIDs,
@@ -41,7 +40,7 @@ public struct NativeLogicQualificationRunner: Sendable {
         let limitations = evaluations.flatMap { evaluation in
             evaluation.mismatches.map { "\(evaluation.caseID): \($0)" }
         }
-        return LogicQualificationReport(
+        return LogicEvidenceReport(
             suiteID: suite.suiteID,
             implementationID: suite.implementationID,
             implementationVersion: suite.implementationVersion,

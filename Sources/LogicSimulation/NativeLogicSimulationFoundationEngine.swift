@@ -16,7 +16,7 @@ public struct NativeLogicSimulationFoundationEngine: LogicSimulationFoundationEn
         _ request: LogicSimulationFoundationRequest
     ) async throws -> LogicSimulationFoundationResult {
         try request.validate()
-        let legacyRequest = LogicSimulationRequest(
+        let domainRequest = LogicSimulationRequest(
             runID: request.runID,
             inputs: request.inputs,
             design: request.design,
@@ -25,7 +25,7 @@ public struct NativeLogicSimulationFoundationEngine: LogicSimulationFoundationEn
             waveformFormat: request.waveformFormat,
             artifactDirectory: request.artifactDirectory
         )
-        let result = try await engine.execute(legacyRequest)
+        let result = try await engine.execute(domainRequest)
         let producer = try ProducerIdentity(kind: .engine, identifier: "LogicSimulation", version: "1")
         let provenance = try ExecutionProvenance(
             producer: producer,

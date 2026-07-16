@@ -7,7 +7,6 @@ public struct LogicCell: Sendable, Hashable, Codable {
     public var area: Double
     public var power: Double
     public var driveStrength: Int
-    public var qualified: Bool
 
     public init(
         name: String,
@@ -15,8 +14,7 @@ public struct LogicCell: Sendable, Hashable, Codable {
         inputCount: Int,
         area: Double,
         power: Double,
-        driveStrength: Int = 0,
-        qualified: Bool = false
+        driveStrength: Int = 0
     ) {
         self.name = name
         self.kind = kind
@@ -24,6 +22,5 @@ public struct LogicCell: Sendable, Hashable, Codable {
         self.area = area
         self.power = power
         self.driveStrength = driveStrength
-        self.qualified = qualified
     }
 }

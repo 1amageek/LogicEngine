@@ -37,9 +37,9 @@ public struct LogicCellLibraryDocument: Sendable, Hashable, Codable {
         }
     }
 
-    public func qualifiedCell(for kind: LogicNodeKind, inputCount: Int) -> LogicCell? {
+    public func cell(for kind: LogicNodeKind, inputCount: Int) -> LogicCell? {
         cells
-            .filter { $0.kind == kind && $0.inputCount == inputCount && $0.qualified }
+            .filter { $0.kind == kind && $0.inputCount == inputCount }
             .sorted { lhs, rhs in
                 if lhs.area != rhs.area { return lhs.area < rhs.area }
                 if lhs.power != rhs.power { return lhs.power < rhs.power }

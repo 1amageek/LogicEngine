@@ -18,9 +18,12 @@ public enum LogicExecutionError: Error, Sendable, Hashable, LocalizedError {
     case missingOutput(String)
     case combinationalCycle
     case missingPrerequisite(String)
-    case unqualifiedCell(String)
     case constraintViolation(String)
     case unsupportedWaveform(String)
+    case artifactReadOutsideRoot(String)
+    case artifactOutputOutsideRoot(String)
+    case artifactSymlinkEscape(String)
+    case artifactCollision(String)
     case artifactWriteFailed(String)
     case timedOut(String)
     case cancelled
@@ -44,9 +47,12 @@ public enum LogicExecutionError: Error, Sendable, Hashable, LocalizedError {
         case .missingOutput(let nodeID): return "Node \(nodeID) does not provide an output."
         case .combinationalCycle: return "The combinational graph did not reach a fixed point."
         case .missingPrerequisite(let value): return "Missing prerequisite: \(value)."
-        case .unqualifiedCell(let cell): return "Cell is not qualified for native mapping: \(cell)."
         case .constraintViolation(let message): return "Synthesis constraint was violated: \(message)."
         case .unsupportedWaveform(let format): return "Unsupported waveform format: \(format)."
+        case .artifactReadOutsideRoot(let path): return "Logic artifact input is outside the configured root: \(path)."
+        case .artifactOutputOutsideRoot(let path): return "Logic artifact output is outside the configured root: \(path)."
+        case .artifactSymlinkEscape(let path): return "Logic artifact output traverses a symbolic link outside the configured root: \(path)."
+        case .artifactCollision(let path): return "Immutable logic artifact already exists with different bytes: \(path)."
         case .artifactWriteFailed(let message): return "Could not write logic artifact: \(message)."
         case .timedOut(let message): return "Logic execution timed out: \(message)."
         case .cancelled: return "Logic execution was cancelled."

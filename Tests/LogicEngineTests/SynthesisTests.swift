@@ -44,8 +44,8 @@ struct SynthesisTests {
         #expect(equivalenceRequestPayload.mappedDesign.designDigest == mappedDesign.artifact.sha256)
     }
 
-    @Test("missing qualified cells block mapping instead of passing")
-    func missingQualifiedCellBlocks() async throws {
+    @Test("library membership controls mapping without caller-issued qualification")
+    func mappingIgnoresCallerQualificationFlags() async throws {
         let outputDirectory = try LogicEngineTestFixture.temporaryOutputDirectory()
         let design = try LogicEngineTestFixture.designReference()
         let library = try LogicEngineTestFixture.reference(named: "logic-cells-unqualified", kind: .timingLibrary, format: .json)
@@ -62,8 +62,8 @@ struct SynthesisTests {
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
         let envelope = try await NativeLogicSynthesisEngine(artifactStore: store).execute(request)
-        #expect(envelope.status == .blocked)
-        #expect(envelope.diagnostics.first?.code.rawValue == "LOGIC_CELL_UNQUALIFIED")
+        #expect(envelope.status == .completed)
+        #expect(envelope.payload.mappedCellCount == 1)
     }
 
     @Test("accepts only matching proved equivalence evidence")

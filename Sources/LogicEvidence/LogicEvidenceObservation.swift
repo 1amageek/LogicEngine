@@ -1,7 +1,7 @@
 import Foundation
 import LogicEngineCore
 
-public struct LogicQualificationObservation: Sendable, Hashable, Codable {
+public struct LogicEvidenceObservation: Sendable, Hashable, Codable {
     public var status: LogicExecutionStatus
     public var diagnosticCodes: [String]
     public var artifactIDs: [String]

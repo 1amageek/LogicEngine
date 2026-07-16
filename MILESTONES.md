@@ -56,7 +56,7 @@ Exit criteria:
 Evidence:
 
 - LogicEngine lowering, artifact, and native simulation handoff tests pass.
-- Xcircuite lowering, simulation, and synthesis adapter tests pass.
+- Xcircuite lowering, simulation, and synthesis composition tests pass through the engines' typed protocols.
 - Repeated lowering runs produce byte-identical execution-design artifacts.
 
 Current slice:
@@ -153,7 +153,7 @@ Exit criteria:
 - The retained native bridge proves only canonical LogicEngine execution-graph
   equivalence; it does not claim temporal RTL-to-synthesized or DFT proof.
 - At least one reference-oracle correlation corpus is retained and reproducible.
-- The native LogicQualification CLI can attach independent observations and
+- The native LogicEvidence CLI can attach independent observations and
   promote a corpus from `corpusChecked` to `oracleCorrelated` only when every
   case, status, diagnostic code, and implementation identity matches.
 - Qualification reports are persisted as JSON artifacts and validated before
@@ -169,7 +169,7 @@ Exit criteria:
 
 ## Milestone 5: Xcircuite execution and human-in-the-loop
 
-Status: complete for the LogicEngine-owned adapter and evidence contracts. The
+Status: complete for the LogicEngine-owned protocol and evidence contracts. The
 Xcircuite runtime still owns orchestration, review/resume policy, and human
 approval execution.
 
@@ -177,11 +177,11 @@ Depends on: Milestones 1–4.
 
 Exit criteria:
 
-- Elaboration, lowering, simulation, synthesis, and equivalence adapters resolve
+- Elaboration, lowering, simulation, synthesis, and equivalence stage executors resolve
   and verify inputs, persist raw/canonical artifacts, and attach provenance.
 - Run manifests, design diffs, review reports, approval, cancellation, resume,
   and repair-loop handoffs preserve immutable evidence.
-- Logic equivalence resume validates request digest, result envelope, evidence,
+- Logic equivalence resume validates request digest, typed result, evidence,
   acceptance, review, audit, and artifact integrity before reusing a result.
 - Headless integration tests run against the complete dependency graph; the
   current regression passed 557 tests in 59 suites. The focused LogicEngine,

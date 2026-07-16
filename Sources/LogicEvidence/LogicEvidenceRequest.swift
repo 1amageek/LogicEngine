@@ -2,7 +2,7 @@ import Foundation
 import LogicSimulation
 import LogicSynthesis
 
-public enum LogicQualificationRequest: Sendable, Hashable, Codable {
+public enum LogicEvidenceRequest: Sendable, Hashable, Codable {
     case simulation(LogicSimulationRequest)
     case synthesis(LogicSynthesisRequest)
     case unbounded(LogicUnboundedTemporalEquivalenceFoundationRequest)
@@ -20,7 +20,7 @@ public enum LogicQualificationRequest: Sendable, Hashable, Codable {
 
     public func validate() throws {
         guard !runID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw LogicQualificationError.invalidSuite("qualification request has an empty run ID")
+            throw LogicEvidenceError.invalidSuite("qualification request has an empty run ID")
         }
     }
 

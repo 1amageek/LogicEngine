@@ -1,15 +1,26 @@
 {
-  "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+  "schemaVersion": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
   "runID": "foundation-lowering-cli",
   "inputs": [
     {
       "id": "rtl-snapshot",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
+      },
       "byteCount": 492,
       "producer": null
     }
@@ -18,11 +29,18 @@
     "artifact": {
       "id": "rtl-snapshot",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/foundation-lowering-snapshot.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
+      },
       "byteCount": 492,
       "producer": null
     },

@@ -768,7 +768,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
             kind: .report,
             format: .json
         )
-        var legacyArtifacts = [reportReference]
+        var producedArtifacts = [reportReference]
         let certificateReference: ArtifactReference?
         if outcome.status == .proved {
             let certificate = LogicUnboundedTemporalEquivalenceCertificate(
@@ -795,7 +795,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
                 format: .json
             )
             if let certificateReference {
-                legacyArtifacts.append(certificateReference)
+                producedArtifacts.append(certificateReference)
             }
         } else {
             certificateReference = nil
@@ -812,13 +812,13 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
                 format: .json
             )
             if let counterexampleReference {
-                legacyArtifacts.append(counterexampleReference)
+                producedArtifacts.append(counterexampleReference)
             }
         } else {
             counterexampleReference = nil
         }
         let producer = try producerIdentity()
-        let artifacts = legacyArtifacts
+        let artifacts = producedArtifacts
         let diagnostics = try diagnostics(
             for: outcome.status,
             exploredTransitionCount: outcome.exploredTransitionCount
@@ -851,25 +851,25 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         startedAt: Date
     ) throws -> LogicUnboundedTemporalEquivalenceFoundationResult {
         let producer = try producerIdentity()
-        let legacyDiagnostic: DesignDiagnostic
+        let designDiagnostic: DesignDiagnostic
         if case .timedOut = error {
-            legacyDiagnostic = DesignDiagnostic(
+            designDiagnostic = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_TIMEOUT",
                 message: error.localizedDescription,
                 suggestedActions: ["increase_timeout_budget", "reduce_declared_state_or_input_space"]
             )
         } else {
-            legacyDiagnostic = LogicDiagnosticFactory.make(for: error)
+            designDiagnostic = LogicDiagnosticFactory.make(for: error)
         }
-        let diagnostic = legacyDiagnostic
+        let diagnostic = designDiagnostic
         let executionStatus: LogicExecutionStatus
         let proofStatus: LogicUnboundedTemporalEquivalenceStatus
         switch error {
         case .timedOut:
             executionStatus = .blocked
             proofStatus = .timeout
-        case .unsupportedNode, .missingPrerequisite, .unqualifiedCell, .unsupportedWaveform, .cancelled:
+        case .unsupportedNode, .missingPrerequisite, .unsupportedWaveform, .cancelled:
             executionStatus = error == .cancelled ? .cancelled : .blocked
             proofStatus = .blocked
         default:
@@ -892,38 +892,38 @@ public struct NativeLogicUnboundedTemporalEquivalenceFoundationEngine:
         for status: LogicUnboundedTemporalEquivalenceStatus,
         exploredTransitionCount: Int
     ) throws -> [DesignDiagnostic] {
-        let legacy: DesignDiagnostic
+        let designDiagnostic: DesignDiagnostic
         switch status {
         case .proved:
-            legacy = DesignDiagnostic(
+            designDiagnostic = DesignDiagnostic(
                 severity: .information,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_EQUIVALENCE_PROVED",
                 message: "The complete finite transition relation was exhausted and no mismatch was found.",
                 suggestedActions: ["retain_unbounded_equivalence_certificate", "proceed_to_human_review"]
             )
         case .counterexample:
-            legacy = DesignDiagnostic(
+            designDiagnostic = DesignDiagnostic(
                 severity: .error,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_COUNTEREXAMPLE",
                 message: "The exhaustive finite transition relation contains a mismatch.",
                 suggestedActions: ["inspect_unbounded_counterexample", "repair_implementation"]
             )
         case .blocked:
-            legacy = DesignDiagnostic(
+            designDiagnostic = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_BLOCKED",
                 message: "The declared finite transition relation could not be exhausted.",
                 suggestedActions: ["increase_proof_limits", "provide_supported_execution_graph"]
             )
         case .timeout:
-            legacy = DesignDiagnostic(
+            designDiagnostic = DesignDiagnostic(
                 severity: .warning,
                 code: "LOGIC_UNBOUNDED_TEMPORAL_TIMEOUT",
                 message: "The exhaustive proof exceeded its declared timeout.",
                 suggestedActions: ["increase_timeout_budget", "reduce_declared_state_or_input_space"]
             )
         }
-        let diagnostic = legacy
+        let diagnostic = designDiagnostic
         if status == .proved, exploredTransitionCount == 0 {
             throw LogicExecutionError.invalidArtifact("a proof must explore at least one transition")
         }

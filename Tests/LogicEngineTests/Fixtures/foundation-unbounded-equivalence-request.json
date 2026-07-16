@@ -1,15 +1,26 @@
 {
-  "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+  "schemaVersion": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
   "runID": "foundation-unbounded-equivalence-cli",
   "inputs": [
     {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     }
@@ -18,11 +29,18 @@
     "artifact": {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     },
@@ -33,18 +51,27 @@
     "artifact": {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     },
     "topDesignName": "and_top",
     "designRevision": null
   },
-  "outputSignals": ["y"],
+  "outputSignals": [
+    "y"
+  ],
   "valueDomain": "twoState",
   "stateSpaceLimit": 1,
   "transitionLimit": 4,

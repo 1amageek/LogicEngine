@@ -4,7 +4,7 @@ import CircuiteFoundation
 import LogicEngine
 import LogicEngineCore
 import LogicLowering
-import LogicQualification
+import LogicEvidence
 import LogicSimulation
 import LogicSynthesis
 
@@ -223,47 +223,31 @@ struct LogicEngineCLI {
             ).execute(request)
             printJSON(result)
             return exitCode(for: result.status)
-        case "qualify":
-            let options = try QualificationCLIOptions(arguments: Array(arguments.dropFirst()))
+        case "assess-evidence":
+            let options = try EvidenceCLIOptions(arguments: Array(arguments.dropFirst()))
             let suiteData = try Data(contentsOf: options.suiteURL)
-            let suite = try JSONDecoder().decode(LogicQualificationSuite.self, from: suiteData)
+            let suite = try JSONDecoder().decode(LogicEvidenceSuite.self, from: suiteData)
             let store = FileSystemLogicArtifactStore(
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
             )
-            let executor = NativeLogicQualificationExecutor(
+            let executor = NativeLogicEvidenceExecutor(
                 simulation: NativeLogicSimulationEngine(artifactStore: store),
                 synthesis: NativeLogicSynthesisEngine(artifactStore: store),
                 unbounded: NativeLogicUnboundedTemporalEquivalenceFoundationEngine(artifactStore: store)
             )
-            var report = try await NativeLogicQualificationRunner(executor: executor).evaluate(suite)
+            var report = try await NativeLogicEvidenceRunner(executor: executor).evaluate(suite)
             if let oracleURL = options.oracleURL {
                 let oracleData = try Data(contentsOf: oracleURL)
                 let oracle = try JSONDecoder().decode(
-                    LogicQualificationOracleObservationSet.self,
+                    LogicEvidenceOracleObservationSet.self,
                     from: oracleData
                 )
-                let correlation = try NativeLogicQualificationOracleCorrelator().correlate(
+                let correlation = try NativeLogicEvidenceOracleCorrelator().correlate(
                     nativeReport: report,
                     oracle: oracle
                 )
                 report = report.includingOracleCorrelation(correlation)
-            }
-            if let processURL = options.processURL {
-                let processData = try Data(contentsOf: processURL)
-                let processEvidence = try JSONDecoder().decode(
-                    LogicQualificationProcessEvidence.self,
-                    from: processData
-                )
-                report = try report.includingProcessQualification(processEvidence)
-            }
-            if let releaseApprovalURL = options.releaseApprovalURL {
-                let approvalData = try Data(contentsOf: releaseApprovalURL)
-                let approval = try JSONDecoder().decode(
-                    LogicQualificationReleaseApproval.self,
-                    from: approvalData
-                )
-                report = try report.includingReleaseApproval(approval)
             }
             try report.validate()
             let reportData: Data
@@ -273,15 +257,15 @@ struct LogicEngineCLI {
                 reportData = try encoder.encode(report)
             } catch {
                 throw LogicExecutionError.artifactWriteFailed(
-                    "logic qualification report encoding failed: \(error.localizedDescription)"
+                    "logic evidence report encoding failed: \(error.localizedDescription)"
                 )
             }
             _ = try store.write(
                 reportData,
-                fileName: "logic-qualification-report.json",
+                fileName: "logic-evidence-report.json",
                 outputDirectory: options.outputPath,
-                runID: Self.qualificationRunID(for: suite.suiteID),
-                artifactID: "logic-qualification-report",
+                runID: Self.evidenceRunID(for: suite.suiteID),
+                artifactID: "logic-evidence-report",
                 kind: .report,
                 format: .json
             )
@@ -290,12 +274,6 @@ struct LogicEngineCLI {
                 return 1
             }
             if options.oracleURL != nil && !report.oraclePassed {
-                return 1
-            }
-            if options.processURL != nil && !report.processPassed {
-                return 1
-            }
-            if options.releaseApprovalURL != nil && !report.isReleaseEligible {
                 return 1
             }
             return 0
@@ -339,17 +317,17 @@ struct LogicEngineCLI {
     }
 
     private static func printUsage() {
-        print("Usage: logic-engine <capabilities|lower|simulate|synthesize|bounded-equivalence|foundation-lower|foundation-simulate|foundation-synthesize|foundation-bounded-equivalence|foundation-unbounded-equivalence|qualify> [--request PATH|--suite PATH] [--oracle PATH] [--process PATH] [--release-approval PATH] [--root PATH] [--output PATH]")
+        print("Usage: logic-engine <capabilities|lower|simulate|synthesize|bounded-equivalence|foundation-lower|foundation-simulate|foundation-synthesize|foundation-bounded-equivalence|foundation-unbounded-equivalence|assess-evidence> [--request PATH|--suite PATH] [--oracle PATH] [--root PATH] [--output PATH]")
     }
 
-    private static func qualificationRunID(for suiteID: String) -> String {
+    private static func evidenceRunID(for suiteID: String) -> String {
         let safeSuiteID = String(suiteID.map { character in
             if character.isLetter || character.isNumber || character == "-" || character == "_" || character == "." {
                 return character
             }
             return "_"
         })
-        return "qualification-\(safeSuiteID)"
+        return "evidence-\(safeSuiteID)"
     }
 
     private static func printCapabilities() {
@@ -401,11 +379,9 @@ struct LogicEngineCLI {
                             "waveformFormats": ["VCD"],
                         ],
                     ],
-                    "qualification": [
+                    "evidence": [
                         "retained-corpus",
                         "independent-oracle-correlation",
-                        "process-evidence-required-for-release",
-                        "human-release-approval-required",
                     ],
                 ],
                 options: [.sortedKeys, .prettyPrinted]
@@ -445,18 +421,16 @@ struct LogicEngineCLI {
         }
     }
 
-    private struct QualificationCLIOptions {
+    private struct EvidenceCLIOptions {
         let suiteURL: URL
         let oracleURL: URL?
-        let processURL: URL?
-        let releaseApprovalURL: URL?
         let rootURL: URL
         let outputURL: URL?
         let outputPath: String?
 
         init(arguments: [String]) throws {
             guard let suitePath = Self.value(for: "--suite", in: arguments) else {
-                throw LogicQualificationError.invalidSuite("--suite is required for qualify")
+                throw LogicEvidenceError.invalidSuite("--suite is required for assess-evidence")
             }
             let rootPath = Self.value(for: "--root", in: arguments)
                 ?? FileManager.default.currentDirectoryPath
@@ -464,12 +438,6 @@ struct LogicEngineCLI {
             let rootURL = URL(fileURLWithPath: rootPath, isDirectory: true).standardizedFileURL
             suiteURL = URL(fileURLWithPath: suitePath, relativeTo: rootURL).standardizedFileURL
             oracleURL = Self.value(for: "--oracle", in: arguments).map {
-                URL(fileURLWithPath: $0, relativeTo: rootURL).standardizedFileURL
-            }
-            processURL = Self.value(for: "--process", in: arguments).map {
-                URL(fileURLWithPath: $0, relativeTo: rootURL).standardizedFileURL
-            }
-            releaseApprovalURL = Self.value(for: "--release-approval", in: arguments).map {
                 URL(fileURLWithPath: $0, relativeTo: rootURL).standardizedFileURL
             }
             outputURL = outputPath.map {

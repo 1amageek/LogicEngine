@@ -1,4 +1,5 @@
 import Foundation
+import CircuiteFoundation
 import LogicEngineCore
 import Testing
 
@@ -66,5 +67,160 @@ struct LogicCoreTests {
         let decoded = try JSONDecoder().decode(LogicStimulusDocument.self, from: data)
         #expect(decoded == stimulus)
         #expect(try JSONDecoder().decode(LogicDesignDocument.self, from: encoder.encode(design)) == design)
+    }
+
+    @Test("filesystem artifact store rejects output outside its root")
+    func artifactStoreRejectsOutsideRoot() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-root-\(UUID().uuidString)")
+        let outside = FileManager.default.temporaryDirectory.appending(path: "logic-store-outside-\(UUID().uuidString)")
+        let store = FileSystemLogicArtifactStore(rootDirectory: root)
+
+        #expect(throws: LogicExecutionError.self) {
+            try store.write(
+                Data("artifact".utf8),
+                fileName: "result.json",
+                outputDirectory: outside.path(percentEncoded: false),
+                runID: "outside-root",
+                artifactID: nil,
+                kind: .report,
+                format: .json
+            )
+        }
+    }
+
+    @Test("filesystem artifact store accepts an absolute output inside its configured directory")
+    func artifactStoreAcceptsAbsoluteOutputInsideConfiguredDirectory() throws {
+        let root = FileManager.default.temporaryDirectory.appending(
+            path: "logic-store-configured-output-\(UUID().uuidString)"
+        )
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            do {
+                try FileManager.default.removeItem(at: root)
+            } catch {
+                Issue.record("Failed to remove temporary artifact root: \(error)")
+            }
+        }
+        let outputDirectory = root.appending(path: "artifacts", directoryHint: .isDirectory)
+        let store = FileSystemLogicArtifactStore(
+            rootDirectory: root,
+            defaultOutputDirectory: outputDirectory
+        )
+
+        let reference = try store.write(
+            Data("artifact".utf8),
+            fileName: "result.json",
+            outputDirectory: outputDirectory.path(percentEncoded: false),
+            runID: "configured-output",
+            artifactID: "configured-output-result",
+            kind: .report,
+            format: .json
+        )
+
+        #expect(reference.path == "artifacts/result.json")
+        #expect(try store.read(reference) == Data("artifact".utf8))
+    }
+
+    @Test("filesystem artifact store rejects absolute and symlinked input outside its root")
+    func artifactStoreRejectsInputOutsideRoot() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-read-root-\(UUID().uuidString)")
+        let outside = FileManager.default.temporaryDirectory.appending(path: "logic-store-read-outside-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        let outsideArtifact = outside.appending(path: "result.json")
+        let data = Data("artifact".utf8)
+        try data.write(to: outsideArtifact)
+        let absoluteReference = ArtifactReference(
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(fileURL: outsideArtifact),
+                role: .input,
+                kind: .report,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data),
+            byteCount: UInt64(data.count)
+        )
+        let store = FileSystemLogicArtifactStore(rootDirectory: root)
+        #expect(throws: LogicExecutionError.self) {
+            try store.read(absoluteReference)
+        }
+
+        try FileManager.default.createSymbolicLink(
+            at: root.appending(path: "escaped.json"),
+            withDestinationURL: outsideArtifact
+        )
+        let symlinkReference = ArtifactReference(
+            locator: ArtifactLocator(
+                location: try ArtifactLocation(workspaceRelativePath: "escaped.json"),
+                role: .input,
+                kind: .report,
+                format: .json
+            ),
+            digest: try SHA256ContentDigester().digest(data: data),
+            byteCount: UInt64(data.count)
+        )
+        #expect(throws: LogicExecutionError.self) {
+            try store.read(symlinkReference)
+        }
+    }
+
+    @Test("filesystem artifact store rejects symlink escapes")
+    func artifactStoreRejectsSymlinkEscape() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-symlink-root-\(UUID().uuidString)")
+        let outside = FileManager.default.temporaryDirectory.appending(path: "logic-store-symlink-outside-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        let link = root.appending(path: "escaped")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: outside)
+        let store = FileSystemLogicArtifactStore(rootDirectory: root)
+
+        #expect(throws: LogicExecutionError.self) {
+            try store.write(
+                Data("artifact".utf8),
+                fileName: "result.json",
+                outputDirectory: "escaped",
+                runID: "symlink-escape",
+                artifactID: nil,
+                kind: .report,
+                format: .json
+            )
+        }
+    }
+
+    @Test("filesystem artifact store is idempotent and rejects immutable collisions")
+    func artifactStoreRejectsImmutableCollision() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-collision-\(UUID().uuidString)")
+        let store = FileSystemLogicArtifactStore(rootDirectory: root)
+        let original = try store.write(
+            Data("first".utf8),
+            fileName: "result.json",
+            outputDirectory: "artifacts",
+            runID: "collision",
+            artifactID: "immutable-result",
+            kind: .report,
+            format: .json
+        )
+        let repeated = try store.write(
+            Data("first".utf8),
+            fileName: "result.json",
+            outputDirectory: "artifacts",
+            runID: "collision",
+            artifactID: "immutable-result",
+            kind: .report,
+            format: .json
+        )
+        #expect(original == repeated)
+
+        #expect(throws: LogicExecutionError.self) {
+            try store.write(
+                Data("second".utf8),
+                fileName: "result.json",
+                outputDirectory: "artifacts",
+                runID: "collision",
+                artifactID: "immutable-result",
+                kind: .report,
+                format: .json
+            )
+        }
     }
 }

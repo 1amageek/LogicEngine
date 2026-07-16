@@ -553,7 +553,6 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 ]
             ))
         }
-        let completedAt = Date()
         let payload = LogicSimulationPayload(
             traceCount: result.report.samples.count,
             assertionFailureCount: failureCount,

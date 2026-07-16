@@ -1,14 +1,14 @@
 import Foundation
 
-public struct LogicQualificationCase: Sendable, Hashable, Codable {
+public struct LogicEvidenceCase: Sendable, Hashable, Codable {
     public var caseID: String
-    public var request: LogicQualificationRequest
-    public var expectation: LogicQualificationExpectation
+    public var request: LogicEvidenceRequest
+    public var expectation: LogicEvidenceExpectation
 
     public init(
         caseID: String,
-        request: LogicQualificationRequest,
-        expectation: LogicQualificationExpectation
+        request: LogicEvidenceRequest,
+        expectation: LogicEvidenceExpectation
     ) {
         self.caseID = caseID
         self.request = request
@@ -17,7 +17,7 @@ public struct LogicQualificationCase: Sendable, Hashable, Codable {
 
     public func validate() throws {
         guard !caseID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw LogicQualificationError.invalidSuite("qualification case has an empty case ID")
+            throw LogicEvidenceError.invalidSuite("qualification case has an empty case ID")
         }
         try request.validate()
     }

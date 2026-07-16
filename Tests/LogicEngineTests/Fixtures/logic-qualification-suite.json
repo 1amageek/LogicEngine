@@ -13,41 +13,81 @@
           "runID": "logic-qualification-simulation",
           "inputs": [
             {
-              "artifactID": "and-design",
-              "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
-              "byteCount": 663
+              "id": "and-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+              },
+              "byteCount": 663,
+              "producer": null
             },
             {
-              "artifactID": "and-stimulus",
-              "path": "Tests/LogicEngineTests/Fixtures/and-stimulus.json",
-              "kind": "testPattern",
-              "format": "JSON",
-              "sha256": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d",
-              "byteCount": 650
+              "id": "and-stimulus",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
+                },
+                "role": "input",
+                "kind": "test-pattern",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"
+              },
+              "byteCount": 650,
+              "producer": null
             }
           ],
           "design": {
             "artifact": {
-              "artifactID": "and-design",
-              "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
-              "byteCount": 663
+              "id": "and-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+              },
+              "byteCount": 663,
+              "producer": null
             },
             "topDesignName": "and_top",
             "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
           },
           "stimulus": {
-            "artifactID": "and-stimulus",
-            "path": "Tests/LogicEngineTests/Fixtures/and-stimulus.json",
-            "kind": "testPattern",
-            "format": "JSON",
-            "sha256": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d",
-            "byteCount": 650
+            "id": "and-stimulus",
+            "locator": {
+              "location": {
+                "storage": "workspaceRelative",
+                "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
+              },
+              "role": "input",
+              "kind": "test-pattern",
+              "format": "json"
+            },
+            "digest": {
+              "algorithm": "sha256",
+              "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"
+            },
+            "byteCount": 650,
+            "producer": null
           },
           "waveformFormat": "vcd"
         }
@@ -67,46 +107,96 @@
           "runID": "logic-qualification-synthesis",
           "inputs": [
             {
-              "artifactID": "and-design",
-              "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
-              "byteCount": 663
+              "id": "and-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+              },
+              "byteCount": 663,
+              "producer": null
             },
             {
-              "artifactID": "logic-cells",
-              "path": "Tests/LogicEngineTests/Fixtures/logic-cells.json",
-              "kind": "timingLibrary",
-              "format": "JSON",
-              "sha256": "00efe7ba9bf2d51bed1b1fe81b9fdf1f0c405eed66f5a8a8e5dd4069d38f58ed",
-              "byteCount": 247
+              "id": "logic-cells",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/logic-cells.json"
+                },
+                "role": "input",
+                "kind": "timing-library",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "00efe7ba9bf2d51bed1b1fe81b9fdf1f0c405eed66f5a8a8e5dd4069d38f58ed"
+              },
+              "byteCount": 247,
+              "producer": null
             },
             {
-              "artifactID": "logic-constraints",
-              "path": "Tests/LogicEngineTests/Fixtures/logic-constraints.json",
-              "kind": "constraint",
-              "format": "JSON",
-              "sha256": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92",
-              "byteCount": 125
+              "id": "logic-constraints",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
+                },
+                "role": "input",
+                "kind": "constraint",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92"
+              },
+              "byteCount": 125,
+              "producer": null
             },
             {
-              "artifactID": "pdk-manifest",
-              "path": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json",
-              "kind": "technology",
-              "format": "JSON",
-              "sha256": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12",
-              "byteCount": 53
+              "id": "pdk-manifest",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json"
+                },
+                "role": "input",
+                "kind": "technology",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
+              },
+              "byteCount": 53,
+              "producer": null
             }
           ],
           "design": {
             "artifact": {
-              "artifactID": "and-design",
-              "path": "Tests/LogicEngineTests/Fixtures/and-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422",
-              "byteCount": 663
+              "id": "and-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+              },
+              "byteCount": 663,
+              "producer": null
             },
             "topDesignName": "and_top",
             "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
@@ -114,35 +204,69 @@
           "libraries": [
             {
               "artifact": {
-                "artifactID": "logic-cells",
-                "path": "Tests/LogicEngineTests/Fixtures/logic-cells.json",
-                "kind": "timingLibrary",
-                "format": "JSON",
-                "sha256": "00efe7ba9bf2d51bed1b1fe81b9fdf1f0c405eed66f5a8a8e5dd4069d38f58ed",
-                "byteCount": 247
+                "id": "logic-cells",
+                "locator": {
+                  "location": {
+                    "storage": "workspaceRelative",
+                    "value": "Tests/LogicEngineTests/Fixtures/logic-cells.json"
+                  },
+                  "role": "input",
+                  "kind": "timing-library",
+                  "format": "json"
+                },
+                "digest": {
+                  "algorithm": "sha256",
+                  "hexadecimalValue": "00efe7ba9bf2d51bed1b1fe81b9fdf1f0c405eed66f5a8a8e5dd4069d38f58ed"
+                },
+                "byteCount": 247,
+                "producer": null
               },
-              "cornerIDs": ["typical"]
+              "cornerIDs": [
+                "typical"
+              ]
             }
           ],
           "constraints": {
             "artifact": {
-              "artifactID": "logic-constraints",
-              "path": "Tests/LogicEngineTests/Fixtures/logic-constraints.json",
-              "kind": "constraint",
-              "format": "JSON",
-              "sha256": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92",
-              "byteCount": 125
+              "id": "logic-constraints",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
+                },
+                "role": "input",
+                "kind": "constraint",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92"
+              },
+              "byteCount": 125,
+              "producer": null
             },
-            "modeIDs": ["default"]
+            "modeIDs": [
+              "default"
+            ]
           },
           "pdk": {
             "manifest": {
-              "artifactID": "pdk-manifest",
-              "path": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json",
-              "kind": "technology",
-              "format": "JSON",
-              "sha256": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12",
-              "byteCount": 53
+              "id": "pdk-manifest",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/pdk-manifest.json"
+                },
+                "role": "input",
+                "kind": "technology",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "105345a6080633af7cd76c89ab1f83edff490b0b4f3b78d2ebeab011230f7c12"
+              },
+              "byteCount": 53,
+              "producer": null
             },
             "processID": "logic-fixture",
             "version": "1",
@@ -152,7 +276,9 @@
       },
       "expectation": {
         "expectedStatus": "completed",
-        "requiredDiagnosticCodes": ["LOGIC_EQUIVALENCE_REQUIRED"],
+        "requiredDiagnosticCodes": [
+          "LOGIC_EQUIVALENCE_REQUIRED"
+        ],
         "forbiddenDiagnosticCodes": []
       }
     },
@@ -165,49 +291,93 @@
           "runID": "logic-qualification-signed-arithmetic",
           "inputs": [
             {
-              "artifactID": "signed-arithmetic-design",
-              "path": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184",
-              "byteCount": 1299
+              "id": "signed-arithmetic-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
+              },
+              "byteCount": 1299,
+              "producer": null
             },
             {
-              "artifactID": "signed-arithmetic-stimulus",
-              "path": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-stimulus.json",
-              "kind": "testPattern",
-              "format": "JSON",
-              "sha256": "6fbcaf9dae6434ead96f32941cf0a465d3fe6b4ea30ac6e5043a1bbf1b3a0df6",
-              "byteCount": 753
+              "id": "signed-arithmetic-stimulus",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-stimulus.json"
+                },
+                "role": "input",
+                "kind": "test-pattern",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "6fbcaf9dae6434ead96f32941cf0a465d3fe6b4ea30ac6e5043a1bbf1b3a0df6"
+              },
+              "byteCount": 753,
+              "producer": null
             }
           ],
           "design": {
             "artifact": {
-              "artifactID": "signed-arithmetic-design",
-              "path": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184",
-              "byteCount": 1299
+              "id": "signed-arithmetic-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
+              },
+              "byteCount": 1299,
+              "producer": null
             },
             "topDesignName": "signed_arithmetic_top",
             "designDigest": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
           },
           "stimulus": {
-            "artifactID": "signed-arithmetic-stimulus",
-            "path": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-stimulus.json",
-            "kind": "testPattern",
-            "format": "JSON",
-            "sha256": "6fbcaf9dae6434ead96f32941cf0a465d3fe6b4ea30ac6e5043a1bbf1b3a0df6",
-            "byteCount": 753
+            "id": "signed-arithmetic-stimulus",
+            "locator": {
+              "location": {
+                "storage": "workspaceRelative",
+                "value": "Tests/LogicEngineTests/Fixtures/signed-arithmetic-stimulus.json"
+              },
+              "role": "input",
+              "kind": "test-pattern",
+              "format": "json"
+            },
+            "digest": {
+              "algorithm": "sha256",
+              "hexadecimalValue": "6fbcaf9dae6434ead96f32941cf0a465d3fe6b4ea30ac6e5043a1bbf1b3a0df6"
+            },
+            "byteCount": 753,
+            "producer": null
           },
           "waveformFormat": "vcd"
         }
       },
       "expectation": {
         "expectedStatus": "completed",
-        "requiredDiagnosticCodes": ["LOGIC_SIMULATION_COMPLETED"],
-        "forbiddenDiagnosticCodes": ["LOGIC_ASSERTION_FAILED"]
+        "requiredDiagnosticCodes": [
+          "LOGIC_SIMULATION_COMPLETED"
+        ],
+        "forbiddenDiagnosticCodes": [
+          "LOGIC_ASSERTION_FAILED"
+        ]
       }
     },
     {
@@ -219,49 +389,93 @@
           "runID": "logic-qualification-vector-logical",
           "inputs": [
             {
-              "artifactID": "vector-logical-design",
-              "path": "Tests/LogicEngineTests/Fixtures/vector-logical-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5",
-              "byteCount": 1245
+              "id": "vector-logical-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/vector-logical-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
+              },
+              "byteCount": 1245,
+              "producer": null
             },
             {
-              "artifactID": "vector-logical-stimulus",
-              "path": "Tests/LogicEngineTests/Fixtures/vector-logical-stimulus.json",
-              "kind": "testPattern",
-              "format": "JSON",
-              "sha256": "72e4cde1833655699705a9016b246c46f46605fdf2b2fdd6eb54802d06e2d222",
-              "byteCount": 1328
+              "id": "vector-logical-stimulus",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/vector-logical-stimulus.json"
+                },
+                "role": "input",
+                "kind": "test-pattern",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "72e4cde1833655699705a9016b246c46f46605fdf2b2fdd6eb54802d06e2d222"
+              },
+              "byteCount": 1328,
+              "producer": null
             }
           ],
           "design": {
             "artifact": {
-              "artifactID": "vector-logical-design",
-              "path": "Tests/LogicEngineTests/Fixtures/vector-logical-design.json",
-              "kind": "netlist",
-              "format": "JSON",
-              "sha256": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5",
-              "byteCount": 1245
+              "id": "vector-logical-design",
+              "locator": {
+                "location": {
+                  "storage": "workspaceRelative",
+                  "value": "Tests/LogicEngineTests/Fixtures/vector-logical-design.json"
+                },
+                "role": "input",
+                "kind": "netlist",
+                "format": "json"
+              },
+              "digest": {
+                "algorithm": "sha256",
+                "hexadecimalValue": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
+              },
+              "byteCount": 1245,
+              "producer": null
             },
             "topDesignName": "vector_logical_top",
             "designDigest": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
           },
           "stimulus": {
-            "artifactID": "vector-logical-stimulus",
-            "path": "Tests/LogicEngineTests/Fixtures/vector-logical-stimulus.json",
-            "kind": "testPattern",
-            "format": "JSON",
-            "sha256": "72e4cde1833655699705a9016b246c46f46605fdf2b2fdd6eb54802d06e2d222",
-            "byteCount": 1328
+            "id": "vector-logical-stimulus",
+            "locator": {
+              "location": {
+                "storage": "workspaceRelative",
+                "value": "Tests/LogicEngineTests/Fixtures/vector-logical-stimulus.json"
+              },
+              "role": "input",
+              "kind": "test-pattern",
+              "format": "json"
+            },
+            "digest": {
+              "algorithm": "sha256",
+              "hexadecimalValue": "72e4cde1833655699705a9016b246c46f46605fdf2b2fdd6eb54802d06e2d222"
+            },
+            "byteCount": 1328,
+            "producer": null
           },
           "waveformFormat": "vcd"
         }
       },
       "expectation": {
         "expectedStatus": "completed",
-        "requiredDiagnosticCodes": ["LOGIC_SIMULATION_COMPLETED"],
-        "forbiddenDiagnosticCodes": ["LOGIC_ASSERTION_FAILED"]
+        "requiredDiagnosticCodes": [
+          "LOGIC_SIMULATION_COMPLETED"
+        ],
+        "forbiddenDiagnosticCodes": [
+          "LOGIC_ASSERTION_FAILED"
+        ]
       }
     }
   ]

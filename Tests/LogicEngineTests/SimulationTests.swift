@@ -867,7 +867,6 @@ struct SimulationTests {
         )
         let designReference = try writeJSON(design, name: "vector-design.json", root: root, kind: .netlist)
         let stimulusReference = try writeJSON(stimulus, name: "vector-stimulus.json", root: root, kind: .testPattern)
-        let designDigest = designReference.digest.hexadecimalValue
         let request = LogicSimulationRequest(
             runID: "vector-simulation",
             inputs: [designReference, stimulusReference],
@@ -963,7 +962,12 @@ struct SimulationTests {
             } catch {
                 throw error
             }
-            return try await NativeLogicSimulationEngine().execute(request)
+            return try await NativeLogicSimulationEngine(
+                artifactStore: FileSystemLogicArtifactStore(
+                    rootDirectory: LogicEngineTestFixture.workspaceRootURL(),
+                    defaultOutputDirectory: outputDirectory
+                )
+            ).execute(request)
         }
         task.cancel()
         let envelope = try await task.value

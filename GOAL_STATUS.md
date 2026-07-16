@@ -13,19 +13,16 @@ explicit external scopes.**
 |---|---|---|
 | Responsibility boundary | Complete | README.md and DESIGN.md |
 | Public package products | Implemented | Package.swift |
-| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | Foundation-native requests/results and canonical payloads, direct `Engine` conformance, artifact bridge, evidence tests |
-| Legacy Xcircuite compatibility boundary | Retained and isolated | Existing CLI/Xcircuite stage contracts remain source-compatible; semantic projection is package-owned |
+| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | Foundation-native requests/results and canonical payloads, direct `Engine` conformance, artifact and evidence tests |
+| Artifact persistence trust boundary | Implemented | Output paths are root-bounded after symlink resolution; publication is atomic and immutable collisions produce typed errors; focused filesystem regressions cover absolute escape, symlink escape and idempotent replay |
 | Contract build | Passed | swift build |
-| Contract test | Passed | timeout-bounded `xcodebuild -scheme LogicEngine-Package -destination 'platform=macOS' test` and `swift test --scratch-path /tmp/logic-engine-final-tests-20260713 --no-parallel`; 80 tests in 11 suites |
+| Contract test | Passed | timeout-bounded `xcodebuild test -scheme LogicEngine-Package -destination 'platform=macOS' -parallel-testing-enabled NO` through the workspace verifier |
 | Domain implementation | Native graph profile plus deterministic lowering, generic combinational processes, vector/NBA/reset/topology, scalar/vector logical operations, comparisons, signed arithmetic, division/modulo, arithmetic-shift semantics, both clock edges, asynchronous reset, and level-sensitive latch semantics | `NativeLogicDesignLowering`, shared `LogicExecutionGraphEvaluator`, simulation, synthesis, exhaustive equivalence |
-| CLI implementation | Implemented | Compatibility commands plus Foundation-native `foundation-lower`, `foundation-simulate`, `foundation-synthesize`, `foundation-bounded-equivalence`, `foundation-unbounded-equivalence`, and `qualify` |
+| CLI implementation | Implemented | Domain commands plus Foundation-native `foundation-lower`, `foundation-simulate`, `foundation-synthesize`, `foundation-bounded-equivalence`, `foundation-unbounded-equivalence`, and `qualify` |
 | Fixture corpus | Retained native and exhaustive-proof corpus runner and CLI baseline | `Tests/LogicEngineTests/Fixtures`, retained 4-case suite plus 5-case unbounded suite, 11 qualification contract tests, persisted qualification reports |
 | Oracle correlation | Verified for retained native fixture profile | `logic-qualification-oracle-v1.json` with 4 matching cases; CLI report state `oracleCorrelated` |
 | Process qualification | Verified for the retained local fixture process scope | `logic-unbounded-qualification-process-evidence.json` and the retained corpus process evidence bind suite/oracle/PDK/output digests |
-| Xcircuite stage adapter | Lowering, simulation, synthesis, and equivalence adapters implemented with equivalence resume | `LogicLoweringFlowStageExecutor`, simulation, synthesis, and `LogicEquivalenceFlowStageExecutor` |
-| End-to-end flow evidence | Native synthesis → mapped proof → evidence → acceptance → review/audit → resume verified; qualification report integrity and independent RTL oracle evidence are enforced | `LogicEngineFlowStageExecutorTests` 7 tests, `RTLVerificationFlowStageExecutorTests` 6 tests, and the complete Xcircuite regression passed |
-| Runtime stage specification | Agent-operable synthesis, equivalence, qualification, and cross-domain stage contracts | `XcircuiteFlowRuntimeSpecInputTests` 35 tests passed; JSON round-trip, validation, descriptors, health bindings, and release-gate input rejection |
-| Xcircuite full integration | Verified for the current dependency graph | Focused LogicEngine/LogicDesign/runtime suites passed (7/3/35); RTL oracle flow passed 6 tests; full current regression passed 557 tests in 59 suites |
+| Flow composition boundary | Direct protocol consumption | LogicEngine remains standalone; Xcircuite and other consumers invoke its typed protocols directly |
 | Release readiness | Eligible only for the declared local native fixture scope | The five-case unbounded corpus, independent oracle, process evidence, and separate human approval reach `releaseEligible`; arbitrary RTL/DFT and foundry scopes remain blocked |
 
 ## Function status
@@ -38,12 +35,12 @@ explicit external scopes.**
 | RTL lowering | Contract defined | Snapshot-to-graph lowering with generic combinational processes, concat/slice/plain case, logical/comparison/arithmetic/division/modulo nodes, signed literals, positive/negative-edge sequential scheduling, asynchronous-reset metadata, and level-sensitive latch nodes | Parsed RTL, always-star, explicit sensitivity list, DFF/reset, signed arithmetic, logical/comparison/division/modulo, latch, blocked semantics, driver conflict, deterministic bytes, simulation handoff | Local native qualification corpus |
 | Logic optimization | Contract defined | Deterministic buffer elimination | Mapped-design test | No equivalence oracle |
 | Technology mapping | Contract defined | Qualified JSON/limited Liberty mapping | Qualified/unqualified fixtures | No process qualification |
-| Synthesis provenance | Contract defined | Transformation, digest provenance, typed equivalence request, and pending acceptance state | Provenance/equivalence-request artifact test; Xcircuite adapter artifact assertion | Equivalence still required |
-| Synthesis acceptance gate | Contract defined | Matching proved evidence can advance to accepted; mismatched/unproved evidence is rejected | Acceptance evaluator regression and Xcircuite end-to-end acceptance artifact | No process qualification |
+| Synthesis provenance | Contract defined | Transformation, digest provenance, typed equivalence request, and pending acceptance state | Provenance/equivalence-request artifact test | Equivalence still required |
+| Synthesis acceptance gate | Contract defined | Matching proved evidence can advance to accepted; mismatched/unproved evidence is rejected | Acceptance evaluator regression | No process qualification |
 | Bounded temporal equivalence | Contract defined | Same finite stimulus is simulated against two execution designs; output traces are compared within an explicit sample bound and digest-bearing reports/counterexamples are persisted | Native tests plus CLI fixture execution | Bounded native profile |
 | Exhaustive finite-state temporal equivalence | Foundation contract defined | Exact two-state/four-state enumeration of combinational, DFF, and latch transition relations with state/transition/timeout limits, report, certificate, counterexample, and structured blocked results | 8 native tests, five-case qualification corpus, CLI release promotion | Qualified for the declared native finite-state fixture scope |
 | Qualification promotion | Contract defined | `corpusChecked → oracleCorrelated → processQualified → releaseEligible` with report validation, SHA-256 PDK digest validation, complete qualified-artifact digest coverage, explicit process evidence, and human approval | 11 qualification contract tests, retained and unbounded fixtures, CLI report artifact | Local fixture process scope qualified |
-| Compatibility backends | Contract defined | Protocol boundary retained | Contract tests | External backend not selected |
+| External backends | Protocol extension point defined | Implementations conform directly to the domain protocol | Contract tests | External backend not selected |
 
 ## Goal progression
 
@@ -59,8 +56,6 @@ corpus validation
 reference-oracle correlation
       ↓
 process-scoped qualification
-      ↓
-Xcircuite integration and repair loop
       ↓
 release-profile eligibility
 ```

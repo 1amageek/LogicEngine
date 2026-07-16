@@ -1,26 +1,44 @@
 {
-  "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+  "schemaVersion": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
   "runID": "foundation-bounded-equivalence-cli",
   "inputs": [
     {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     },
     {
       "id": "and-stimulus",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
+        },
         "kind": "evidence",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"
+      },
       "byteCount": 650,
       "producer": null
     }
@@ -29,11 +47,18 @@
     "artifact": {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     },
@@ -44,11 +69,18 @@
     "artifact": {
       "id": "and-design",
       "locator": {
-        "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-design.json"},
+        "location": {
+          "storage": "workspaceRelative",
+          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
+        },
         "kind": "netlist",
-        "format": "json"
+        "format": "json",
+        "role": "input"
       },
-      "digest": {"algorithm": "sha256", "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"},
+      "digest": {
+        "algorithm": "sha256",
+        "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+      },
       "byteCount": 663,
       "producer": null
     },
@@ -58,15 +90,24 @@
   "stimulus": {
     "id": "and-stimulus",
     "locator": {
-      "location": {"storage": "workspaceRelative", "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"},
+      "location": {
+        "storage": "workspaceRelative",
+        "value": "Tests/LogicEngineTests/Fixtures/and-stimulus.json"
+      },
       "kind": "evidence",
-      "format": "json"
+      "format": "json",
+      "role": "input"
     },
-    "digest": {"algorithm": "sha256", "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"},
+    "digest": {
+      "algorithm": "sha256",
+      "hexadecimalValue": "fbf348832404bfd6428d231ef94651abf2cbeb8129e6b8444658b59c9881a71d"
+    },
     "byteCount": 650,
     "producer": null
   },
-  "outputSignals": ["y"],
+  "outputSignals": [
+    "y"
+  ],
   "sampleLimit": 8,
   "artifactDirectory": "outputs/foundation-bounded-temporal"
 }

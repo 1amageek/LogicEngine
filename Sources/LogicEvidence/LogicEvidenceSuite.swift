@@ -1,20 +1,20 @@
 import Foundation
 
-public struct LogicQualificationSuite: Sendable, Hashable, Codable {
+public struct LogicEvidenceSuite: Sendable, Hashable, Codable {
     public static let currentSchemaVersion = 1
 
     public var schemaVersion: Int
     public var suiteID: String
     public var implementationID: String
     public var implementationVersion: String
-    public var cases: [LogicQualificationCase]
+    public var cases: [LogicEvidenceCase]
 
     public init(
         suiteID: String,
         implementationID: String,
         implementationVersion: String,
-        cases: [LogicQualificationCase],
-        schemaVersion: Int = LogicQualificationSuite.currentSchemaVersion
+        cases: [LogicEvidenceCase],
+        schemaVersion: Int = LogicEvidenceSuite.currentSchemaVersion
     ) {
         self.schemaVersion = schemaVersion
         self.suiteID = suiteID
@@ -25,21 +25,21 @@ public struct LogicQualificationSuite: Sendable, Hashable, Codable {
 
     public func validate() throws {
         guard schemaVersion == Self.currentSchemaVersion else {
-            throw LogicQualificationError.invalidSuite("unsupported schema version \(schemaVersion)")
+            throw LogicEvidenceError.invalidSuite("unsupported schema version \(schemaVersion)")
         }
         guard !suiteID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !implementationID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               !implementationVersion.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw LogicQualificationError.invalidSuite("suite identity is incomplete")
+            throw LogicEvidenceError.invalidSuite("suite identity is incomplete")
         }
         guard !cases.isEmpty else {
-            throw LogicQualificationError.invalidSuite("suite has no cases")
+            throw LogicEvidenceError.invalidSuite("suite has no cases")
         }
         var caseIDs: Set<String> = []
-        for qualificationCase in cases {
-            try qualificationCase.validate()
-            guard caseIDs.insert(qualificationCase.caseID).inserted else {
-                throw LogicQualificationError.duplicateCase(qualificationCase.caseID)
+        for evidenceCase in cases {
+            try evidenceCase.validate()
+            guard caseIDs.insert(evidenceCase.caseID).inserted else {
+                throw LogicEvidenceError.duplicateCase(evidenceCase.caseID)
             }
         }
     }

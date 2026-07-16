@@ -234,7 +234,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     }
 
     private func loadLibraries(_ references: [TimingLibraryReference]) throws -> LibraryResult {
-        let hasher = SHA256ContentDigester()
         var cells: [LogicCell] = []
         var digests: [String] = []
         for reference in references {
@@ -269,7 +268,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         var currentInputCount = 2
         var currentArea = 0.0
         var currentPower = 0.0
-        var currentQualified = false
         for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
             let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
             if line.hasPrefix("cell (") {
@@ -279,8 +277,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                         kind: currentKind,
                         inputCount: currentInputCount,
                         area: currentArea,
-                        power: currentPower,
-                        qualified: currentQualified
+                        power: currentPower
                     ))
                 }
                 currentName = parseParenthesizedName(line)
@@ -288,7 +285,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 currentInputCount = 2
                 currentArea = 0
                 currentPower = 0
-                currentQualified = false
             } else if line.contains("function") {
                 currentKind = inferKind(from: line)
                 currentInputCount = inferInputCount(from: line)
@@ -296,8 +292,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 currentArea = parseNumber(line, field: "area", path: path)
             } else if line.contains("power") && line.contains(":") {
                 currentPower = parseNumber(line, field: "power", path: path)
-            } else if line.contains("logic_engine_qualified") {
-                currentQualified = line.contains("true") || line.contains("1")
             }
         }
         if let currentName, let currentKind {
@@ -306,8 +300,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 kind: currentKind,
                 inputCount: currentInputCount,
                 area: currentArea,
-                power: currentPower,
-                qualified: currentQualified
+                power: currentPower
             ))
         }
         guard !cells.isEmpty else {
@@ -424,12 +417,9 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         var totalPower = 0.0
         for index in mappedDesign.nodes.indices {
             let node = mappedDesign.nodes[index]
-            guard let cell = library.qualifiedCell(for: node.kind, inputCount: node.inputs.count) else {
-                if let cell = library.cells.first(where: { $0.kind == node.kind && $0.inputCount == node.inputs.count }) {
-                    throw LogicExecutionError.unqualifiedCell(cell.name)
-                }
+            guard let cell = library.cell(for: node.kind, inputCount: node.inputs.count) else {
                 throw LogicExecutionError.missingPrerequisite(
-                    "qualified cell for \(node.kind.rawValue) with \(node.inputs.count) input(s)"
+                    "cell for \(node.kind.rawValue) with \(node.inputs.count) input(s)"
                 )
             }
             mappedDesign.nodes[index].parameters["mappedCell"] = cell.name
@@ -452,7 +442,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 "power \(totalPower) exceeds maximum \(maximumPower)"
             )
         }
-        mappedDesign.metadata["logicEngine.mapping"] = "qualified-library-cell"
+        mappedDesign.metadata["logicEngine.mapping"] = "declared-library-cell"
         try mappedDesign.validate()
         return MappingResult(
             design: mappedDesign,

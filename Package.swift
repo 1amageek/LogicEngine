@@ -9,7 +9,7 @@ let package = Package(
         .library(name: "LogicLowering", targets: ["LogicLowering"]),
         .library(name: "LogicSimulation", targets: ["LogicSimulation"]),
         .library(name: "LogicSynthesis", targets: ["LogicSynthesis"]),
-        .library(name: "LogicQualification", targets: ["LogicQualification"]),
+        .library(name: "LogicEvidence", targets: ["LogicEvidence"]),
         .library(name: "LogicEngine", targets: ["LogicEngine"]),
         .executable(name: "logic-engine", targets: ["LogicEngineCLI"]),
     ],
@@ -57,7 +57,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "LogicQualification",
+            name: "LogicEvidence",
             dependencies: [
                 "LogicSimulation",
                 "LogicSynthesis",
@@ -76,12 +76,12 @@ let package = Package(
         ),
         .testTarget(
             name: "LogicEngineTests",
-            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicQualification", "LogicEngine", .product(name: "SystemVerilogFrontend", package: "LogicDesign")],
+            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine", .product(name: "SystemVerilogFrontend", package: "LogicDesign")],
             resources: [.copy("Fixtures")]
         ),
         .executableTarget(
             name: "LogicEngineCLI",
-            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicQualification", "LogicEngine"]
+            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine"]
         ),
     ]
 )

@@ -16,14 +16,14 @@ public struct NativeLogicLoweringFoundationEngine: LogicLoweringFoundationEngine
         _ request: LogicLoweringFoundationRequest
     ) async throws -> LogicLoweringFoundationResult {
         try request.validate()
-        let legacyRequest = LogicLoweringRequest(
+        let domainRequest = LogicLoweringRequest(
             runID: request.runID,
             inputs: request.inputs,
             design: request.design,
             artifactDirectory: request.artifactDirectory
         )
         let startedAt = Date()
-        let result = try await engine.execute(legacyRequest)
+        let result = try await engine.execute(domainRequest)
         let completedAt = Date()
         let sourceDigest = try result.payload.sourceDesignDigest.map {
             try ContentDigest(algorithm: .sha256, hexadecimalValue: $0)

@@ -18,13 +18,14 @@ qualification remain external scopes.
 | `LogicLowering` | Deterministic RTL snapshot to execution-graph lowering |
 | `LogicSimulation` | Event-driven RTL and gate simulation |
 | `LogicSynthesis` | Optimization and technology mapping |
-| `LogicQualification` | Retained corpus execution, independent oracle correlation, process evidence, and promotion state |
+| `LogicEvidence` | Retained corpus execution, independent oracle correlation, process evidence, and promotion state |
 | `LogicEngine` | Umbrella API without a combined execution protocol |
 | `LogicSynthesis` equivalence boundary | Bounded temporal trace comparison and exhaustive finite-state proof with digest-bearing reports, certificates, and counterexamples |
 
 `LogicEngineCore` contains the execution artifact schema, four-state values,
 stimulus/assertion records, cell-library and constraint records, provenance, typed
-diagnostics, and filesystem artifact store.
+diagnostics, and a root-bounded filesystem artifact store with symlink-escape
+rejection, atomic publication and immutable collision detection.
 
 ## Contract
 
@@ -39,7 +40,7 @@ Every design execution product exposes a Foundation-native boundary:
 The Foundation-native domain engines are the public execution boundary. Flow
 and project storage are injected by `DesignFlowKernel` and `Xcircuite`; this
 package does not expose a compatibility envelope or storage facade.
-`LogicQualification` remains the package-owned qualification lifecycle: it
+`LogicEvidence` remains the package-owned qualification lifecycle: it
 consumes execution observations and qualification evidence, but is not itself
 an execution engine or a Foundation replacement for the qualification schema.
 
@@ -90,25 +91,25 @@ Foundation-native entry points are available as
 `NativeLogicBoundedTemporalEquivalenceFoundationEngine`, and
 `NativeLogicUnboundedTemporalEquivalenceFoundationEngine`. They preserve the
 domain metrics while projecting artifact identity, diagnostics, and provenance
-to canonical Foundation types at the public cross-domain boundary. The
-legacy Xcircuite request/result envelope is confined to the package-owned
-compatibility implementation.
+to canonical Foundation types at the public cross-domain boundary.
 
 ## Xcircuite integration
 
-Xcircuite exposes simulation, synthesis, and mapped-equivalence flow stage
-executors. Synthesis remains `pendingEquivalence` until
-`LogicEquivalenceFlowStageExecutor` consumes its typed request, invokes the
-RTLVerification mapped execution proof, and persists matching evidence plus an
-acceptance record. These stages share artifacts and run identity but never
-collapse result schemas or qualification claims.
+Xcircuite may compose the package's public Foundation protocols with flow-stage
+execution. Synthesis remains `pendingEquivalence` until an orchestrator consumes
+its typed request, invokes an independently qualified mapped-execution proof,
+and persists matching evidence plus an acceptance record. These stages share
+canonical artifacts but never collapse result schemas or qualification claims.
 
 The bounded and exhaustive temporal APIs are independently CLI-operable through
 `logic-engine bounded-equivalence` and
-`logic-engine foundation-unbounded-equivalence`. The Xcircuite stage adapter
-and general RTL/DFT solver remain separate external boundaries.
+`logic-engine foundation-unbounded-equivalence`. Flow orchestration and a
+general RTL/DFT solver remain separate external boundaries.
 
-The library does not depend on the Xcircuite runtime. Xcircuite owns the adapter to `DesignFlowKernel.FlowStageExecutor`, artifact persistence, qualification gates, repair loops and human approval.
+The library does not depend on the Xcircuite runtime. A flow consumer conforms
+its own concrete stage executor to `DesignFlowKernel` and invokes LogicEngine's
+typed protocols directly; project persistence, repair loops and human approval
+remain outside this package.
 
 ## Build
 
@@ -131,8 +132,8 @@ swift run logic-engine foundation-bounded-equivalence --request path/to/foundati
 swift run logic-engine foundation-unbounded-equivalence --request path/to/foundation-unbounded-equivalence-request.json --root path/to/project
 ```
 
-The first group is the retained Xcircuite-compatible CLI. The `foundation-*`
-commands decode and execute the Foundation-native request types and print the
+The first group exposes LogicEngine's domain requests. The `foundation-*`
+commands decode and execute the cross-package Foundation-native request types and print the
 typed Foundation result, including artifact references, diagnostics, evidence,
 and provenance. The retained Foundation fixtures under
 `Tests/LogicEngineTests/Fixtures/foundation-*-request.json` are directly
@@ -170,21 +171,16 @@ and release approval to reach `releaseEligible` for the local fixture process.
 
 ## Test
 
-```bash
-perl -e '$SIG{ALRM}=sub { kill 9, $$ }; alarm 180; exec @ARGV' swift test
-```
-
-The generated Swift Package Xcode scheme is also testable with a timeout-bounded
-command:
+Use the generated Swift Package Xcode scheme under an external 180-second
+timeout:
 
 ```bash
 perl -e '$SIG{ALRM}=sub { kill 9, $$ }; alarm 180; exec @ARGV' \
-  xcodebuild -scheme LogicEngine-Package -destination 'platform=macOS' \
-  -derivedDataPath /tmp/logic-engine-xcodebuild test
+  xcodebuild test -scheme LogicEngine-Package -destination 'platform=macOS' \
+  -derivedDataPath /tmp/logic-engine-xcodebuild
 ```
 
-The current suite passes 80 tests in 11 suites under both Xcode and Swift
-Testing.
+The workspace verifier records the result as a reproducible JSON report.
 
 See `DESIGN.md`, `INTERFACES.md` and `IMPLEMENTATION_PLAN.md` before implementing a backend.
 
@@ -207,11 +203,11 @@ flowchart LR
     Sim --> SimArtifacts["VCD + assertion report"]
     Sim --> CancelArtifacts["Cancellation record when cancelled"]
     Syn --> SynArtifacts["Mapped design + provenance"]
-    SimArtifacts --> Flow["Xcircuite stage adapter"]
+    SimArtifacts --> Flow["Protocol-conforming flow consumer"]
     CancelArtifacts --> Flow
     SynArtifacts --> Flow
     Flow --> Review["Review + audit + resumable evidence"]
-    Corpus["LogicQualification corpus"] --> Oracle["Independent oracle correlation"]
+    Corpus["LogicEvidence corpus"] --> Oracle["Independent oracle correlation"]
     Oracle --> Promotion["Qualification promotion"]
     Eq --> Certificate["Finite-state proof certificate"]
     Certificate --> Promotion

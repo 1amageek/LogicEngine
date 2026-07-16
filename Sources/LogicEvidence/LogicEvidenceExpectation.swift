@@ -1,7 +1,7 @@
 import Foundation
 import LogicEngineCore
 
-public struct LogicQualificationExpectation: Sendable, Hashable, Codable {
+public struct LogicEvidenceExpectation: Sendable, Hashable, Codable {
     public var expectedStatus: LogicExecutionStatus
     public var requiredDiagnosticCodes: [String]
     public var forbiddenDiagnosticCodes: [String]

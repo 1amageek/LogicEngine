@@ -23,7 +23,7 @@ LogicEngine Foundation-native typed requests/results
                  ↓
 native or external-tool backends
                  ↓
-Xcircuite compatibility boundary and stage execution
+Xcircuite composition and stage execution
                  ↓
 DesignFlowKernel and .xcircuite artifacts
 ```

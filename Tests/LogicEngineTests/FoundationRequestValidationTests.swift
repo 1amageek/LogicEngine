@@ -92,6 +92,7 @@ struct FoundationRequestValidationTests {
             id: try ArtifactID(rawValue: id),
             locator: ArtifactLocator(
                 location: try ArtifactLocation(workspaceRelativePath: "inputs/\(id).json"),
+                role: .input,
                 kind: .netlist,
                 format: .json
             ),

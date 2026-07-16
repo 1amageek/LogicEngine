@@ -18,7 +18,7 @@ public enum LogicDiagnosticFactory {
 
     public static func status(for error: LogicExecutionError) -> LogicExecutionStatus {
         switch error {
-        case .unsupportedNode, .missingPrerequisite, .unqualifiedCell, .unsupportedWaveform, .timedOut:
+        case .unsupportedNode, .missingPrerequisite, .unsupportedWaveform, .timedOut:
             return .blocked
         case .cancelled:
             return .cancelled
@@ -41,6 +41,14 @@ public enum LogicDiagnosticFactory {
             return "LOGIC_ARTIFACT_SIZE_MISMATCH"
         case .invalidArtifact:
             return "LOGIC_ARTIFACT_INVALID"
+        case .artifactReadOutsideRoot:
+            return "LOGIC_ARTIFACT_INPUT_OUTSIDE_ROOT"
+        case .artifactOutputOutsideRoot:
+            return "LOGIC_ARTIFACT_OUTPUT_OUTSIDE_ROOT"
+        case .artifactSymlinkEscape:
+            return "LOGIC_ARTIFACT_SYMLINK_ESCAPE"
+        case .artifactCollision:
+            return "LOGIC_ARTIFACT_IMMUTABLE_COLLISION"
         case .invalidDesign:
             return "LOGIC_DESIGN_INVALID"
         case .invalidStimulus:
@@ -55,8 +63,6 @@ public enum LogicDiagnosticFactory {
             return "LOGIC_COMBINATIONAL_CYCLE"
         case .missingPrerequisite:
             return "LOGIC_PREREQUISITE_MISSING"
-        case .unqualifiedCell:
-            return "LOGIC_CELL_UNQUALIFIED"
         case .constraintViolation:
             return "LOGIC_CONSTRAINT_VIOLATION"
         case .unsupportedWaveform:
@@ -74,12 +80,16 @@ public enum LogicDiagnosticFactory {
         switch error {
         case .missingArtifact, .unreadableArtifact, .artifactDigestMismatch, .artifactByteCountMismatch:
             return ["verify_artifact_path", "refresh_artifact_reference"]
+        case .artifactReadOutsideRoot:
+            return ["select_input_below_project_root", "remove_unsafe_symbolic_link"]
+        case .artifactOutputOutsideRoot, .artifactSymlinkEscape:
+            return ["select_output_below_project_root", "remove_unsafe_symbolic_link"]
+        case .artifactCollision:
+            return ["use_a_new_run_artifact_path", "preserve_existing_immutable_artifact"]
         case .unsupportedNode:
             return ["lower_unsupported_node", "select_backend_with_required_semantics"]
         case .missingPrerequisite:
             return ["provide_required_artifact", "run_prerequisite_stage"]
-        case .unqualifiedCell:
-            return ["provide_process_scoped_qualification", "select_a_qualified_cell"]
         case .constraintViolation:
             return ["relax_or_update_constraints", "optimize_the_design"]
         case .combinationalCycle:

@@ -19,7 +19,7 @@ public struct NativeLogicBoundedTemporalEquivalenceFoundationEngine:
         _ request: LogicBoundedTemporalEquivalenceFoundationRequest
     ) async throws -> LogicBoundedTemporalEquivalenceFoundationResult {
         try request.validate()
-        let legacyRequest = LogicBoundedTemporalEquivalenceRequest(
+        let domainRequest = LogicBoundedTemporalEquivalenceRequest(
             runID: request.runID,
             inputs: request.inputs,
             referenceDesign: request.referenceDesign,
@@ -29,7 +29,7 @@ public struct NativeLogicBoundedTemporalEquivalenceFoundationEngine:
             sampleLimit: request.sampleLimit,
             artifactDirectory: request.artifactDirectory
         )
-        let result = try await engine.execute(legacyRequest)
+        let result = try await engine.execute(domainRequest)
         let producer = try ProducerIdentity(kind: .engine, identifier: "LogicBoundedTemporalEquivalence", version: "1")
         let provenance = try ExecutionProvenance(
             producer: producer,

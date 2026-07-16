@@ -9,8 +9,7 @@ public protocol DomainFoundationEngine: CircuiteFoundation.Engine {}
 Foundation-native requests carry a schema version, run ID, and digest-bearing
 `ArtifactReference` values. Results expose typed Foundation payloads carrying
 domain metrics while conforming to `ArtifactProducing`, `DiagnosticReporting`, and
-`EvidenceProviding`. The old Xcircuite envelope is a package-owned
-compatibility boundary only.
+`EvidenceProviding`.
 
 ## Products
 
@@ -33,23 +32,23 @@ Optimization and technology mapping.
 
 Umbrella API without a combined execution protocol.
 
-### LogicQualification
+### LogicEvidence
 
-`LogicQualificationSuite` contains versioned, agent-operable cases whose typed
-requests are executed through `LogicQualificationExecuting`. The native runner
+`LogicEvidenceSuite` contains versioned, agent-operable cases whose typed
+requests are executed through `LogicEvidenceExecuting`. The native runner
 records status, diagnostic codes, artifact IDs, and mismatches for every case.
-`NativeLogicQualificationOracleCorrelator` compares those observations with a
-separately identified `LogicQualificationOracleObservationSet`; missing cases,
+`NativeLogicEvidenceOracleCorrelator` compares those observations with a
+separately identified `LogicEvidenceOracleObservationSet`; missing cases,
 extra cases, status/code differences, or non-independent identities prevent
 promotion to `oracleCorrelated`.
 
-`LogicQualificationProcessEvidence` is the process/PDK qualification boundary.
+`LogicEvidenceProcessEvidence` is the process/PDK qualification boundary.
 It requires process and PDK identity, a SHA-256 PDK digest, tool and environment
 identity, input/output artifact IDs, digest coverage for every qualified
 artifact, metrics, and explicit failures. A qualified evidence record must bind
 one input artifact digest to the selected PDK digest. It can promote an
 oracle-correlated report to `processQualified` only when its identity matches
-the report. `LogicQualificationReleaseApproval` is a separate human-in-the-loop
+the report. `LogicEvidenceReleaseApproval` is a separate human-in-the-loop
 artifact required for `releaseEligible`.
 
 Qualification intentionally remains a package-owned lifecycle contract rather
@@ -59,8 +58,9 @@ execution boundary.
 
 ## Native implementations
 
-`LogicEquivalenceFlowStageExecutor` is the Xcircuite-owned bridge for the
-typed `LogicSynthesisEquivalenceRequest`. It maps the declared
+`LogicEquivalenceFlowStageExecutor` is the Xcircuite-owned stage executor for
+the typed `LogicSynthesisEquivalenceRequest`. It invokes the conforming engine
+protocol directly and maps the declared
 `rtl-to-mapped-structural` scope to RTLVerificationEngine's
 `rtlToMappedExecutionStructural` proof view, persists the verification report,
 equivalence evidence, and synthesis acceptance record, and blocks the flow
@@ -113,24 +113,22 @@ scope is not a general SystemVerilog or DFT solver.
 ```mermaid
 flowchart TD
     Request["Foundation-native request"] --> Verify["Reference digest + schema validation"]
-    Verify --> BridgeIn["Package-owned compatibility bridge"]
-    BridgeIn --> Native["Native domain engine"]
-    Native --> BridgeOut["Package-owned result projection"]
-    BridgeOut --> Result["Typed Foundation result + evidence + provenance"]
+    Verify --> Native["Conforming native domain engine"]
+    Native --> Result["Typed Foundation result + evidence + provenance"]
 ```
 
 
 ## Error contract
 
-- Throw only when execution cannot produce a valid result envelope.
+- Throw only when execution cannot produce a valid typed domain result.
 - Represent design findings and failed checks as typed diagnostics and a completed domain payload.
 - Represent missing prerequisites or insufficient semantics as `blocked`.
 - Preserve cancellation as `cancelled`.
 - Do not swallow parser, process or persistence failures.
 
-## flow integration
+## Flow integration
 
-The adapter must:
+The Xcircuite-owned stage executor must:
 
 1. resolve project-relative references through the injected Xcircuite workspace store;
 2. verify input digests;
