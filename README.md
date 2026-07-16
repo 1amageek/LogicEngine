@@ -112,6 +112,18 @@ remain outside this package.
 
 ## Build
 
+`Package.swift` resolves each dependency independently. When the corresponding
+`../<Package>/Package.swift` exists it uses the local sibling checkout;
+otherwise it uses the pinned GitHub revision below. No umbrella repository is
+required for either mode.
+
+| Dependency | Local sibling | Remote fallback revision |
+|---|---|---|
+| CircuiteFoundation | `../CircuiteFoundation` | `2ec6ee13a89ac6885be3c26b41a9ee0ef89948ac` |
+| LogicDesign | `../LogicDesign` | `8e0c8c2c63152aa45bf12d943fa034bb1aba0f1e` |
+| TimingEngine | `../TimingEngine` | `5b2f711d355af8a204819c6ed33f98ef722e379c` |
+| PDKKit | `../PDKKit` | `aa145dfaa67454c44ac7767c37a28ab7f4b1d2e2` |
+
 ```bash
 swift build
 ```
