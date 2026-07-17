@@ -392,8 +392,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
                     return allAssignmentsUseBlocking(nested)
                 case .conditional(_, let ifTrue, let ifFalse):
                     return allAssignmentsUseBlocking(ifTrue) && allAssignmentsUseBlocking(ifFalse)
-                case .caseStatement(_, let items, let defaultStatements),
-                     .typedCaseStatement(_, _, let items, let defaultStatements):
+                case .typedCaseStatement(_, _, let items, let defaultStatements):
                     return items.allSatisfy { allAssignmentsUseBlocking($0.statements) }
                         && allAssignmentsUseBlocking(defaultStatements)
                 case .null:
@@ -420,8 +419,7 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
                     return allAssignmentsUseNonBlocking(nested)
                 case .conditional(_, let ifTrue, let ifFalse):
                     return allAssignmentsUseNonBlocking(ifTrue) && allAssignmentsUseNonBlocking(ifFalse)
-                case .caseStatement(_, let items, let defaultStatements),
-                     .typedCaseStatement(_, _, let items, let defaultStatements):
+                case .typedCaseStatement(_, _, let items, let defaultStatements):
                     return items.allSatisfy { allAssignmentsUseNonBlocking($0.statements) }
                         && allAssignmentsUseNonBlocking(defaultStatements)
                 case .null:
@@ -476,20 +474,6 @@ public struct NativeLogicDesignLowering: LogicDesignLowering {
                             outputWidth: width
                         )
                         assignments[target] = merged
-                    }
-                case .caseStatement(let expression, let items, let defaultStatements):
-                    let caseAssignments = try lowerCaseStatement(
-                        kind: .standard,
-                        expression: expression,
-                        items: items,
-                        defaultStatements: defaultStatements
-                    )
-                    for target in caseAssignments.keys.sorted() {
-                        guard let value = caseAssignments[target] else { continue }
-                        guard assignments[target] == nil else {
-                            throw LogicLoweringError.multipleDriver(target)
-                        }
-                        assignments[target] = value
                     }
                 case .typedCaseStatement(let kind, let expression, let items, let defaultStatements):
                     let caseAssignments = try lowerCaseStatement(

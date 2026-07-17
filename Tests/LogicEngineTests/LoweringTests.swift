@@ -850,7 +850,8 @@ struct LoweringTests {
             processes: [RTLProcess(
                 id: "process-case",
                 kind: .combinational,
-                statements: [.caseStatement(
+                statements: [.typedCaseStatement(
+                    kind: .standard,
                     expression: .identifier("sel"),
                     items: [RTLCaseItem(
                         matches: [.integer(value: 1, width: nil, isSigned: false)],
