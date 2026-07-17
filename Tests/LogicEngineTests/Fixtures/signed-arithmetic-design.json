@@ -62,6 +62,7 @@
       "width": 2
     },
     {
+      "isSigned": false,
       "name": "amount",
       "width": 1
     },

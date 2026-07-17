@@ -56,7 +56,7 @@ public struct LogicNodeKind: RawRepresentable, Sendable, Hashable, Codable, Expr
     public static let latch = LogicNodeKind(rawValue: "latch")
 
     public var isSequential: Bool {
-        self == .dff || self == .latch || rawValue == "flipflop" || rawValue == "register"
+        self == .dff || self == .latch
     }
 
     public var isSupported: Bool {

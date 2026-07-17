@@ -5,7 +5,6 @@ import PowerIntent
 import TimingCore
 import PDKCore
 import LogicEngineCore
-import CircuiteFoundation
 
 public struct LogicSynthesisPayload: Sendable, Hashable, Codable {
     public var mappedDesign: LogicDesignArtifact?

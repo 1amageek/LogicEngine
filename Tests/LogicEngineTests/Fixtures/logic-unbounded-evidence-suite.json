@@ -141,9 +141,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "ae81227a2d6fe71d7260625259cf32f0abe775c7077e6b267f5837bc24fb44a7"
+                "hexadecimalValue": "fd47fe4103424359d7b8cb75704ad28acf3e9fe537c0391296c7abcbe4c6344b"
               },
-              "byteCount": 700,
+              "byteCount": 775,
               "producer": null
             }
           ],
@@ -183,9 +183,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "ae81227a2d6fe71d7260625259cf32f0abe775c7077e6b267f5837bc24fb44a7"
+                "hexadecimalValue": "fd47fe4103424359d7b8cb75704ad28acf3e9fe537c0391296c7abcbe4c6344b"
               },
-              "byteCount": 700,
+              "byteCount": 775,
               "producer": null
             },
             "topDesignName": "and_top",

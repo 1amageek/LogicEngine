@@ -55,22 +55,27 @@
   "schemaVersion": 1,
   "signals": [
     {
+      "isSigned": false,
       "name": "a",
       "width": 2
     },
     {
+      "isSigned": false,
       "name": "b",
       "width": 2
     },
     {
+      "isSigned": false,
       "name": "and",
       "width": 1
     },
     {
+      "isSigned": false,
       "name": "or",
       "width": 1
     },
     {
+      "isSigned": false,
       "name": "not",
       "width": 1
     }

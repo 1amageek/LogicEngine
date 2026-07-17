@@ -79,7 +79,7 @@ Native implementations:
   certificate on success, persists a counterexample on mismatch, and returns
   structured blocked or timeout diagnostics without claiming a proof.
 - `NativeLogicSynthesisEngine` validates/lowers the execution graph, eliminates
-  non-observable buffers, selects qualified cells, checks area/power/depth
+  non-observable buffers, selects declared library cells, checks area/power/depth
   constraints, and emits mapped design, provenance, and a typed equivalence
   request. The synthesis payload remains `pendingEquivalence` until a later
   verification stage supplies acceptance evidence.
@@ -120,14 +120,9 @@ required for either mode.
 | Dependency | Local sibling | Remote fallback revision |
 |---|---|---|
 | CircuiteFoundation | `../CircuiteFoundation` | `2ec6ee13a89ac6885be3c26b41a9ee0ef89948ac` |
-| LogicDesign | `../LogicDesign` | `698e54a6861cee247969d89df946d3b0f53c28ca` |
-| TimingEngine | `../TimingEngine` | `144c8f7b26820fc7aeff819dd2f8c0d9378a463c` |
-| PDKKit | `../PDKKit` | `b0d0ab30b044266e1ce3bd008dcec844e51f2302` |
-
-The remote fallback graph is pinned as a compatible set with the published
-TimingEngine revision. LogicLowering keeps a narrowly scoped compatibility
-branch for its untyped RTL case API only in that fallback graph; the workspace
-path uses the typed case API directly and exposes no legacy public contract.
+| LogicDesign | `../LogicDesign` | `09768ed203d97d1d0f79f786f9988fcb2cd39155` |
+| TimingEngine | `../TimingEngine` | `81898ed51ab05c62712ebca5b1b03869b89f7682` |
+| PDKKit | `../PDKKit` | `28f3b83304ad2bbb0c2e0269d26616081d90d992` |
 
 ```bash
 swift build
@@ -195,7 +190,7 @@ The native backend consumes a versioned JSON graph referenced by
 `LogicDesignReference`. The graph contains `ports`, `signals`, and `nodes`; each
 node has an `id`, `kind`, `inputs`, `outputs`, and optional string parameters.
 Stimulus artifacts contain timestamped assignments and assertions. Synthesis
-library artifacts contain qualified cells keyed by node kind and input count.
+library artifacts contain declared cells keyed by node kind and input count.
 These are execution artifacts, not UI state and not a replacement for the
 canonical RTL or gate IR owned by `LogicDesign`.
 

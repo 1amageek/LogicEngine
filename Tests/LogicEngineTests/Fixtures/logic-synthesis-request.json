@@ -1,5 +1,5 @@
 {
-  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "schemaVersion": { "major": 2, "minor": 0, "patch": 0 },
   "runID": "logic-synthesis-cli",
   "inputs": [
     {
@@ -45,7 +45,7 @@
           "storage": "workspaceRelative",
           "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
         },
-        "kind": "constraints",
+        "kind": "constraint",
         "format": "json",
         "role": "input"
       },
@@ -129,7 +129,7 @@
           "storage": "workspaceRelative",
           "value": "Tests/LogicEngineTests/Fixtures/logic-constraints.json"
         },
-        "kind": "constraints",
+        "kind": "constraint",
         "format": "json",
         "role": "input"
       },

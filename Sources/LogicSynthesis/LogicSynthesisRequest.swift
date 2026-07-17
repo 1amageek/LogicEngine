@@ -7,7 +7,7 @@ import PDKCore
 import LogicEngineCore
 
 public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v1
+    public static let currentSchemaVersion = SchemaVersion.v2
 
     public var schemaVersion: SchemaVersion
     public var runID: String
@@ -65,6 +65,11 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         guard !libraries.isEmpty else {
             throw LogicExecutionContractError.invalidRequest(
                 "at least one timing library is required"
+            )
+        }
+        guard constraints.kind == .constraint else {
+            throw LogicExecutionContractError.invalidRequest(
+                "synthesis constraints must use the constraint artifact kind"
             )
         }
         var requiredArtifacts = [design.artifact]

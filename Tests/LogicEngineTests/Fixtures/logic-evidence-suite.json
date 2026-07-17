@@ -103,7 +103,7 @@
       "request": {
         "kind": "synthesis",
         "value": {
-          "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
+          "schemaVersion": {"major": 2, "minor": 0, "patch": 0},
           "runID": "logic-evidence-synthesis",
           "inputs": [
             {
@@ -298,9 +298,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
+                "hexadecimalValue": "000c466e40d1292dd996acd85db3ea52dded1d15e8a289e4121425a5a9205a9e"
               },
-              "byteCount": 1299,
+              "byteCount": 1324,
               "producer": null
             },
             {
@@ -336,13 +336,13 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
+                "hexadecimalValue": "000c466e40d1292dd996acd85db3ea52dded1d15e8a289e4121425a5a9205a9e"
               },
-              "byteCount": 1299,
+              "byteCount": 1324,
               "producer": null
             },
             "topDesignName": "signed_arithmetic_top",
-            "designDigest": "7f4d4ff1f3a25c71cda2cd5dd1b17a833afd5ba364ba3bb10e867782e769d184"
+            "designDigest": "000c466e40d1292dd996acd85db3ea52dded1d15e8a289e4121425a5a9205a9e"
           },
           "stimulus": {
             "id": "signed-arithmetic-stimulus",
@@ -396,9 +396,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
+                "hexadecimalValue": "05bd74a544cb25ffa601ac35f9ab74737faec3dda80377de83278368f94268fb"
               },
-              "byteCount": 1245,
+              "byteCount": 1370,
               "producer": null
             },
             {
@@ -434,13 +434,13 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
+                "hexadecimalValue": "05bd74a544cb25ffa601ac35f9ab74737faec3dda80377de83278368f94268fb"
               },
-              "byteCount": 1245,
+              "byteCount": 1370,
               "producer": null
             },
             "topDesignName": "vector_logical_top",
-            "designDigest": "cc35e48d70815bbb526f090e0d8b2499268182e2dc0f3476198c6e00814151a5"
+            "designDigest": "05bd74a544cb25ffa601ac35f9ab74737faec3dda80377de83278368f94268fb"
           },
           "stimulus": {
             "id": "vector-logical-stimulus",
