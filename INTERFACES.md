@@ -62,7 +62,7 @@ resume bookkeeping.
 `NativeLogicSynthesisEngine`, and
 `NativeLogicUnboundedTemporalEquivalenceEngine` are the native domain
 implementations. They conform directly to their Foundation-refining domain
-protocols, accept `LogicDesignArtifact` values, and return canonical records
+protocols, accept canonical LogicDesign `LogicDesignReference` values, and return records
 containing `ArtifactReference`,
 `DesignDiagnostic`, and `EvidenceManifest` values. The default filesystem
 store still verifies SHA-256 and byte-count provenance on reads and writes
