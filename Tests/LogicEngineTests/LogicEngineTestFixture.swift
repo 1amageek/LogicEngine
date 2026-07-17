@@ -63,7 +63,7 @@ struct LogicEngineTestFixture {
             inputs: [design.artifact, libraryArtifact, constraintsArtifact, pdkArtifact],
             design: design,
             libraries: [TimingLibraryReference(artifact: libraryArtifact, cornerIDs: ["typical"])],
-            constraints: TimingConstraintReference(artifact: constraintsArtifact, modeIDs: ["default"]),
+            constraints: constraintsArtifact,
             pdk: PDKReference(
                 manifest: pdkArtifact,
                 processID: "logic-fixture",

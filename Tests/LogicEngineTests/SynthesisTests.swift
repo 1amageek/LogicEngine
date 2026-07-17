@@ -62,7 +62,7 @@ struct SynthesisTests {
             inputs: [design.artifact, constraints, pdk],
             design: design,
             libraries: [TimingLibraryReference(artifact: library, cornerIDs: ["typical"])],
-            constraints: TimingConstraintReference(artifact: constraints, modeIDs: ["default"]),
+            constraints: constraints,
             pdk: PDKReference(
                 manifest: pdk,
                 processID: "logic-fixture",

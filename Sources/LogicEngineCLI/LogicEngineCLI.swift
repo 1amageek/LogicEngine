@@ -120,7 +120,8 @@ struct LogicEngineCLI {
         case "assess-evidence":
             let options = try EvidenceCLIOptions(arguments: Array(arguments.dropFirst()))
             let suiteData = try Data(contentsOf: options.suiteURL)
-            let suite = try JSONDecoder().decode(LogicEvidenceSuite.self, from: suiteData)
+            let decodedSuite = try JSONDecoder().decode(LogicEvidenceSuite.self, from: suiteData)
+            let suite = Self.suite(decodedSuite, overridingArtifactDirectory: options.outputPath)
             let store = FileSystemLogicArtifactStore(
                 rootDirectory: options.rootURL,
                 defaultOutputDirectory: options.outputURL
@@ -222,6 +223,48 @@ struct LogicEngineCLI {
             return "_"
         })
         return "evidence-\(safeSuiteID)"
+    }
+
+    private static func suite(
+        _ suite: LogicEvidenceSuite,
+        overridingArtifactDirectory artifactDirectory: String?
+    ) -> LogicEvidenceSuite {
+        guard let artifactDirectory else {
+            return suite
+        }
+
+        var updatedSuite = suite
+        updatedSuite.cases = suite.cases.map { evidenceCase in
+            var updatedCase = evidenceCase
+            let baseOutputDirectory = artifactDirectory.hasSuffix("/")
+                ? String(artifactDirectory.dropLast())
+                : artifactDirectory
+            let runOutputDirectory = "\(baseOutputDirectory)/\(Self.evidenceRunID(for: evidenceCase.request.runID))"
+            switch evidenceCase.request {
+            case .simulation(var request):
+                request.artifactDirectory = runOutputDirectory
+                updatedCase.request = .simulation(request)
+            case .synthesis(var request):
+                request.artifactDirectory = runOutputDirectory
+                updatedCase.request = .synthesis(request)
+            case .unbounded(let request):
+                updatedCase.request = .unbounded(LogicUnboundedTemporalEquivalenceRequest(
+                    runID: request.runID,
+                    referenceDesign: request.referenceDesign,
+                    implementationDesign: request.implementationDesign,
+                    outputSignals: request.outputSignals,
+                    valueDomain: request.valueDomain,
+                    stateSpaceLimit: request.stateSpaceLimit,
+                    transitionLimit: request.transitionLimit,
+                    timeoutNanoseconds: request.timeoutNanoseconds,
+                    clockSignal: request.clockSignal,
+                    inputs: request.inputs,
+                    artifactDirectory: runOutputDirectory
+                ))
+            }
+            return updatedCase
+        }
+        return updatedSuite
     }
 
     private static func printCapabilities() {

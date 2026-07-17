@@ -15,7 +15,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
 
     public var design: LogicDesignArtifact
     public var libraries: [TimingLibraryReference]
-    public var constraints: TimingConstraintReference
+    public var constraints: ArtifactReference
     public var pdk: PDKReference
     public var powerIntent: PowerIntentReference?
     public var artifactDirectory: String?
@@ -25,7 +25,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         inputs: [ArtifactReference] = [],
         design: LogicDesignArtifact,
         libraries: [TimingLibraryReference],
-        constraints: TimingConstraintReference,
+        constraints: ArtifactReference,
         pdk: PDKReference,
         powerIntent: PowerIntentReference? = nil,
         artifactDirectory: String? = nil
@@ -34,7 +34,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         self.runID = runID
         let prerequisites = [design.artifact]
             + libraries.map(\.artifact)
-            + [constraints.artifact, pdk.manifest]
+            + [constraints, pdk.manifest]
             + (powerIntent.map { [$0.artifact] } ?? [])
             + inputs
         var allInputs: [ArtifactReference] = []
@@ -69,7 +69,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         }
         var requiredArtifacts = [design.artifact]
             + libraries.map(\.artifact)
-            + [constraints.artifact, pdk.manifest]
+            + [constraints, pdk.manifest]
         if let powerIntent {
             requiredArtifacts.append(powerIntent.artifact)
         }
@@ -111,7 +111,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
         design = try container.decode(LogicDesignArtifact.self, forKey: .design)
         libraries = try container.decode([TimingLibraryReference].self, forKey: .libraries)
-        constraints = try container.decode(TimingConstraintReference.self, forKey: .constraints)
+        constraints = try container.decode(ArtifactReference.self, forKey: .constraints)
         pdk = try container.decode(PDKReference.self, forKey: .pdk)
         powerIntent = try container.decodeIfPresent(PowerIntentReference.self, forKey: .powerIntent)
         artifactDirectory = try container.decodeIfPresent(String.self, forKey: .artifactDirectory)

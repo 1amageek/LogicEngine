@@ -33,6 +33,10 @@ let pdkKitDependency: Package.Dependency = isLSIWorkspace && FileManager.default
     ? .package(path: "../PDKKit")
     : .package(url: "https://github.com/1amageek/PDKKit.git", revision: "b0d0ab30b044266e1ce3bd008dcec844e51f2302")
 
+let logicLoweringSwiftSettings: [SwiftSetting] = isLSIWorkspace
+    ? []
+    : [.define("LOGICDESIGN_LEGACY_UNTYPED_CASE")]
+
 let package = Package(
     name: "LogicEngine",
     platforms: [.macOS(.v26)],
@@ -65,7 +69,8 @@ let package = Package(
                 "LogicEngineCore",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
                 .product(name: "LogicIR", package: "LogicDesign"),
-            ]
+            ],
+            swiftSettings: logicLoweringSwiftSettings
         ),
         .target(
             name: "LogicSimulation",

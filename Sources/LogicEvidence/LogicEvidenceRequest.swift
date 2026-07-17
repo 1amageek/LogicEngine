@@ -20,7 +20,7 @@ public enum LogicEvidenceRequest: Sendable, Hashable, Codable {
 
     public func validate() throws {
         guard !runID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw LogicEvidenceError.invalidSuite("qualification request has an empty run ID")
+            throw LogicEvidenceError.invalidSuite("evidence request has an empty run ID")
         }
     }
 

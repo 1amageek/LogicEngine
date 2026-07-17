@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "oracleImplementationID": "reference-logic-qualification",
+  "oracleImplementationID": "reference-logic-evidence",
   "oracleImplementationVersion": "1",
   "observations": [
     {
       "caseID": "simulation-and-gate",
       "observation": {
         "status": "completed",
-        "diagnosticCodes": ["LOGIC_SIMULATION_COMPLETED"],
+        "diagnosticCodes": ["logic.simulation.completed"],
         "artifactIDs": ["logic-simulation-report", "logic-waveform"]
       }
     },
@@ -30,7 +30,7 @@
       "caseID": "simulation-signed-arithmetic",
       "observation": {
         "status": "completed",
-        "diagnosticCodes": ["LOGIC_SIMULATION_COMPLETED"],
+        "diagnosticCodes": ["logic.simulation.completed"],
         "artifactIDs": ["logic-simulation-report", "logic-waveform"]
       }
     },
@@ -38,7 +38,7 @@
       "caseID": "simulation-vector-logical",
       "observation": {
         "status": "completed",
-        "diagnosticCodes": ["LOGIC_SIMULATION_COMPLETED"],
+        "diagnosticCodes": ["logic.simulation.completed"],
         "artifactIDs": ["logic-simulation-report", "logic-waveform"]
       }
     }

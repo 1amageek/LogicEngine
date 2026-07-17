@@ -123,7 +123,6 @@
     }
   ],
   "constraints": {
-    "artifact": {
       "id": "logic-constraints",
       "locator": {
         "location": {
@@ -140,8 +139,6 @@
       },
       "byteCount": 125,
       "producer": null
-    },
-    "modeIDs": ["default"]
   },
   "pdk": {
     "manifest": {

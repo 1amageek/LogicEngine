@@ -120,9 +120,14 @@ required for either mode.
 | Dependency | Local sibling | Remote fallback revision |
 |---|---|---|
 | CircuiteFoundation | `../CircuiteFoundation` | `2ec6ee13a89ac6885be3c26b41a9ee0ef89948ac` |
-| LogicDesign | `../LogicDesign` | `8e0c8c2c63152aa45bf12d943fa034bb1aba0f1e` |
-| TimingEngine | `../TimingEngine` | `5b2f711d355af8a204819c6ed33f98ef722e379c` |
-| PDKKit | `../PDKKit` | `aa145dfaa67454c44ac7767c37a28ab7f4b1d2e2` |
+| LogicDesign | `../LogicDesign` | `698e54a6861cee247969d89df946d3b0f53c28ca` |
+| TimingEngine | `../TimingEngine` | `144c8f7b26820fc7aeff819dd2f8c0d9378a463c` |
+| PDKKit | `../PDKKit` | `b0d0ab30b044266e1ce3bd008dcec844e51f2302` |
+
+The remote fallback graph is pinned as a compatible set with the published
+TimingEngine revision. LogicLowering keeps a narrowly scoped compatibility
+branch for its untyped RTL case API only in that fallback graph; the workspace
+path uses the typed case API directly and exposes no legacy public contract.
 
 ```bash
 swift build
@@ -158,11 +163,16 @@ policy; it is not a process-qualified or release-eligible result.
 
 ```bash
 swift run logic-engine assess-evidence \
-  --suite Tests/LogicEngineTests/Fixtures/logic-qualification-suite.json \
-  --oracle Tests/LogicEngineTests/Fixtures/logic-qualification-oracle-v1.json \
+  --suite Tests/LogicEngineTests/Fixtures/logic-evidence-suite.json \
+  --oracle Tests/LogicEngineTests/Fixtures/logic-evidence-oracle-v1.json \
   --root . \
   --output /tmp/logic-engine-evidence
 ```
+
+When `--output` is provided, each evidence case is isolated below an
+`evidence-<run-id>` directory and the aggregate report is written at the
+selected output root. Immutable artifact IDs therefore cannot collide across
+cases in one suite.
 
 ## Test
 

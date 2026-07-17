@@ -17,7 +17,7 @@ public struct LogicEvidenceCase: Sendable, Hashable, Codable {
 
     public func validate() throws {
         guard !caseID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            throw LogicEvidenceError.invalidSuite("qualification case has an empty case ID")
+            throw LogicEvidenceError.invalidSuite("evidence case has an empty case ID")
         }
         try request.validate()
     }

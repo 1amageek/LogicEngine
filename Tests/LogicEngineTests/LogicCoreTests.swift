@@ -69,6 +69,16 @@ struct LogicCoreTests {
         #expect(try JSONDecoder().decode(LogicDesignDocument.self, from: encoder.encode(design)) == design)
     }
 
+    @Test("design signals default omitted signedness to unsigned")
+    func legacySignalSignednessDefaultsToUnsigned() throws {
+        let data = Data(
+            "{\"schemaVersion\":1,\"topDesignName\":\"legacy\",\"ports\":[],\"signals\":[{\"name\":\"a\",\"width\":1}],\"nodes\":[],\"metadata\":{}}".utf8
+        )
+        let design = try JSONDecoder().decode(LogicDesignDocument.self, from: data)
+
+        #expect(design.signals == [LogicSignal(name: "a", width: 1, isSigned: false)])
+    }
+
     @Test("filesystem artifact store rejects output outside its root")
     func artifactStoreRejectsOutsideRoot() throws {
         let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-root-\(UUID().uuidString)")

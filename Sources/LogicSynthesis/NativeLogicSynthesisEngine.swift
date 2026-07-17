@@ -45,7 +45,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             try design.validateNativeExecutionTopology()
 
             let libraryResult = try loadLibraries(request.libraries)
-            let constraintsResult = try loadConstraints(request.constraints.artifact)
+            let constraintsResult = try loadConstraints(request.constraints)
             let pdkDigest = try loadAndValidatePDK(request.pdk)
             if let powerIntent = request.powerIntent {
                 guard request.inputs.contains(powerIntent.artifact) else {

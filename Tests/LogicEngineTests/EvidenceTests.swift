@@ -4,9 +4,9 @@ import LogicEvidence
 import Testing
 
 @Suite("Logic evidence contracts")
-struct QualificationTests {
+struct EvidenceTests {
     @Test("retained suite decodes as an agent-operable corpus")
-    func qualificationFixtureDecodes() throws {
+    func evidenceFixtureDecodes() throws {
         let suite = try loadSuite()
         try suite.validate()
         #expect(suite.cases.count == 4)
@@ -129,21 +129,21 @@ struct QualificationTests {
     private func loadSuite() throws -> LogicEvidenceSuite {
         try JSONDecoder().decode(
             LogicEvidenceSuite.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-qualification-suite"))
+            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-evidence-suite"))
         )
     }
 
     private func loadOracle() throws -> LogicEvidenceOracleObservationSet {
         try JSONDecoder().decode(
             LogicEvidenceOracleObservationSet.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-qualification-oracle-v1"))
+            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-evidence-oracle-v1"))
         )
     }
 
     private func loadUnboundedSuite() throws -> LogicEvidenceSuite {
         try JSONDecoder().decode(
             LogicEvidenceSuite.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-unbounded-qualification-suite"))
+            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-unbounded-evidence-suite"))
         )
     }
 }
@@ -179,22 +179,22 @@ private struct FixtureObservationExecutor: LogicEvidenceExecuting {
         _ request: LogicEvidenceRequest
     ) async throws -> LogicEvidenceObservation {
         switch request.runID {
-        case "logic-qualification-simulation":
+        case "logic-evidence-simulation":
             return LogicEvidenceObservation(
                 status: .completed,
-                diagnosticCodes: ["LOGIC_SIMULATION_COMPLETED"],
+                diagnosticCodes: ["logic.simulation.completed"],
                 artifactIDs: ["logic-simulation-report", "logic-waveform"]
             )
-        case "logic-qualification-synthesis":
+        case "logic-evidence-synthesis":
             return LogicEvidenceObservation(
                 status: .completed,
                 diagnosticCodes: ["LOGIC_EQUIVALENCE_REQUIRED", "LOGIC_SYNTHESIS_COMPLETED"],
                 artifactIDs: ["logic-equivalence-request", "logic-synthesis-provenance", "mapped-design"]
             )
-        case "logic-qualification-signed-arithmetic", "logic-qualification-vector-logical":
+        case "logic-evidence-signed-arithmetic", "logic-evidence-vector-logical":
             return LogicEvidenceObservation(
                 status: .completed,
-                diagnosticCodes: ["LOGIC_SIMULATION_COMPLETED"],
+                diagnosticCodes: ["logic.simulation.completed"],
                 artifactIDs: ["logic-simulation-report", "logic-waveform"]
             )
         default:

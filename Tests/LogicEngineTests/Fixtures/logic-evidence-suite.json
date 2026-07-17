@@ -10,7 +10,7 @@
         "kind": "simulation",
         "value": {
           "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
-          "runID": "logic-qualification-simulation",
+          "runID": "logic-evidence-simulation",
           "inputs": [
             {
               "id": "and-design",
@@ -25,9 +25,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+                "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
               },
-              "byteCount": 663,
+              "byteCount": 738,
               "producer": null
             },
             {
@@ -63,13 +63,13 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+                "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
               },
-              "byteCount": 663,
+              "byteCount": 738,
               "producer": null
             },
             "topDesignName": "and_top",
-            "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "stimulus": {
             "id": "and-stimulus",
@@ -104,7 +104,7 @@
         "kind": "synthesis",
         "value": {
           "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
-          "runID": "logic-qualification-synthesis",
+          "runID": "logic-evidence-synthesis",
           "inputs": [
             {
               "id": "and-design",
@@ -119,9 +119,9 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+                "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
               },
-              "byteCount": 663,
+              "byteCount": 738,
               "producer": null
             },
             {
@@ -193,13 +193,13 @@
               },
               "digest": {
                 "algorithm": "sha256",
-                "hexadecimalValue": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+                "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
               },
-              "byteCount": 663,
+              "byteCount": 738,
               "producer": null
             },
             "topDesignName": "and_top",
-            "designDigest": "cde0a89af2a2ec1f4f64a67c3e000b3568c326fb263fe65a1e08f2a21f9c8422"
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "libraries": [
             {
@@ -227,7 +227,6 @@
             }
           ],
           "constraints": {
-            "artifact": {
               "id": "logic-constraints",
               "locator": {
                 "location": {
@@ -242,12 +241,8 @@
                 "algorithm": "sha256",
                 "hexadecimalValue": "500b795dcea6c0b28c455dd5bb9f6bbb63c8c45c2096e3491904c77e3ebbce92"
               },
-              "byteCount": 125,
-              "producer": null
-            },
-            "modeIDs": [
-              "default"
-            ]
+                "byteCount": 125,
+                "producer": null
           },
           "pdk": {
             "manifest": {
@@ -288,7 +283,7 @@
         "kind": "simulation",
         "value": {
           "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
-          "runID": "logic-qualification-signed-arithmetic",
+          "runID": "logic-evidence-signed-arithmetic",
           "inputs": [
             {
               "id": "signed-arithmetic-design",
@@ -373,7 +368,7 @@
       "expectation": {
         "expectedStatus": "completed",
         "requiredDiagnosticCodes": [
-          "LOGIC_SIMULATION_COMPLETED"
+          "logic.simulation.completed"
         ],
         "forbiddenDiagnosticCodes": [
           "LOGIC_ASSERTION_FAILED"
@@ -386,7 +381,7 @@
         "kind": "simulation",
         "value": {
           "schemaVersion": {"major": 1, "minor": 0, "patch": 0},
-          "runID": "logic-qualification-vector-logical",
+          "runID": "logic-evidence-vector-logical",
           "inputs": [
             {
               "id": "vector-logical-design",
@@ -471,7 +466,7 @@
       "expectation": {
         "expectedStatus": "completed",
         "requiredDiagnosticCodes": [
-          "LOGIC_SIMULATION_COMPLETED"
+          "logic.simulation.completed"
         ],
         "forbiddenDiagnosticCodes": [
           "LOGIC_ASSERTION_FAILED"
