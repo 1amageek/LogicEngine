@@ -119,10 +119,10 @@ required for either mode.
 
 | Dependency | Local sibling | Remote fallback revision |
 |---|---|---|
-| CircuiteFoundation | `../CircuiteFoundation` | `2ec6ee13a89ac6885be3c26b41a9ee0ef89948ac` |
-| LogicDesign | `../LogicDesign` | `09768ed203d97d1d0f79f786f9988fcb2cd39155` |
-| TimingEngine | `../TimingEngine` | `81898ed51ab05c62712ebca5b1b03869b89f7682` |
-| PDKKit | `../PDKKit` | `28f3b83304ad2bbb0c2e0269d26616081d90d992` |
+| CircuiteFoundation | `../CircuiteFoundation` | `7abcac83517935c9b9f7553d7016d62cffde259d` |
+| LogicDesign | `../LogicDesign` | `4b82337cb78bf8aec9f1bb008e6c128a32649b6d` |
+| TimingEngine | `../TimingEngine` | `fb7e71beb24e9dc0d69bd65c45b09af74de15280` |
+| PDKKit | `../PDKKit` | `435ea9f047059b1c07fd7e0ac528610841ebb7b6` |
 
 ```bash
 swift build

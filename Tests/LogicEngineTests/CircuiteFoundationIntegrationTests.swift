@@ -82,6 +82,13 @@ struct CircuiteFoundationIntegrationTests {
         #expect(result.evidence.provenance.inputs == [design])
         #expect(result.evidence.provenance.randomSeed == 7)
         #expect(result.evidence.provenance.designRevision == design.digest)
+        let evidenceID = result.evidence.id
+        #expect(result.evidence.id == evidenceID)
+        let decoded = try JSONDecoder().decode(
+            LogicSimulationResult.self,
+            from: JSONEncoder().encode(result)
+        )
+        #expect(decoded.evidence.id == evidenceID)
     }
 
     @Test
