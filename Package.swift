@@ -25,7 +25,7 @@ let timingEngineDependency: Package.Dependency = isLSIWorkspace && FileManager.d
     atPath: workspaceRoot.appendingPathComponent("TimingEngine/Package.swift").path
 )
     ? .package(path: "../TimingEngine")
-    : .package(url: "https://github.com/1amageek/TimingEngine.git", revision: "baada25223ccc1225afefa672120ba0d7d1d5d41")
+    : .package(url: "https://github.com/1amageek/TimingEngine.git", revision: "2b8f0df3e359fca274edc8ede176457de40e1648")
 
 let pdkKitDependency: Package.Dependency = isLSIWorkspace && FileManager.default.fileExists(
     atPath: workspaceRoot.appendingPathComponent("PDKKit/Package.swift").path
