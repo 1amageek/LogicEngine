@@ -13,10 +13,7 @@ public struct LogicSynthesisResult: Sendable, Hashable, Codable, ArtifactProduci
     public let artifacts: [ArtifactReference]
     public let provenance: ExecutionProvenance
     public let payload: LogicSynthesisPayload
-
-    public var evidence: EvidenceManifest {
-        EvidenceManifest(provenance: provenance, artifacts: artifacts)
-    }
+    public let evidence: EvidenceManifest
 
     public init(
         schemaVersion: SchemaVersion,
@@ -34,5 +31,6 @@ public struct LogicSynthesisResult: Sendable, Hashable, Codable, ArtifactProduci
         self.artifacts = artifacts
         self.provenance = provenance
         self.payload = payload
+        self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
     }
 }

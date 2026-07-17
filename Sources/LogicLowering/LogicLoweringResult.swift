@@ -11,13 +11,14 @@ public struct LogicLoweringResult: Sendable, Hashable, Codable, ArtifactProducin
     public var status: LogicExecutionStatus
     public var document: LogicDesignDocument?
     public var payload: LogicLoweringPayload
-    public var artifacts: [ArtifactReference]
-    public var diagnostics: [DesignDiagnostic]
-    public var provenance: ExecutionProvenance
-
-    public var evidence: EvidenceManifest {
-        EvidenceManifest(provenance: provenance, artifacts: artifacts)
+    public var artifacts: [ArtifactReference] {
+        didSet { evidence = EvidenceManifest(id: evidence.id, provenance: provenance, artifacts: artifacts) }
     }
+    public var diagnostics: [DesignDiagnostic]
+    public var provenance: ExecutionProvenance {
+        didSet { evidence = EvidenceManifest(id: evidence.id, provenance: provenance, artifacts: artifacts) }
+    }
+    public private(set) var evidence: EvidenceManifest
 
     public init(
         schemaVersion: SchemaVersion = LogicLoweringRequest.currentSchemaVersion,
@@ -37,5 +38,6 @@ public struct LogicLoweringResult: Sendable, Hashable, Codable, ArtifactProducin
         self.artifacts = artifacts
         self.diagnostics = diagnostics
         self.provenance = provenance
+        self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
     }
 }

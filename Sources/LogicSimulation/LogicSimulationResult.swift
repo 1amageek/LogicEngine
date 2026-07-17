@@ -13,10 +13,7 @@ public struct LogicSimulationResult: Sendable, Hashable, Codable, ArtifactProduc
     public let artifacts: [ArtifactReference]
     public let diagnostics: [DesignDiagnostic]
     public let provenance: ExecutionProvenance
-
-    public var evidence: EvidenceManifest {
-        EvidenceManifest(provenance: provenance, artifacts: artifacts)
-    }
+    public let evidence: EvidenceManifest
 
     public init(
         schemaVersion: SchemaVersion = LogicSimulationRequest.currentSchemaVersion,
@@ -34,5 +31,6 @@ public struct LogicSimulationResult: Sendable, Hashable, Codable, ArtifactProduc
         self.artifacts = artifacts
         self.diagnostics = diagnostics
         self.provenance = provenance
+        self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
     }
 }
