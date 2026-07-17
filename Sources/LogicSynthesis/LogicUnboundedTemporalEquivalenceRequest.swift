@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 
 /// Request for an exhaustive finite-state proof with no trace-length bound.
 ///
@@ -14,8 +15,8 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
     public let schemaVersion: SchemaVersion
     public let runID: String
     public let inputs: [ArtifactReference]
-    public let referenceDesign: LogicDesignArtifact
-    public let implementationDesign: LogicDesignArtifact
+    public let referenceDesign: LogicDesignReference
+    public let implementationDesign: LogicDesignReference
     public let outputSignals: [String]
     public let valueDomain: LogicUnboundedTemporalEquivalenceDomain
     public let stateSpaceLimit: Int
@@ -26,8 +27,8 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
 
     public init(
         runID: String,
-        referenceDesign: LogicDesignArtifact,
-        implementationDesign: LogicDesignArtifact,
+        referenceDesign: LogicDesignReference,
+        implementationDesign: LogicDesignReference,
         outputSignals: [String] = [],
         valueDomain: LogicUnboundedTemporalEquivalenceDomain = .twoState,
         stateSpaceLimit: Int = 65_536,
@@ -69,6 +70,14 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
               referenceDesign.topDesignName == implementationDesign.topDesignName else {
             throw LogicExecutionContractError.invalidRequest(
                 "reference and implementation designs must use the same non-empty top design"
+            )
+        }
+        do {
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: referenceDesign.designDigest)
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: implementationDesign.designDigest)
+        } catch {
+            throw LogicExecutionContractError.invalidRequest(
+                "equivalence designs must carry valid SHA-256 digests"
             )
         }
         guard stateSpaceLimit > 0, transitionLimit > 0, timeoutNanoseconds > 0 else {

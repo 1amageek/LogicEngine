@@ -13,7 +13,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
     public var runID: String
     public var inputs: [ArtifactReference]
 
-    public var design: LogicDesignArtifact
+    public var design: LogicDesignReference
     public var libraries: [TimingLibraryReference]
     public var constraints: ArtifactReference
     public var pdk: PDKReference
@@ -23,7 +23,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
     public init(
         runID: String,
         inputs: [ArtifactReference] = [],
-        design: LogicDesignArtifact,
+        design: LogicDesignReference,
         libraries: [TimingLibraryReference],
         constraints: ArtifactReference,
         pdk: PDKReference,
@@ -61,6 +61,13 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         }
         guard !design.topDesignName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw LogicExecutionContractError.invalidRequest("top design name is empty")
+        }
+        do {
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: design.designDigest)
+        } catch {
+            throw LogicExecutionContractError.invalidRequest(
+                "design must carry a valid SHA-256 digest"
+            )
         }
         guard !libraries.isEmpty else {
             throw LogicExecutionContractError.invalidRequest(
@@ -114,7 +121,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
-        design = try container.decode(LogicDesignArtifact.self, forKey: .design)
+        design = try container.decode(LogicDesignReference.self, forKey: .design)
         libraries = try container.decode([TimingLibraryReference].self, forKey: .libraries)
         constraints = try container.decode(ArtifactReference.self, forKey: .constraints)
         pdk = try container.decode(PDKReference.self, forKey: .pdk)

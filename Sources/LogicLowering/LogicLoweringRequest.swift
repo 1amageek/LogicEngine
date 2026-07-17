@@ -9,13 +9,13 @@ public struct LogicLoweringRequest: Sendable, Hashable, Codable {
     public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
-    public var design: LogicDesignArtifact
+    public var design: LogicDesignReference
     public var artifactDirectory: String?
 
     public init(
         runID: String,
         inputs: [ArtifactReference] = [],
-        design: LogicDesignArtifact,
+        design: LogicDesignReference,
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
@@ -40,6 +40,13 @@ public struct LogicLoweringRequest: Sendable, Hashable, Codable {
         }
         guard !design.topDesignName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw LogicExecutionContractError.invalidRequest("top design name is empty")
+        }
+        do {
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: design.designDigest)
+        } catch {
+            throw LogicExecutionContractError.invalidRequest(
+                "design must carry a valid SHA-256 digest"
+            )
         }
         guard inputs.contains(design.artifact) else {
             throw LogicExecutionContractError.invalidRequest(

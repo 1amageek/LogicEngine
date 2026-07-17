@@ -253,13 +253,15 @@ struct UnboundedTemporalEquivalenceTests {
     ) throws -> LogicUnboundedTemporalEquivalenceRequest {
         return LogicUnboundedTemporalEquivalenceRequest(
             runID: runID,
-            referenceDesign: LogicDesignArtifact(
+            referenceDesign: LogicDesignReference(
                 artifact: reference,
-                topDesignName: topName
+                topDesignName: topName,
+                designRevision: reference.digest
             ),
-            implementationDesign: LogicDesignArtifact(
+            implementationDesign: LogicDesignReference(
                 artifact: implementation,
-                topDesignName: topName
+                topDesignName: topName,
+                designRevision: implementation.digest
             ),
             outputSignals: outputSignals,
             valueDomain: valueDomain,

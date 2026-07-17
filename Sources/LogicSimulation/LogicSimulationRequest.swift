@@ -10,7 +10,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
     public var runID: String
     public var inputs: [ArtifactReference]
 
-    public var design: LogicDesignArtifact
+    public var design: LogicDesignReference
     public var stimulus: ArtifactReference?
     public var seed: UInt64?
     public var waveformFormat: LogicWaveformFormat
@@ -19,7 +19,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
     public init(
         runID: String,
         inputs: [ArtifactReference] = [],
-        design: LogicDesignArtifact,
+        design: LogicDesignReference,
         stimulus: ArtifactReference? = nil,
         seed: UInt64? = nil,
         waveformFormat: LogicWaveformFormat = .vcd,
@@ -54,6 +54,13 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
         guard !design.topDesignName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw LogicExecutionContractError.invalidRequest("top design name is empty")
         }
+        do {
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: design.designDigest)
+        } catch {
+            throw LogicExecutionContractError.invalidRequest(
+                "design must carry a valid SHA-256 digest"
+            )
+        }
         guard inputs.contains(design.artifact) else {
             throw LogicExecutionContractError.invalidRequest(
                 "design artifact is missing from the input set"
@@ -87,7 +94,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
         }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
-        design = try container.decode(LogicDesignArtifact.self, forKey: .design)
+        design = try container.decode(LogicDesignReference.self, forKey: .design)
         stimulus = try container.decodeIfPresent(ArtifactReference.self, forKey: .stimulus)
         seed = try container.decodeIfPresent(UInt64.self, forKey: .seed)
         waveformFormat = try container.decode(LogicWaveformFormat.self, forKey: .waveformFormat)

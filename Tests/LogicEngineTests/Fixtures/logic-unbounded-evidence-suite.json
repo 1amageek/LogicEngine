@@ -55,7 +55,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "implementationDesign": {
             "artifact": {
@@ -77,7 +77,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "outputSignals": [
             "y"
@@ -167,7 +167,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "implementationDesign": {
             "artifact": {
@@ -189,7 +189,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "fd47fe4103424359d7b8cb75704ad28acf3e9fe537c0391296c7abcbe4c6344b"
           },
           "outputSignals": [
             "y"
@@ -261,7 +261,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "implementationDesign": {
             "artifact": {
@@ -283,7 +283,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "outputSignals": [
             "y"
@@ -355,7 +355,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "implementationDesign": {
             "artifact": {
@@ -377,7 +377,7 @@
               "producer": null
             },
             "topDesignName": "and_top",
-            "designRevision": null
+            "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
           },
           "outputSignals": [
             "y"
@@ -449,7 +449,7 @@
               "producer": null
             },
             "topDesignName": "unsupported_top",
-            "designRevision": null
+            "designDigest": "2e1a4b0ce8f385a721513e279e2e99b12259abac552729003e69320b47b46e56"
           },
           "implementationDesign": {
             "artifact": {
@@ -471,7 +471,7 @@
               "producer": null
             },
             "topDesignName": "unsupported_top",
-            "designRevision": null
+            "designDigest": "2e1a4b0ce8f385a721513e279e2e99b12259abac552729003e69320b47b46e56"
           },
           "outputSignals": [
             "y"

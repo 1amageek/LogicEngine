@@ -32,7 +32,7 @@ struct SynthesisTests {
             Issue.record("mapped design is missing")
             return
         }
-        #expect(mappedDesign.designRevision?.hexadecimalValue == mappedDesign.artifact.digest.hexadecimalValue)
+        #expect(mappedDesign.designDigest == mappedDesign.artifact.digest.hexadecimalValue)
         let mappedData = try Data(contentsOf: URL(fileURLWithPath: mappedDesign.artifact.path))
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: mappedData)
         #expect(document.nodes.first?.parameters["mappedCell"] == "AND2_X1")

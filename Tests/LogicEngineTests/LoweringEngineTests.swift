@@ -48,7 +48,7 @@ struct LoweringEngineTests {
         let request = LogicLoweringRequest(
             runID: "lowering-engine-test",
             inputs: [sourceReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: sourceReference,
                 topDesignName: "top",
                 designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)
@@ -60,7 +60,7 @@ struct LoweringEngineTests {
 
         #expect(result.status == .completed)
         #expect(result.payload.executionDesign?.topDesignName == "top")
-        #expect(result.payload.executionDesign?.designRevision != nil)
+        #expect(result.payload.executionDesign?.designDigest.isEmpty == false)
         #expect(result.payload.loweredNodeCount == 1)
         guard let executionDesign = result.payload.executionDesign,
               let output = result.payload.executionDesign?.artifact else {

@@ -19,13 +19,13 @@ let logicDesignDependency: Package.Dependency = isLSIWorkspace && FileManager.de
     atPath: workspaceRoot.appendingPathComponent("LogicDesign/Package.swift").path
 )
     ? .package(path: "../LogicDesign")
-    : .package(url: "https://github.com/1amageek/LogicDesign.git", revision: "66dc625904fe1da52a1d01454c1c7759eea8f138")
+    : .package(url: "https://github.com/1amageek/LogicDesign.git", revision: "b9aa25b0b78e6168befa25df3bfe8309bd020a6d")
 
 let timingEngineDependency: Package.Dependency = isLSIWorkspace && FileManager.default.fileExists(
     atPath: workspaceRoot.appendingPathComponent("TimingEngine/Package.swift").path
 )
     ? .package(path: "../TimingEngine")
-    : .package(url: "https://github.com/1amageek/TimingEngine.git", revision: "d1623cdff03ab60a30cb90b56e76f8e065d0c57f")
+    : .package(url: "https://github.com/1amageek/TimingEngine.git", revision: "baada25223ccc1225afefa672120ba0d7d1d5d41")
 
 let pdkKitDependency: Package.Dependency = isLSIWorkspace && FileManager.default.fileExists(
     atPath: workspaceRoot.appendingPathComponent("PDKKit/Package.swift").path

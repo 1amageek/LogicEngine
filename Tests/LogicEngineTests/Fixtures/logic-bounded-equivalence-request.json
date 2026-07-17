@@ -59,10 +59,7 @@
       "producer": null
     },
     "topDesignName": "and_top",
-    "designRevision": {
-      "algorithm": "sha256",
-      "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
-    }
+    "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
   },
   "implementationDesign": {
     "artifact": {
@@ -84,10 +81,7 @@
       "producer": null
     },
     "topDesignName": "and_top",
-    "designRevision": {
-      "algorithm": "sha256",
-      "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
-    }
+    "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
   },
   "stimulus": {
     "id": "and-stimulus",

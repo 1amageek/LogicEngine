@@ -35,8 +35,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 throw LogicExecutionError.invalidArtifact("RTL snapshot JSON could not be decoded: \(error.localizedDescription)")
             }
             let canonicalDesignDigest = try LogicDesignSnapshotCodec.digest(snapshot)
-            guard request.design.designRevision?.hexadecimalValue == nil
-                || request.design.designRevision?.hexadecimalValue == canonicalDesignDigest else {
+            guard request.design.designDigest == canonicalDesignDigest else {
                 throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
             }
             guard snapshot.rtl.topModuleName == request.design.topDesignName else {
@@ -71,7 +70,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 format: .json
             )
             let executionDesignDigest = output.digest.hexadecimalValue
-            let designReference = LogicDesignArtifact(
+            let designReference = LogicDesignReference(
                 artifact: output,
                 topDesignName: document.topDesignName,
                 designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
@@ -144,7 +143,10 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                     version: implementationVersion
                 ),
                 inputs: request.inputs,
-                designRevision: request.design.designRevision ?? request.design.artifact.digest,
+                designRevision: try ContentDigest(
+                    algorithm: .sha256,
+                    hexadecimalValue: request.design.designDigest
+                ),
                 startedAt: startedAt,
                 completedAt: Date()
             )

@@ -99,10 +99,8 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 runID: request.runID,
                 requestDigest: requestDigest,
                 stimulusDigest: stimulusDigest,
-                referenceDesignDigest: request.referenceDesign.designRevision?.hexadecimalValue
-                    ?? request.referenceDesign.artifact.digest.hexadecimalValue,
-                implementationDesignDigest: request.implementationDesign.designRevision?.hexadecimalValue
-                    ?? request.implementationDesign.artifact.digest.hexadecimalValue,
+                referenceDesignDigest: request.referenceDesign.designDigest,
+                implementationDesignDigest: request.implementationDesign.designDigest,
                 outputSignals: outputSignals,
                 sampleLimit: request.sampleLimit,
                 comparedSampleCount: Set(referenceReport.samples.map(\.time))
@@ -262,7 +260,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
 
     private func simulate(
         request: LogicBoundedTemporalEquivalenceRequest,
-        design: LogicDesignArtifact,
+        design: LogicDesignReference,
         role: String,
         outputDirectory: String
     ) async throws -> LogicSimulationResult {

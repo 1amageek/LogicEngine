@@ -7,7 +7,7 @@ import PDKCore
 import LogicEngineCore
 
 public struct LogicSynthesisPayload: Sendable, Hashable, Codable {
-    public var mappedDesign: LogicDesignArtifact?
+    public var mappedDesign: LogicDesignReference?
     public var mappedCellCount: Int
     public var loweredNodeCount: Int
     public var optimizedNodeCount: Int
@@ -19,7 +19,7 @@ public struct LogicSynthesisPayload: Sendable, Hashable, Codable {
     public var acceptanceState: LogicSynthesisAcceptanceState
 
     public init(
-        mappedDesign: LogicDesignArtifact?,
+        mappedDesign: LogicDesignReference?,
         mappedCellCount: Int,
         loweredNodeCount: Int = 0,
         optimizedNodeCount: Int = 0,
@@ -57,7 +57,7 @@ public struct LogicSynthesisPayload: Sendable, Hashable, Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        mappedDesign = try container.decodeIfPresent(LogicDesignArtifact.self, forKey: .mappedDesign)
+        mappedDesign = try container.decodeIfPresent(LogicDesignReference.self, forKey: .mappedDesign)
         mappedCellCount = try container.decode(Int.self, forKey: .mappedCellCount)
         loweredNodeCount = try container.decode(Int.self, forKey: .loweredNodeCount)
         optimizedNodeCount = try container.decode(Int.self, forKey: .optimizedNodeCount)

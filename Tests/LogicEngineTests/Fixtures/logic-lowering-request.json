@@ -41,7 +41,7 @@
       "producer": null
     },
     "topDesignName": "top",
-    "designRevision": null
+    "designDigest": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
   },
   "artifactDirectory": "outputs/logic-lowering"
 }

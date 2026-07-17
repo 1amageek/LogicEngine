@@ -35,10 +35,10 @@ struct LogicEngineTestFixture {
         )
     }
 
-    static func designReference(named name: String = "and-design") throws -> LogicDesignArtifact {
+    static func designReference(named name: String = "and-design") throws -> LogicDesignReference {
         let artifact = try reference(named: name, kind: .netlist)
         let topDesignName = name == "and-design" ? "and_top" : "unsupported_top"
-        return LogicDesignArtifact(
+        return LogicDesignReference(
             artifact: artifact,
             topDesignName: topDesignName,
             designRevision: artifact.digest

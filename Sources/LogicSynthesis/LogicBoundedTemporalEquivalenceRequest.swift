@@ -9,8 +9,8 @@ public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codabl
     public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
-    public var referenceDesign: LogicDesignArtifact
-    public var implementationDesign: LogicDesignArtifact
+    public var referenceDesign: LogicDesignReference
+    public var implementationDesign: LogicDesignReference
     public var stimulus: ArtifactReference
     public var outputSignals: [String]
     public var sampleLimit: Int
@@ -19,8 +19,8 @@ public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codabl
     public init(
         runID: String,
         inputs: [ArtifactReference] = [],
-        referenceDesign: LogicDesignArtifact,
-        implementationDesign: LogicDesignArtifact,
+        referenceDesign: LogicDesignReference,
+        implementationDesign: LogicDesignReference,
         stimulus: ArtifactReference,
         outputSignals: [String] = [],
         sampleLimit: Int,
@@ -59,10 +59,12 @@ public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codabl
                 "bounded temporal equivalence designs must use the same top design"
             )
         }
-        guard referenceDesign.designRevision != nil,
-              implementationDesign.designRevision != nil else {
+        do {
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: referenceDesign.designDigest)
+            _ = try ContentDigest(algorithm: .sha256, hexadecimalValue: implementationDesign.designDigest)
+        } catch {
             throw LogicExecutionContractError.invalidRequest(
-                "bounded temporal equivalence designs must carry digests"
+                "bounded temporal equivalence designs must carry valid SHA-256 digests"
             )
         }
         guard !stimulus.locator.location.value.isEmpty else {

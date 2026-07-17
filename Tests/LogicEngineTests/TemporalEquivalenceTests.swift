@@ -119,12 +119,12 @@ struct TemporalEquivalenceTests {
         LogicBoundedTemporalEquivalenceRequest(
             runID: runID,
             inputs: [referenceArtifact, implementationArtifact, stimulusArtifact],
-            referenceDesign: LogicDesignArtifact(
+            referenceDesign: LogicDesignReference(
                 artifact: referenceArtifact,
                 topDesignName: "temporal_top",
                 designRevision: referenceArtifact.digest
             ),
-            implementationDesign: LogicDesignArtifact(
+            implementationDesign: LogicDesignReference(
                 artifact: implementationArtifact,
                 topDesignName: "temporal_top",
                 designRevision: implementationArtifact.digest

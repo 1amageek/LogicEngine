@@ -66,9 +66,10 @@ struct CircuiteFoundationIntegrationTests {
         let engine: any LogicSimulationExecuting = FixedSimulationEngine(result: fixedResult)
         let request = LogicSimulationRequest(
             runID: "run-1",
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: design,
-                topDesignName: "top"
+                topDesignName: "top",
+                designRevision: design.digest
             ),
             seed: 7
         )
@@ -122,6 +123,10 @@ struct CircuiteFoundationIntegrationTests {
                 )]
             )
         ))
+        guard let snapshotDigest = snapshot.designDigest else {
+            Issue.record("Finalized logic design snapshot is missing its canonical digest")
+            return
+        }
         let snapshotData = try LogicDesignSnapshotCodec.encode(snapshot)
         try snapshotData.write(to: root.appending(path: "snapshot.json"), options: [.atomic])
 
@@ -144,9 +149,13 @@ struct CircuiteFoundationIntegrationTests {
         )
         let request = LogicLoweringRequest(
             runID: "canonical-lowering",
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: artifact,
-                topDesignName: "top"
+                topDesignName: "top",
+                designRevision: try ContentDigest(
+                    algorithm: .sha256,
+                    hexadecimalValue: snapshotDigest
+                )
             )
         )
         let engine: any LogicLoweringExecuting = NativeLogicLoweringEngine(
@@ -156,7 +165,7 @@ struct CircuiteFoundationIntegrationTests {
         let result = try await engine.execute(request)
 
         #expect(result.status == LogicExecutionStatus.completed)
-        #expect(result.payload.sourceDesignDigest?.hexadecimalValue == snapshot.designDigest)
+        #expect(result.payload.sourceDesignDigest?.hexadecimalValue == snapshotDigest)
         #expect(result.payload.executionDesign?.topDesignName == "top")
         #expect(result.evidence.provenance.inputs == [artifact])
     }
@@ -245,13 +254,15 @@ struct CircuiteFoundationIntegrationTests {
         let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "run-2",
             inputs: [reference, implementation, stimulus],
-            referenceDesign: LogicDesignArtifact(
+            referenceDesign: LogicDesignReference(
                 artifact: reference,
-                topDesignName: "top"
+                topDesignName: "top",
+                designRevision: reference.digest
             ),
-            implementationDesign: LogicDesignArtifact(
+            implementationDesign: LogicDesignReference(
                 artifact: implementation,
-                topDesignName: "top"
+                topDesignName: "top",
+                designRevision: implementation.digest
             ),
             stimulus: stimulus,
             sampleLimit: 2

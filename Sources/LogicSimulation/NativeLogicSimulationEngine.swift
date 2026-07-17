@@ -27,8 +27,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             }
             let designData = try artifactStore.read(request.design.artifact)
             let designDigest = request.design.artifact.digest.hexadecimalValue
-            guard request.design.designRevision?.hexadecimalValue == nil
-                || request.design.designRevision?.hexadecimalValue == designDigest else {
+            guard request.design.designDigest == designDigest else {
                 throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
             }
             let design = try decodeDesign(designData)
@@ -318,7 +317,10 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 version: implementationVersion
             ),
             inputs: request.inputs,
-            designRevision: request.design.designRevision ?? request.design.artifact.digest,
+            designRevision: try ContentDigest(
+                algorithm: .sha256,
+                hexadecimalValue: request.design.designDigest
+            ),
             randomSeed: request.seed,
             startedAt: startedAt,
             completedAt: Date()

@@ -30,10 +30,8 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             }
 
             let designData = try artifactStore.read(request.design.artifact)
-            let designDigest = request.design.designRevision?.hexadecimalValue
-                ?? request.design.artifact.digest.hexadecimalValue
-            guard request.design.designRevision == nil
-                || request.design.designRevision?.hexadecimalValue == designDigest else {
+            let designDigest = request.design.designDigest
+            guard designDigest == request.design.artifact.digest.hexadecimalValue else {
                 throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
             }
             let design = try decodeDesign(designData)
@@ -106,7 +104,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 kind: .report,
                 format: .json
             )
-            let mappedDesignArtifact = LogicDesignArtifact(
+            let mappedDesignArtifact = LogicDesignReference(
                 artifact: mappedReference,
                 topDesignName: mapped.design.topDesignName,
                 designRevision: try ContentDigest(

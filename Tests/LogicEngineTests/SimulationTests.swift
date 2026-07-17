@@ -91,7 +91,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "extended-semantics-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "extended_top",
                 designRevision: designReference.digest
@@ -156,7 +156,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "arithmetic_top",
                 designRevision: designReference.digest
@@ -238,7 +238,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "vector-logical-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_logical_top",
                 designRevision: designReference.digest
@@ -322,7 +322,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "signed-arithmetic-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "signed_arithmetic_top",
                 designRevision: designReference.digest
@@ -403,7 +403,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "reset_top",
                 designRevision: designReference.digest
@@ -481,7 +481,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "dff-reset-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "dff_reset_top",
                 designRevision: designReference.digest
@@ -574,7 +574,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "async-reset-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "async_reset_top",
                 designRevision: designReference.digest
@@ -638,7 +638,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "case-equality-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "case_top",
                 designRevision: designReference.digest
@@ -710,7 +710,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "sequential-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "sequential_top",
                 designRevision: designReference.digest
@@ -792,7 +792,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "negative-edge-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "negative_edge_top",
                 designRevision: designReference.digest
@@ -873,7 +873,7 @@ struct SimulationTests {
         let request = LogicSimulationRequest(
             runID: "vector-simulation",
             inputs: [designReference, stimulusReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_top",
                 designRevision: designReference.digest
@@ -1028,7 +1028,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "cycle-simulation",
             inputs: [designReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "cycle_top",
                 designRevision: designReference.digest
@@ -1072,7 +1072,7 @@ struct SimulationTests {
         ).execute(LogicSimulationRequest(
             runID: "multiple-driver-simulation",
             inputs: [designReference],
-            design: LogicDesignArtifact(
+            design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "multiple_driver_top",
                 designRevision: designReference.digest

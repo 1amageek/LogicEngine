@@ -1,6 +1,7 @@
 import CircuiteFoundation
 import Foundation
 import LogicEngineCore
+import LogicIR
 import LogicLowering
 import LogicSimulation
 import LogicSynthesis
@@ -10,11 +11,13 @@ import Testing
 struct ExecutionRequestValidationTests {
     @Test
     func loweringRejectsBlankRunID() throws {
+        let design = try artifact(id: "design")
         let request = LogicLoweringRequest(
             runID: " \n",
-            design: LogicDesignArtifact(
-                artifact: try artifact(id: "design"),
-                topDesignName: "top"
+            design: LogicDesignReference(
+                artifact: design,
+                topDesignName: "top",
+                designRevision: design.digest
             )
         )
 
@@ -29,7 +32,11 @@ struct ExecutionRequestValidationTests {
         let stimulus = try artifact(id: "stimulus")
         let request = LogicSimulationRequest(
             runID: "simulation",
-            design: LogicDesignArtifact(artifact: design, topDesignName: "top"),
+            design: LogicDesignReference(
+                artifact: design,
+                topDesignName: "top",
+                designRevision: design.digest
+            ),
             stimulus: stimulus
         )
         let encodedRequest = try JSONEncoder().encode(request)
@@ -51,13 +58,17 @@ struct ExecutionRequestValidationTests {
 
     @Test
     func boundedEquivalenceRejectsDuplicateOutputSignals() throws {
-        let reference = LogicDesignArtifact(
-            artifact: try artifact(id: "reference"),
-            topDesignName: "top"
+        let referenceArtifact = try artifact(id: "reference")
+        let implementationArtifact = try artifact(id: "implementation")
+        let reference = LogicDesignReference(
+            artifact: referenceArtifact,
+            topDesignName: "top",
+            designRevision: referenceArtifact.digest
         )
-        let implementation = LogicDesignArtifact(
-            artifact: try artifact(id: "implementation"),
-            topDesignName: "top"
+        let implementation = LogicDesignReference(
+            artifact: implementationArtifact,
+            topDesignName: "top",
+            designRevision: implementationArtifact.digest
         )
         let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "equivalence",
@@ -80,11 +91,32 @@ struct ExecutionRequestValidationTests {
         let request = LogicSimulationRequest(
             runID: "simulation",
             inputs: [design, stimulus, design],
-            design: LogicDesignArtifact(artifact: design, topDesignName: "top"),
+            design: LogicDesignReference(
+                artifact: design,
+                topDesignName: "top",
+                designRevision: design.digest
+            ),
             stimulus: stimulus
         )
 
         #expect(request.inputs == [design, stimulus])
+    }
+
+    @Test
+    func loweringRejectsMalformedCanonicalDesignDigest() throws {
+        let design = try artifact(id: "design")
+        let request = LogicLoweringRequest(
+            runID: "lowering",
+            design: LogicDesignReference(
+                artifact: design,
+                topDesignName: "top",
+                designDigest: "not-a-sha256-digest"
+            )
+        )
+
+        #expect(throws: LogicExecutionContractError.self) {
+            try request.validate()
+        }
     }
 
     private func artifact(id: String) throws -> ArtifactReference {

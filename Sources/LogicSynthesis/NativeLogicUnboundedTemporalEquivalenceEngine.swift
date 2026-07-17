@@ -736,10 +736,8 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
         let report = LogicUnboundedTemporalEquivalenceReport(
             runID: request.runID,
             requestDigest: requestDigest,
-            referenceDesignDigest: request.referenceDesign.designRevision?.hexadecimalValue
-                ?? request.referenceDesign.artifact.digest.hexadecimalValue,
-            implementationDesignDigest: request.implementationDesign.designRevision?.hexadecimalValue
-                ?? request.implementationDesign.artifact.digest.hexadecimalValue,
+            referenceDesignDigest: request.referenceDesign.designDigest,
+            implementationDesignDigest: request.implementationDesign.designDigest,
             valueDomain: request.valueDomain,
             outputSignals: pair.outputSignals,
             stateSignals: pair.stateSignals,
@@ -943,8 +941,10 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
         let provenance = try ExecutionProvenance(
             producer: producer,
             inputs: request.inputs,
-            designRevision: request.implementationDesign.designRevision
-                ?? request.implementationDesign.artifact.digest,
+            designRevision: try ContentDigest(
+                algorithm: .sha256,
+                hexadecimalValue: request.implementationDesign.designDigest
+            ),
             startedAt: startedAt,
             completedAt: Date()
         )
