@@ -27,7 +27,11 @@ Optimization and technology mapping.
 
 ### LogicEngine
 
-Umbrella API without a combined execution protocol.
+Umbrella product without a combined execution protocol.
+`LogicEngineCapabilities` is the typed, versioned discovery record returned by
+the CLI. Its `schemaVersion` belongs to that record rather than to a package API
+namespace, and its domain capability fields are Codable values rather than an
+untyped JSON dictionary.
 
 ### LogicEvidence
 

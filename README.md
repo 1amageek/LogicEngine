@@ -19,7 +19,7 @@ qualification remain external scopes.
 | `LogicSimulation` | Event-driven RTL and gate simulation |
 | `LogicSynthesis` | Optimization and technology mapping |
 | `LogicEvidence` | Retained corpus execution and independent oracle correlation observations |
-| `LogicEngine` | Umbrella API without a combined execution protocol |
+| `LogicEngine` | Umbrella product and the versioned `LogicEngineCapabilities` discovery record, without a combined execution protocol |
 | `LogicSynthesis` equivalence boundary | Bounded temporal trace comparison and exhaustive finite-state proof with digest-bearing reports, certificates, and counterexamples |
 
 `LogicEngineCore` contains the execution artifact schema, four-state values,
@@ -44,6 +44,11 @@ package does not expose a compatibility facade or parallel result type.
 ends at `oracleCorrelated`; it does not decide process qualification or release
 eligibility. ToolQualification evaluates implementation trust and the composing
 flow owns release policy and human approval.
+
+`LogicEngineCapabilities` owns the schema version for CLI capability discovery.
+Its native record contains typed lowering, simulation, synthesis, equivalence,
+and evidence fields; no package-level API namespace or untyped JSON dictionary
+defines that contract.
 
 Native implementations:
 
@@ -138,6 +143,10 @@ swift run logic-engine synthesize --request path/to/synthesis-request.json --roo
 swift run logic-engine bounded-equivalence --request path/to/bounded-equivalence-request.json --root path/to/project
 swift run logic-engine unbounded-equivalence --request path/to/unbounded-equivalence-request.json --root path/to/project
 ```
+
+The `capabilities` command encodes `LogicEngineCapabilities.native` as
+sorted-key JSON. Consumers must validate its `schemaVersion` before using the
+declared product fields.
 
 Each command decodes the canonical domain request and prints the domain result,
 including artifact references, diagnostics, evidence, and provenance. The

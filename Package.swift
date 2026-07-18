@@ -102,6 +102,7 @@ let package = Package(
         .target(
             name: "LogicEngine",
             dependencies: [
+                "LogicEngineCore",
                 "LogicLowering",
                 "LogicSimulation",
                 "LogicSynthesis",

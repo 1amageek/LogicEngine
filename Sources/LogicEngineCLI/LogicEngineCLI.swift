@@ -268,65 +268,7 @@ struct LogicEngineCLI {
     }
 
     private static func printCapabilities() {
-        do {
-            let data = try JSONSerialization.data(
-                withJSONObject: [
-                    "contractVersion": LogicEngineAPI.contractVersion,
-                    "products": [
-                        "lowering": [
-                            "implementation": "native-rtl-to-execution-graph",
-                            "negativeIntegerLiterals": true,
-                            "scalarLogicalOperators": true,
-                            "vectorLogicalOperators": true,
-                            "logicalNot": true,
-                            "signedArithmetic": true,
-                            "comparisons": true,
-                            "division": true,
-                            "modulo": true,
-                            "levelSensitiveLatch": true,
-                            "negativeEdgeSequential": true,
-                        ],
-                        "simulation": [
-                            "implementation": "native-four-state",
-                            "waveformFormats": ["VCD"],
-                            "scalarLogicalOperators": true,
-                            "vectorLogicalOperators": true,
-                            "logicalNot": true,
-                            "signedArithmetic": true,
-                            "arithmeticRightShift": true,
-                            "comparisons": true,
-                            "division": true,
-                            "modulo": true,
-                            "levelSensitiveLatch": true,
-                            "negativeEdgeSequential": true,
-                            "maximumArithmeticWidthBits": 64,
-                        ],
-                        "synthesis": [
-                            "implementation": "native-lowering-optimization-mapping",
-                            "equivalenceRequired": true,
-                            "acceptanceState": "pendingEquivalence",
-                            "equivalenceRequestArtifact": true,
-                        ],
-                        "equivalence": [
-                            "implementation": "native-bounded-trace",
-                            "boundedTemporalTrace": true,
-                            "unboundedTemporalFormal": true,
-                            "unboundedImplementation": "native-exhaustive-finite-state",
-                            "unboundedProofCertificate": true,
-                            "waveformFormats": ["VCD"],
-                        ],
-                    ],
-                    "evidence": [
-                        "retained-corpus",
-                        "independent-oracle-correlation",
-                    ],
-                ],
-                options: [.sortedKeys, .prettyPrinted]
-            )
-            print(String(decoding: data, as: UTF8.self))
-        } catch {
-            printFailure(error)
-        }
+        printJSON(LogicEngineCapabilities.native)
     }
 
     private struct CLIOptions {
