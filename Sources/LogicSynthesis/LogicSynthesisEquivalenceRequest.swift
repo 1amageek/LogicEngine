@@ -4,7 +4,7 @@ import LogicIR
 import CircuiteFoundation
 
 public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = 2
 
     public let schemaVersion: Int
     public let runID: String
@@ -12,6 +12,7 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
     public let sourceDesign: LogicDesignReference
     public let mappedDesign: LogicDesignReference
     public let synthesisProvenance: ArtifactReference
+    public let pdkArtifact: ArtifactReference
     public let proofScope: String
 
     public init(
@@ -20,6 +21,7 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
         sourceDesign: LogicDesignReference,
         mappedDesign: LogicDesignReference,
         synthesisProvenance: ArtifactReference,
+        pdkArtifact: ArtifactReference,
         proofScope: String = "rtl-to-mapped-structural"
     ) {
         self.schemaVersion = Self.currentSchemaVersion
@@ -28,6 +30,7 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
         self.sourceDesign = sourceDesign
         self.mappedDesign = mappedDesign
         self.synthesisProvenance = synthesisProvenance
+        self.pdkArtifact = pdkArtifact
         self.proofScope = proofScope
     }
 
@@ -52,6 +55,12 @@ public struct LogicSynthesisEquivalenceRequest: Sendable, Hashable, Codable {
               !mappedDesign.designDigest.isEmpty else {
             throw LogicExecutionError.invalidArtifact(
                 "synthesis equivalence references must carry design digests"
+            )
+        }
+        guard pdkArtifact.digest.algorithm == .sha256,
+              pdkArtifact.byteCount > 0 else {
+            throw LogicExecutionError.invalidArtifact(
+                "synthesis equivalence requires an integrity-bearing PDK artifact"
             )
         }
         guard !proofScope.isEmpty else {

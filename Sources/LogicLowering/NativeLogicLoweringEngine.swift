@@ -11,7 +11,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
     public init(
         artifactStore: any LogicArtifactStoring = FileSystemLogicArtifactStore(),
         lowerer: any LogicDesignLowering = NativeLogicDesignLowering(),
-        implementationVersion: String = "1"
+        implementationVersion: String = "1.0.0"
     ) {
         self.artifactStore = artifactStore
         self.lowerer = lowerer
@@ -139,7 +139,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
                     kind: .engine,
-                    identifier: "LogicLowering",
+                    identifier: "logic-lowering",
                     version: implementationVersion
                 ),
                 inputs: request.inputs,

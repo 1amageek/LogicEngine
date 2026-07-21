@@ -9,7 +9,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
 
     public init(
         artifactStore: any LogicArtifactStoring = FileSystemLogicArtifactStore(),
-        implementationVersion: String = "1"
+        implementationVersion: String = "1.0.0"
     ) {
         self.artifactStore = artifactStore
         self.implementationVersion = implementationVersion
@@ -313,7 +313,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         try ExecutionProvenance(
             producer: ProducerIdentity(
                 kind: .engine,
-                identifier: "LogicSimulation",
+                identifier: "logic-simulation",
                 version: implementationVersion
             ),
             inputs: request.inputs,

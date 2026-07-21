@@ -86,6 +86,7 @@ struct SynthesisTests {
         let mappedArtifact = try artifact(id: "mapped", path: "mapped.json", kind: .netlist)
         let proof = try artifact(id: "proof", path: "proof.json", kind: .report)
         let provenance = try artifact(id: "provenance", path: "provenance.json", kind: .report)
+        let pdk = try artifact(id: "pdk", path: "pdk.json", kind: .technology)
         let sourceDesign = LogicDesignReference(
             artifact: sourceArtifact,
             topDesignName: "top",
@@ -101,7 +102,18 @@ struct SynthesisTests {
             topDesignName: "top",
             sourceDesign: sourceDesign,
             mappedDesign: mappedDesign,
-            synthesisProvenance: provenance
+            synthesisProvenance: provenance,
+            pdkArtifact: pdk
+        )
+        let executionProvenance = try ExecutionProvenance(
+            producer: ProducerIdentity(
+                kind: .engine,
+                identifier: "logic-equivalence",
+                version: "1.0.0"
+            ),
+            inputs: [sourceArtifact, mappedArtifact, provenance, pdk],
+            startedAt: Date(timeIntervalSince1970: 0),
+            completedAt: Date(timeIntervalSince1970: 1)
         )
         let evidence = LogicSynthesisEquivalenceEvidence(
             runID: request.runID,
@@ -109,7 +121,8 @@ struct SynthesisTests {
             mappedDesignDigest: mappedDesign.designDigest,
             proofScope: request.proofScope,
             status: .proved,
-            proofArtifact: proof
+            proofArtifact: proof,
+            provenance: executionProvenance
         )
         let result = NativeLogicSynthesisAcceptanceEvaluator().evaluate(request: request, evidence: evidence)
 
@@ -122,7 +135,8 @@ struct SynthesisTests {
             mappedDesignDigest: "other-mapped-digest",
             proofScope: request.proofScope,
             status: .proved,
-            proofArtifact: proof
+            proofArtifact: proof,
+            provenance: executionProvenance
         )
         let rejected = NativeLogicSynthesisAcceptanceEvaluator().evaluate(
             request: request,

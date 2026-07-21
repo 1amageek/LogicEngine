@@ -12,7 +12,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
 
     public init(
         artifactStore: any LogicArtifactStoring = FileSystemLogicArtifactStore(),
-        implementationVersion: String = "1"
+        implementationVersion: String = "1.0.0"
     ) {
         self.artifactStore = artifactStore
         self.implementationVersion = implementationVersion
@@ -134,7 +134,8 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                     designDigest: designDigest
                 ),
                 mappedDesign: mappedDesign,
-                synthesisProvenance: provenanceReference
+                synthesisProvenance: provenanceReference,
+                pdkArtifact: request.pdk.manifest
             )
             try equivalenceRequest.validate()
             let equivalenceRequestData = try encode(equivalenceRequest)
@@ -144,7 +145,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
                 artifactID: "logic-equivalence-request",
-                kind: .report,
+                kind: .request,
                 format: .json
             )
             var diagnostics: [DesignDiagnostic] = [
@@ -188,7 +189,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 provenance: try ExecutionProvenance(
                     producer: ProducerIdentity(
                         kind: .engine,
-                        identifier: "LogicSynthesis",
+                        identifier: "logic-synthesis",
                         version: implementationVersion,
                         build: "native-lowering-optimization-mapping"
                     ),
@@ -490,7 +491,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
                     kind: .engine,
-                    identifier: "LogicSynthesis",
+                    identifier: "logic-synthesis",
                     version: implementationVersion,
                     build: "native-lowering-optimization-mapping"
                 ),

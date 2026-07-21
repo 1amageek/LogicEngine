@@ -3,7 +3,7 @@ import LogicEngineCore
 import CircuiteFoundation
 
 public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = 1
+    public static let currentSchemaVersion = 2
 
     public let schemaVersion: Int
     public let runID: String
@@ -12,6 +12,7 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
     public let proofScope: String
     public let status: LogicEquivalenceEvidenceStatus
     public let proofArtifact: ArtifactReference?
+    public let provenance: ExecutionProvenance
 
     public init(
         runID: String,
@@ -19,7 +20,8 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
         mappedDesignDigest: String,
         proofScope: String,
         status: LogicEquivalenceEvidenceStatus,
-        proofArtifact: ArtifactReference? = nil
+        proofArtifact: ArtifactReference? = nil,
+        provenance: ExecutionProvenance
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
@@ -28,6 +30,7 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
         self.proofScope = proofScope
         self.status = status
         self.proofArtifact = proofArtifact
+        self.provenance = provenance
     }
 
     public func validate() throws {
