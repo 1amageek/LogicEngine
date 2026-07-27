@@ -51,7 +51,7 @@ struct LoweringEngineTests {
             design: LogicDesignReference(
                 artifact: sourceReference,
                 topDesignName: "top",
-                designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)
+                canonicalDesignDigest: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)
             ),
             artifactDirectory: "outputs"
         )

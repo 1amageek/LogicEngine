@@ -317,10 +317,6 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 version: implementationVersion
             ),
             inputs: request.inputs,
-            designRevision: try ContentDigest(
-                algorithm: .sha256,
-                hexadecimalValue: request.design.designDigest
-            ),
             randomSeed: request.seed,
             startedAt: startedAt,
             completedAt: Date()

@@ -17,7 +17,7 @@ struct ExecutionRequestValidationTests {
             design: LogicDesignReference(
                 artifact: design,
                 topDesignName: "top",
-                designRevision: design.digest
+                canonicalDesignDigest: design.digest
             )
         )
 
@@ -35,7 +35,7 @@ struct ExecutionRequestValidationTests {
             design: LogicDesignReference(
                 artifact: design,
                 topDesignName: "top",
-                designRevision: design.digest
+                canonicalDesignDigest: design.digest
             ),
             stimulus: stimulus
         )
@@ -63,12 +63,12 @@ struct ExecutionRequestValidationTests {
         let reference = LogicDesignReference(
             artifact: referenceArtifact,
             topDesignName: "top",
-            designRevision: referenceArtifact.digest
+            canonicalDesignDigest: referenceArtifact.digest
         )
         let implementation = LogicDesignReference(
             artifact: implementationArtifact,
             topDesignName: "top",
-            designRevision: implementationArtifact.digest
+            canonicalDesignDigest: implementationArtifact.digest
         )
         let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "equivalence",
@@ -94,7 +94,7 @@ struct ExecutionRequestValidationTests {
             design: LogicDesignReference(
                 artifact: design,
                 topDesignName: "top",
-                designRevision: design.digest
+                canonicalDesignDigest: design.digest
             ),
             stimulus: stimulus
         )

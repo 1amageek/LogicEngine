@@ -122,12 +122,12 @@ struct TemporalEquivalenceTests {
             referenceDesign: LogicDesignReference(
                 artifact: referenceArtifact,
                 topDesignName: "temporal_top",
-                designRevision: referenceArtifact.digest
+                canonicalDesignDigest: referenceArtifact.digest
             ),
             implementationDesign: LogicDesignReference(
                 artifact: implementationArtifact,
                 topDesignName: "temporal_top",
-                designRevision: implementationArtifact.digest
+                canonicalDesignDigest: implementationArtifact.digest
             ),
             stimulus: stimulusArtifact,
             outputSignals: ["y"],

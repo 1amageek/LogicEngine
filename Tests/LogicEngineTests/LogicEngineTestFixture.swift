@@ -41,7 +41,7 @@ struct LogicEngineTestFixture {
         return LogicDesignReference(
             artifact: artifact,
             topDesignName: topDesignName,
-            designRevision: artifact.digest
+            canonicalDesignDigest: artifact.digest
         )
     }
 

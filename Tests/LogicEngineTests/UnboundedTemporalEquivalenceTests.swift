@@ -256,12 +256,12 @@ struct UnboundedTemporalEquivalenceTests {
             referenceDesign: LogicDesignReference(
                 artifact: reference,
                 topDesignName: topName,
-                designRevision: reference.digest
+                canonicalDesignDigest: reference.digest
             ),
             implementationDesign: LogicDesignReference(
                 artifact: implementation,
                 topDesignName: topName,
-                designRevision: implementation.digest
+                canonicalDesignDigest: implementation.digest
             ),
             outputSignals: outputSignals,
             valueDomain: valueDomain,

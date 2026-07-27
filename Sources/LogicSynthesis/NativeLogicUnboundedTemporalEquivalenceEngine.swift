@@ -941,10 +941,6 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
         let provenance = try ExecutionProvenance(
             producer: producer,
             inputs: request.inputs,
-            designRevision: try ContentDigest(
-                algorithm: .sha256,
-                hexadecimalValue: request.implementationDesign.designDigest
-            ),
             startedAt: startedAt,
             completedAt: Date()
         )

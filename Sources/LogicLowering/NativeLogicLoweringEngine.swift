@@ -73,7 +73,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
             let designReference = LogicDesignReference(
                 artifact: output,
                 topDesignName: document.topDesignName,
-                designRevision: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
+                canonicalDesignDigest: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
             )
             return try result(
                 request: request,
@@ -143,10 +143,6 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                     version: implementationVersion
                 ),
                 inputs: request.inputs,
-                designRevision: try ContentDigest(
-                    algorithm: .sha256,
-                    hexadecimalValue: request.design.designDigest
-                ),
                 startedAt: startedAt,
                 completedAt: Date()
             )

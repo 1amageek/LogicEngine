@@ -57,7 +57,6 @@ struct CircuiteFoundationIntegrationTests {
                     version: "1"
                 ),
                 inputs: [design],
-                designRevision: design.digest,
                 randomSeed: 7,
                 startedAt: Date(),
                 completedAt: Date()
@@ -69,7 +68,7 @@ struct CircuiteFoundationIntegrationTests {
             design: LogicDesignReference(
                 artifact: design,
                 topDesignName: "top",
-                designRevision: design.digest
+                canonicalDesignDigest: design.digest
             ),
             seed: 7
         )
@@ -82,7 +81,8 @@ struct CircuiteFoundationIntegrationTests {
         #expect(result.payload.assertionReport == nil)
         #expect(result.evidence.provenance.inputs == [design])
         #expect(result.evidence.provenance.randomSeed == 7)
-        #expect(result.evidence.provenance.designRevision == design.digest)
+        #expect(result.evidence.provenance.inputDesignRevision == nil)
+        #expect(result.evidence.provenance.outputDesignRevision == nil)
         let evidenceID = result.evidence.id
         #expect(result.evidence.id == evidenceID)
         let decoded = try JSONDecoder().decode(
@@ -152,7 +152,7 @@ struct CircuiteFoundationIntegrationTests {
             design: LogicDesignReference(
                 artifact: artifact,
                 topDesignName: "top",
-                designRevision: try ContentDigest(
+                canonicalDesignDigest: try ContentDigest(
                     algorithm: .sha256,
                     hexadecimalValue: snapshotDigest
                 )
@@ -257,12 +257,12 @@ struct CircuiteFoundationIntegrationTests {
             referenceDesign: LogicDesignReference(
                 artifact: reference,
                 topDesignName: "top",
-                designRevision: reference.digest
+                canonicalDesignDigest: reference.digest
             ),
             implementationDesign: LogicDesignReference(
                 artifact: implementation,
                 topDesignName: "top",
-                designRevision: implementation.digest
+                canonicalDesignDigest: implementation.digest
             ),
             stimulus: stimulus,
             sampleLimit: 2

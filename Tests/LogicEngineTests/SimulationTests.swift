@@ -94,7 +94,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "extended_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -159,7 +159,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "arithmetic_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -241,7 +241,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_logical_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -325,7 +325,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "signed_arithmetic_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -406,7 +406,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "reset_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -484,7 +484,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "dff_reset_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -577,7 +577,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "async_reset_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -641,7 +641,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "case_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -713,7 +713,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "sequential_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -795,7 +795,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "negative_edge_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -876,7 +876,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "vector_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             stimulus: stimulusReference,
             artifactDirectory: "outputs"
@@ -1031,7 +1031,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "cycle_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             artifactDirectory: "outputs"
         ))
@@ -1075,7 +1075,7 @@ struct SimulationTests {
             design: LogicDesignReference(
                 artifact: designReference,
                 topDesignName: "multiple_driver_top",
-                designRevision: designReference.digest
+                canonicalDesignDigest: designReference.digest
             ),
             artifactDirectory: "outputs"
         ))

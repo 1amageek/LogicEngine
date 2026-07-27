@@ -107,7 +107,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
             let mappedDesignArtifact = LogicDesignReference(
                 artifact: mappedReference,
                 topDesignName: mapped.design.topDesignName,
-                designRevision: try ContentDigest(
+                canonicalDesignDigest: try ContentDigest(
                     algorithm: .sha256,
                     hexadecimalValue: outputDesignDigest
                 )
