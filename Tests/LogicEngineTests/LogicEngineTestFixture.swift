@@ -5,6 +5,8 @@ import PDKCore
 import LogicSynthesis
 import TimingCore
 import CircuiteFoundation
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 struct LogicEngineTestFixture {
     static func url(named name: String) throws -> URL {
@@ -19,20 +21,22 @@ struct LogicEngineTestFixture {
         kind: ArtifactKind = .other,
         format: ArtifactFormat = .json
     ) throws -> ArtifactReference {
+        try binding(named: name, kind: kind, format: format).reference
+    }
+
+    static func binding(
+        named name: String,
+        kind: ArtifactKind = .other,
+        format: ArtifactFormat = .json
+    ) throws -> LogicArtifactBinding {
         let url = try url(named: name)
         let data = try Data(contentsOf: url)
-        let locator = ArtifactLocator(
-            location: try ArtifactLocation(fileURL: url),
-            role: .input,
-            kind: kind,
-            format: format
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: kind, format: format)
         )
-        return ArtifactReference(
-            id: try ArtifactID(rawValue: name),
-            locator: locator,
-            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
-        )
+        return try LogicArtifactBinding.local(reference: reference, fileURL: url)
     }
 
     static func designReference(named name: String = "and-design") throws -> LogicDesignReference {
@@ -54,23 +58,67 @@ struct LogicEngineTestFixture {
     }
 
     static func synthesisRequest(outputDirectory: URL? = nil) throws -> LogicSynthesisRequest {
-        let design = try designReference()
-        let libraryArtifact = try reference(named: "logic-cells", kind: .timingLibrary, format: .json)
-        let constraintsArtifact = try reference(named: "logic-constraints", kind: .constraint, format: .json)
-        let pdkArtifact = try reference(named: "pdk-manifest", kind: .technology, format: .json)
+        let designBinding = try binding(named: "and-design", kind: .netlist)
+        let design = LogicDesignReference(
+            artifact: designBinding.reference,
+            topDesignName: "and_top",
+            canonicalDesignDigest: designBinding.digest
+        )
+        let libraryBinding = try binding(named: "logic-cells", kind: .timingLibrary, format: .json)
+        let timingLibraryBinding = try TimingArtifactBinding(
+            reference: libraryBinding.reference,
+            availability: timingAvailability(from: libraryBinding.availability)
+        )
+        let constraintsBinding = try binding(named: "logic-constraints", kind: .constraint, format: .json)
+        let pdkBinding = try binding(named: "pdk-manifest", kind: .technology, format: .json)
         return LogicSynthesisRequest(
             runID: "logic-synthesis-fixture",
-            inputs: [design.artifact, libraryArtifact, constraintsArtifact, pdkArtifact],
+            inputBindings: [designBinding],
             design: design,
-            libraries: [TimingLibraryReference(artifact: libraryArtifact, cornerIDs: ["typical"])],
-            constraints: constraintsArtifact,
+            libraries: [TimingLibraryReference(artifact: timingLibraryBinding, cornerIDs: ["typical"])],
+            constraints: constraintsBinding,
             pdk: PDKReference(
-                manifest: pdkArtifact,
+                manifest: pdkBinding.reference,
+                manifestLocator: try locator(
+                    named: "pdk-manifest",
+                    kind: .technology,
+                    format: .json
+                ),
                 processID: "logic-fixture",
                 version: "1",
-                digest: pdkArtifact.digest.hexadecimalValue
+                digest: pdkBinding.digest.hexadecimalValue
             ),
             artifactDirectory: outputDirectory?.path(percentEncoded: false)
         )
+    }
+
+    static func locator(
+        named name: String,
+        kind: ArtifactKind,
+        format: ArtifactFormat
+    ) throws -> ArtifactLocator {
+        ArtifactLocator(
+            location: try ArtifactLocation(fileURL: url(named: name)),
+            role: .input,
+            kind: kind,
+            format: format
+        )
+    }
+
+    static func timingAvailability(
+        from availability: ArtifactAvailability
+    ) throws -> ArtifactAvailability {
+        switch availability {
+        case .local(let artifactID, _, let relativePath):
+            return .local(
+                artifactID: artifactID,
+                rootID: try ArtifactRootID(
+                    rawValue: TimingArtifactBinding.localFileSystemRootIdentifier
+                ),
+                relativePath: relativePath
+            )
+        case .service:
+            return availability
+        }
     }
 }

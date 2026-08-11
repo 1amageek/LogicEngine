@@ -4,37 +4,39 @@ import LogicIR
 import LogicEngineCore
 
 public struct LogicSimulationRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v1
+    public static let currentSchemaVersion = SchemaVersion.v2
 
     public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
+    public var inputBindings: [LogicArtifactBinding]
 
     public var design: LogicDesignReference
-    public var stimulus: ArtifactReference?
+    public var stimulus: LogicArtifactBinding?
     public var seed: UInt64?
     public var waveformFormat: LogicWaveformFormat
     public var artifactDirectory: String?
 
     public init(
         runID: String,
-        inputs: [ArtifactReference] = [],
+        inputBindings: [LogicArtifactBinding],
         design: LogicDesignReference,
-        stimulus: ArtifactReference? = nil,
+        stimulus: LogicArtifactBinding? = nil,
         seed: UInt64? = nil,
         waveformFormat: LogicWaveformFormat = .vcd,
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
-        var allInputs: [ArtifactReference] = []
-        for artifact in [design.artifact] + inputs where !allInputs.contains(artifact) {
-            allInputs.append(artifact)
+        var allBindings: [LogicArtifactBinding] = []
+        for binding in inputBindings where !allBindings.contains(where: { $0.reference == binding.reference }) {
+            allBindings.append(binding)
         }
-        if let stimulus, !allInputs.contains(stimulus) {
-            allInputs.append(stimulus)
+        if let stimulus, !allBindings.contains(where: { $0.reference == stimulus.reference }) {
+            allBindings.append(stimulus)
         }
-        self.inputs = allInputs
+        self.inputs = allBindings.map(\.reference)
+        self.inputBindings = allBindings
         self.design = design
         self.stimulus = stimulus
         self.seed = seed
@@ -66,7 +68,12 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
                 "design artifact is missing from the input set"
             )
         }
-        if let stimulus, !inputs.contains(stimulus) {
+        guard inputBindings.map(\.reference) == inputs else {
+            throw LogicExecutionContractError.invalidRequest(
+                "input bindings do not match the content-only input lineage"
+            )
+        }
+        if let stimulus, !inputs.contains(stimulus.reference) {
             throw LogicExecutionContractError.invalidRequest(
                 "stimulus artifact is missing from the input set"
             )
@@ -77,6 +84,7 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
         case schemaVersion
         case runID
         case inputs
+        case inputBindings
         case design
         case stimulus
         case seed
@@ -94,8 +102,9 @@ public struct LogicSimulationRequest: Sendable, Hashable, Codable {
         }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
+        inputBindings = try container.decode([LogicArtifactBinding].self, forKey: .inputBindings)
         design = try container.decode(LogicDesignReference.self, forKey: .design)
-        stimulus = try container.decodeIfPresent(ArtifactReference.self, forKey: .stimulus)
+        stimulus = try container.decodeIfPresent(LogicArtifactBinding.self, forKey: .stimulus)
         seed = try container.decodeIfPresent(UInt64.self, forKey: .seed)
         waveformFormat = try container.decode(LogicWaveformFormat.self, forKey: .waveformFormat)
         artifactDirectory = try container.decodeIfPresent(String.self, forKey: .artifactDirectory)

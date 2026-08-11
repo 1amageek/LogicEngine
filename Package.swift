@@ -56,6 +56,9 @@ let package = Package(
             name: "LogicEngineCore",
             dependencies: [
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationFileSystem", package: "CircuiteFoundation"),
                 .product(name: "LogicIR", package: "LogicDesign"),
             ]
         ),
@@ -83,6 +86,7 @@ let package = Package(
                 "LogicLowering",
                 "LogicSimulation",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
                 .product(name: "LogicIR", package: "LogicDesign"),
                 .product(name: "PowerIntent", package: "LogicDesign"),
                 .product(name: "TimingCore", package: "TimingEngine"),
@@ -111,7 +115,19 @@ let package = Package(
         ),
         .testTarget(
             name: "LogicEngineTests",
-            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine", .product(name: "SystemVerilogFrontend", package: "LogicDesign")],
+            dependencies: [
+                "LogicEngineCore",
+                "LogicLowering",
+                "LogicSimulation",
+                "LogicSynthesis",
+                "LogicEvidence",
+                "LogicEngine",
+                .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+                .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
+                .product(name: "TimingCore", package: "TimingEngine"),
+                .product(name: "PDKCore", package: "PDKKit"),
+            ],
             resources: [.copy("Fixtures")]
         ),
         .executableTarget(

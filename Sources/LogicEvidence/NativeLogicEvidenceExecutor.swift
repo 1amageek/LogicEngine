@@ -45,7 +45,7 @@ public struct NativeLogicEvidenceExecutor: LogicEvidenceExecuting {
             return LogicEvidenceObservation(
                 status: result.status,
                 diagnosticCodes: result.diagnostics.map { $0.code.rawValue },
-                artifactIDs: result.artifacts.map { $0.id.rawValue }
+                artifactIDs: result.artifacts.map { $0.id.description }
             )
         }
     }

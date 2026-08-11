@@ -6,6 +6,7 @@ import PDKCore
 import Testing
 import TimingCore
 import CircuiteFoundation
+import CircuiteFoundationCrypto
 
 @Suite("Native logic synthesis")
 struct SynthesisTests {
@@ -33,7 +34,11 @@ struct SynthesisTests {
             return
         }
         #expect(mappedDesign.designDigest == mappedDesign.artifact.digest.hexadecimalValue)
-        let mappedData = try Data(contentsOf: URL(fileURLWithPath: mappedDesign.artifact.path))
+        let mappedBinding = try LogicArtifactBinding.require(
+            mappedDesign.artifact,
+            in: result.artifactBindings
+        )
+        let mappedData = try store.read(mappedBinding)
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: mappedData)
         #expect(document.nodes.first?.parameters["mappedCell"] == "AND2_X1")
         #expect(result.payload.provenance != nil)
@@ -41,7 +46,11 @@ struct SynthesisTests {
             Issue.record("equivalence request artifact is missing")
             return
         }
-        let equivalenceData = try Data(contentsOf: URL(fileURLWithPath: equivalenceRequest.path))
+        let equivalenceBinding = try LogicArtifactBinding.require(
+            equivalenceRequest,
+            in: result.artifactBindings
+        )
+        let equivalenceData = try store.read(equivalenceBinding)
         let equivalenceRequestPayload = try JSONDecoder().decode(LogicSynthesisEquivalenceRequest.self, from: equivalenceData)
         try equivalenceRequestPayload.validate()
         #expect(
@@ -53,18 +62,36 @@ struct SynthesisTests {
     @Test("library membership controls mapping without caller-issued qualification")
     func mappingIgnoresCallerQualificationFlags() async throws {
         let outputDirectory = try LogicEngineTestFixture.temporaryOutputDirectory()
-        let design = try LogicEngineTestFixture.designReference()
-        let library = try LogicEngineTestFixture.reference(named: "logic-cells-unqualified", kind: .timingLibrary, format: .json)
-        let constraints = try LogicEngineTestFixture.reference(named: "logic-constraints", kind: .constraint, format: .json)
-        let pdk = try LogicEngineTestFixture.reference(named: "pdk-manifest", kind: .technology, format: .json)
+        let designBinding = try LogicEngineTestFixture.binding(named: "and-design", kind: .netlist)
+        let design = LogicDesignReference(
+            artifact: designBinding.reference,
+            topDesignName: "and_top",
+            canonicalDesignDigest: designBinding.digest
+        )
+        let library = try LogicEngineTestFixture.binding(named: "logic-cells-unqualified", kind: .timingLibrary, format: .json)
+        let constraints = try LogicEngineTestFixture.binding(named: "logic-constraints", kind: .constraint, format: .json)
+        let pdk = try LogicEngineTestFixture.binding(named: "pdk-manifest", kind: .technology, format: .json)
         let request = LogicSynthesisRequest(
             runID: "logic-synthesis-no-cell",
-            inputs: [design.artifact, constraints, pdk],
+            inputBindings: [designBinding],
             design: design,
-            libraries: [TimingLibraryReference(artifact: library, cornerIDs: ["typical"])],
+            libraries: [TimingLibraryReference(
+                artifact: try TimingArtifactBinding(
+                    reference: library.reference,
+                    availability: LogicEngineTestFixture.timingAvailability(
+                        from: library.availability
+                    )
+                ),
+                cornerIDs: ["typical"]
+            )],
             constraints: constraints,
             pdk: PDKReference(
-                manifest: pdk,
+                manifest: pdk.reference,
+                manifestLocator: try LogicEngineTestFixture.locator(
+                    named: "pdk-manifest",
+                    kind: .technology,
+                    format: .json
+                ),
                 processID: "logic-fixture",
                 version: "1",
                 digest: pdk.digest.hexadecimalValue
@@ -152,16 +179,10 @@ struct SynthesisTests {
         kind: ArtifactKind
     ) throws -> ArtifactReference {
         let data = Data([0])
-        return ArtifactReference(
-            id: try ArtifactID(rawValue: id),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: path),
-                role: .input,
-                kind: kind,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
+        return try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: kind, format: .json)
         )
     }
 }

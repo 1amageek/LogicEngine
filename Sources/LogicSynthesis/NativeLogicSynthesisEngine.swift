@@ -5,6 +5,7 @@ import PDKCore
 import PowerIntent
 import TimingCore
 import CircuiteFoundation
+import CircuiteFoundationCrypto
 
 public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -25,14 +26,20 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         do {
             try validate(request)
             try checkCancellation()
-            for input in request.inputs {
+            for input in request.inputBindings {
                 _ = try artifactStore.read(input)
             }
 
-            let designData = try artifactStore.read(request.design.artifact)
+            let designBinding = try LogicArtifactBinding.require(
+                request.design.artifact,
+                in: request.inputBindings
+            )
+            let designData = try artifactStore.read(designBinding)
             let designDigest = request.design.designDigest
             guard designDigest == request.design.artifact.digest.hexadecimalValue else {
-                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.path)
+                throw LogicExecutionError.artifactDigestMismatch(
+                    designBinding.materializationDescription
+                )
             }
             let design = try decodeDesign(designData)
             guard design.topDesignName == request.design.topDesignName else {
@@ -51,11 +58,16 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                         "power intent artifact is missing from the input set"
                     )
                 }
-                let powerIntentData = try artifactStore.read(powerIntent.artifact)
+                guard let powerIntentBinding = request.powerIntentBinding else {
+                    throw LogicExecutionError.missingPrerequisite(
+                        "power intent materialization is missing"
+                    )
+                }
+                let powerIntentData = try artifactStore.read(powerIntentBinding)
                 let powerIntentDigest = try digestHex(powerIntentData)
                 guard powerIntent.designDigest.isEmpty || powerIntent.designDigest == designDigest else {
                     throw LogicExecutionError.artifactDigestMismatch(
-                        powerIntent.artifact.locator.location.value
+                        powerIntentBinding.materializationDescription
                     )
                 }
                 guard !powerIntentData.isEmpty else {
@@ -81,7 +93,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 fileName: "mapped-design.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "mapped-design",
                 kind: .netlist,
                 format: .json
             )
@@ -100,12 +111,11 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 fileName: "synthesis-provenance.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-synthesis-provenance",
                 kind: .report,
                 format: .json
             )
             let mappedDesignArtifact = LogicDesignReference(
-                artifact: mappedReference,
+                artifact: mappedReference.reference,
                 topDesignName: mapped.design.topDesignName,
                 canonicalDesignDigest: try ContentDigest(
                     algorithm: .sha256,
@@ -113,7 +123,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 )
             )
             let mappedDesign = LogicDesignReference(
-                artifact: mappedReference,
+                artifact: mappedReference.reference,
                 topDesignName: mapped.design.topDesignName,
                 designDigest: outputDesignDigest,
                 provenance: LogicDesignProvenance(
@@ -134,7 +144,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                     designDigest: designDigest
                 ),
                 mappedDesign: mappedDesign,
-                synthesisProvenance: provenanceReference,
+                synthesisProvenance: provenanceReference.reference,
                 pdkArtifact: request.pdk.manifest
             )
             try equivalenceRequest.validate()
@@ -144,7 +154,6 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 fileName: "logic-equivalence-request.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-equivalence-request",
                 kind: .request,
                 format: .json
             )
@@ -175,17 +184,17 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
                 optimizedNodeCount: optimization.design.nodes.count,
                 totalArea: mapped.totalArea,
                 totalPower: mapped.totalPower,
-                provenance: provenanceReference,
-                equivalenceRequest: equivalenceRequestReference,
+                provenance: provenanceReference.reference,
+                equivalenceRequest: equivalenceRequestReference.reference,
                 equivalenceRequired: true,
                 acceptanceState: .pendingEquivalence
             )
-            return LogicSynthesisResult(
+            return try LogicSynthesisResult(
                 schemaVersion: LogicSynthesisRequest.currentSchemaVersion,
                 runID: request.runID,
                 status: .completed,
                 diagnostics: diagnostics,
-                artifacts: [mappedReference, provenanceReference, equivalenceRequestReference],
+                artifactBindings: [mappedReference, provenanceReference, equivalenceRequestReference],
                 provenance: try ExecutionProvenance(
                     producer: ProducerIdentity(
                         kind: .engine,
@@ -232,10 +241,19 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         var cells: [LogicCell] = []
         var digests: [String] = []
         for reference in references {
-            let data = try artifactStore.read(reference.artifact)
+            let binding = try LogicArtifactBinding(
+                reference: reference.artifact.reference,
+                availability: logicAvailability(
+                    from: reference.artifact.availability
+                )
+            )
+            let data = try artifactStore.read(binding)
             let digest = try digestHex(data)
             digests.append(digest)
-            let library = try decodeLibrary(data: data, path: reference.artifact.path)
+            let library = try decodeLibrary(
+                data: data,
+                path: reference.artifact.materializationDescription
+            )
             try library.validate()
             cells.append(contentsOf: library.cells)
         }
@@ -304,7 +322,7 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         return LogicCellLibraryDocument(libraryName: path, cells: cells)
     }
 
-    private func loadConstraints(_ reference: ArtifactReference) throws -> ConstraintResult {
+    private func loadConstraints(_ reference: LogicArtifactBinding) throws -> ConstraintResult {
         let data = try artifactStore.read(reference)
         let digest = try digestHex(data)
         do {
@@ -314,7 +332,9 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         } catch let error as LogicExecutionError where !isJSONDecodeError(error) {
             throw error
         } catch {
-            guard reference.format == .sdc || reference.format == .text || reference.format == .unknown else {
+            guard reference.descriptor.format == .sdc
+                    || reference.descriptor.format == .text
+                    || reference.descriptor.format == .unknown else {
                 throw LogicExecutionError.invalidArtifact(
                     "constraint JSON could not be decoded: \(error.localizedDescription)"
                 )
@@ -359,15 +379,63 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
     }
 
     private func loadAndValidatePDK(_ reference: PDKReference) throws -> String {
-        let data = try artifactStore.read(reference.manifest)
+        let binding = try LogicArtifactBinding(
+            reference: reference.manifest,
+            availability: try LogicArtifactBinding.local(
+                reference: reference.manifest,
+                fileURL: reference.manifestLocator.location.resolvedFileURL(
+                    relativeTo: artifactStoreRoot
+                )
+            ).availability
+        )
+        let data = try artifactStore.read(binding)
         guard !data.isEmpty else {
             throw LogicExecutionError.missingPrerequisite("PDK manifest is empty")
         }
         let actualDigest = try digestHex(data)
         guard reference.digest == actualDigest else {
-            throw LogicExecutionError.artifactDigestMismatch(reference.manifest.path)
+            throw LogicExecutionError.artifactDigestMismatch(
+                reference.manifestLocator.location.value
+            )
         }
         return actualDigest
+    }
+
+    private var artifactStoreRoot: URL {
+        (artifactStore as? FileSystemLogicArtifactStore)?.rootDirectory
+            ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+    }
+
+    private func logicAvailability(
+        from availability: ArtifactAvailability
+    ) throws -> ArtifactAvailability {
+        switch availability {
+        case .local(let artifactID, let rootID, let relativePath):
+            let mappedRootID: ArtifactRootID
+            switch rootID.rawValue {
+            case TimingArtifactBinding.workspaceRootIdentifier,
+                 LogicArtifactBinding.workspaceRootIdentifier:
+                mappedRootID = try ArtifactRootID(
+                    rawValue: LogicArtifactBinding.workspaceRootIdentifier
+                )
+            case TimingArtifactBinding.localFileSystemRootIdentifier,
+                 LogicArtifactBinding.localFileSystemRootIdentifier:
+                mappedRootID = try ArtifactRootID(
+                    rawValue: LogicArtifactBinding.localFileSystemRootIdentifier
+                )
+            default:
+                throw LogicExecutionError.invalidArtifact(
+                    "unsupported timing library root: \(rootID.rawValue)"
+                )
+            }
+            return .local(
+                artifactID: artifactID,
+                rootID: mappedRootID,
+                relativePath: relativePath
+            )
+        case .service:
+            return availability
+        }
     }
 
     private func optimize(_ design: LogicDesignDocument) throws -> OptimizationResult {
@@ -482,12 +550,12 @@ public struct NativeLogicSynthesisEngine: LogicSynthesisExecuting {
         error: LogicExecutionError,
         startedAt: Date
     ) throws -> LogicSynthesisResult {
-        LogicSynthesisResult(
+        try LogicSynthesisResult(
             schemaVersion: LogicSynthesisRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
-            artifacts: [],
+            artifactBindings: [],
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
                     kind: .engine,

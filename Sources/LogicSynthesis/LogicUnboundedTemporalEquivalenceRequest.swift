@@ -10,11 +10,12 @@ import LogicIR
 /// records those limits and the explored relation so callers can distinguish a
 /// proof from a bounded trace experiment.
 public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v1
+    public static let currentSchemaVersion = SchemaVersion.v2
 
     public let schemaVersion: SchemaVersion
     public let runID: String
     public let inputs: [ArtifactReference]
+    public let inputBindings: [LogicArtifactBinding]
     public let referenceDesign: LogicDesignReference
     public let implementationDesign: LogicDesignReference
     public let outputSignals: [String]
@@ -35,7 +36,7 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
         transitionLimit: Int = 1_000_000,
         timeoutNanoseconds: UInt64 = 30_000_000_000,
         clockSignal: String? = nil,
-        inputs: [ArtifactReference] = [],
+        inputBindings: [LogicArtifactBinding],
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
@@ -49,12 +50,13 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
         self.timeoutNanoseconds = timeoutNanoseconds
         self.clockSignal = clockSignal
         self.artifactDirectory = artifactDirectory
-        var allInputs: [ArtifactReference] = []
-        for artifact in [referenceDesign.artifact, implementationDesign.artifact] + inputs
-            where !allInputs.contains(artifact) {
-            allInputs.append(artifact)
+        var allBindings: [LogicArtifactBinding] = []
+        for binding in inputBindings
+            where !allBindings.contains(where: { $0.reference == binding.reference }) {
+            allBindings.append(binding)
         }
-        self.inputs = allInputs
+        self.inputs = allBindings.map(\.reference)
+        self.inputBindings = allBindings
     }
 
     public func validate() throws {
@@ -101,5 +103,12 @@ public struct LogicUnboundedTemporalEquivalenceRequest: Sendable, Hashable, Coda
                 "equivalence design artifacts must be present in the input set"
             )
         }
+        guard inputBindings.map(\.reference) == inputs else {
+            throw LogicExecutionContractError.invalidRequest(
+                "input bindings do not match the content-only input lineage"
+            )
+        }
+        _ = try LogicArtifactBinding.require(referenceDesign.artifact, in: inputBindings)
+        _ = try LogicArtifactBinding.require(implementationDesign.artifact, in: inputBindings)
     }
 }

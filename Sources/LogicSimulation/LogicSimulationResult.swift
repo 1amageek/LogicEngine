@@ -10,7 +10,8 @@ public struct LogicSimulationResult: Sendable, Hashable, Codable, ArtifactProduc
     public let runID: String
     public let status: LogicExecutionStatus
     public let payload: LogicSimulationPayload
-    public let artifacts: [ArtifactReference]
+    public let artifactBindings: [LogicArtifactBinding]
+    public var artifacts: [ArtifactReference] { artifactBindings.map(\.reference) }
     public let diagnostics: [DesignDiagnostic]
     public let provenance: ExecutionProvenance
     public let evidence: EvidenceManifest
@@ -20,17 +21,20 @@ public struct LogicSimulationResult: Sendable, Hashable, Codable, ArtifactProduc
         runID: String,
         status: LogicExecutionStatus,
         payload: LogicSimulationPayload,
-        artifacts: [ArtifactReference] = [],
+        artifactBindings: [LogicArtifactBinding] = [],
         diagnostics: [DesignDiagnostic] = [],
         provenance: ExecutionProvenance
-    ) {
+    ) throws {
         self.schemaVersion = schemaVersion
         self.runID = runID
         self.status = status
         self.payload = payload
-        self.artifacts = artifacts
+        self.artifactBindings = artifactBindings
         self.diagnostics = diagnostics
         self.provenance = provenance
-        self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
+        self.evidence = try LogicEvidenceManifestFactory.make(
+            provenance: provenance,
+            artifacts: artifactBindings.map(\.reference)
+        )
     }
 }

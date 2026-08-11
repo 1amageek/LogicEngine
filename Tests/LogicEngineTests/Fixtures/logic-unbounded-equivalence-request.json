@@ -1,66 +1,40 @@
 {
-  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "schemaVersion": {
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  },
   "runID": "logic-unbounded-equivalence-cli",
   "inputs": [
     {
-      "id": "and-design",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
-        },
+      "id": "43697263756974654172746966616374436f6e74656e74000001000673686132353600201815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e00000000000002e2",
+      "descriptor": {
+        "role": "input",
         "kind": "netlist",
-        "format": "json",
-        "role": "input"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
-      },
-      "byteCount": 738,
-      "producer": null
+        "format": "json"
+      }
     }
   ],
   "referenceDesign": {
     "artifact": {
-      "id": "and-design",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
-        },
+      "id": "43697263756974654172746966616374436f6e74656e74000001000673686132353600201815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e00000000000002e2",
+      "descriptor": {
+        "role": "input",
         "kind": "netlist",
-        "format": "json",
-        "role": "input"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
-      },
-      "byteCount": 738,
-      "producer": null
+        "format": "json"
+      }
     },
     "topDesignName": "and_top",
     "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
   },
   "implementationDesign": {
     "artifact": {
-      "id": "and-design",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/and-design.json"
-        },
+      "id": "43697263756974654172746966616374436f6e74656e74000001000673686132353600201815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e00000000000002e2",
+      "descriptor": {
+        "role": "input",
         "kind": "netlist",
-        "format": "json",
-        "role": "input"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
-      },
-      "byteCount": 738,
-      "producer": null
+        "format": "json"
+      }
     },
     "topDesignName": "and_top",
     "designDigest": "1815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e"
@@ -73,5 +47,28 @@
   "transitionLimit": 4,
   "timeoutNanoseconds": 30000000000,
   "clockSignal": null,
-  "artifactDirectory": "outputs/logic-unbounded-equivalence"
+  "artifactDirectory": "outputs/logic-unbounded-equivalence",
+  "inputBindings": [
+    {
+      "reference": {
+        "id": "43697263756974654172746966616374436f6e74656e74000001000673686132353600201815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e00000000000002e2",
+        "descriptor": {
+          "role": "input",
+          "kind": "netlist",
+          "format": "json"
+        }
+      },
+      "availability": {
+        "kind": "local",
+        "artifactID": "43697263756974654172746966616374436f6e74656e74000001000673686132353600201815980adef474c4300960476d707e840171caae24e5bfa4db90e91468572e8e00000000000002e2",
+        "rootID": "logic-workspace",
+        "relativePath": [
+          "Tests",
+          "LogicEngineTests",
+          "Fixtures",
+          "and-design.json"
+        ]
+      }
+    }
+  ]
 }

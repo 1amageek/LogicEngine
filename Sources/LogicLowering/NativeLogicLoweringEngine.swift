@@ -24,10 +24,14 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
         let startedAt = Date()
         do {
             try validate(request)
-            for input in request.inputs {
+            for input in request.inputBindings {
                 _ = try artifactStore.read(input)
             }
-            let snapshotData = try artifactStore.read(request.design.artifact)
+            let designBinding = try LogicArtifactBinding.require(
+                request.design.artifact,
+                in: request.inputBindings
+            )
+            let snapshotData = try artifactStore.read(designBinding)
             let snapshot: LogicDesignSnapshot
             do {
                 snapshot = try LogicDesignSnapshotCodec.decode(snapshotData)
@@ -36,7 +40,9 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
             }
             let canonicalDesignDigest = try LogicDesignSnapshotCodec.digest(snapshot)
             guard request.design.designDigest == canonicalDesignDigest else {
-                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
+                throw LogicExecutionError.artifactDigestMismatch(
+                    designBinding.materializationDescription
+                )
             }
             guard snapshot.rtl.topModuleName == request.design.topDesignName else {
                 throw LogicExecutionError.invalidDesign(
@@ -65,13 +71,12 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 fileName: "logic-execution-design.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-execution-design",
                 kind: .netlist,
                 format: .json
             )
             let executionDesignDigest = output.digest.hexadecimalValue
             let designReference = LogicDesignReference(
-                artifact: output,
+                artifact: output.reference,
                 topDesignName: document.topDesignName,
                 canonicalDesignDigest: try ContentDigest(algorithm: .sha256, hexadecimalValue: executionDesignDigest)
             )
@@ -79,7 +84,7 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
                 request: request,
                 status: .completed,
                 diagnostics: lowering.diagnostics,
-                artifacts: [output],
+                artifactBindings: [output],
                 payload: LogicLoweringPayload(
                     sourceDesignDigest: try ContentDigest(
                         algorithm: .sha256,
@@ -124,17 +129,17 @@ public struct NativeLogicLoweringEngine: LogicLoweringExecuting {
         request: LogicLoweringRequest,
         status: LogicIR.LogicExecutionStatus,
         diagnostics: [DesignDiagnostic],
-        artifacts: [ArtifactReference] = [],
+        artifactBindings: [LogicArtifactBinding] = [],
         payload: LogicLoweringPayload,
         document: LogicDesignDocument?,
         startedAt: Date
     ) throws -> LogicLoweringResult {
-        LogicLoweringResult(
+        try LogicLoweringResult(
             runID: request.runID,
             status: status,
             document: document,
             payload: payload,
-            artifacts: artifacts,
+            artifactBindings: artifactBindings,
             diagnostics: diagnostics,
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(

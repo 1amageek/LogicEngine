@@ -7,36 +7,39 @@ import PDKCore
 import LogicEngineCore
 
 public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v2
+    public static let currentSchemaVersion = SchemaVersion.v3
 
     public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
+    public var inputBindings: [LogicArtifactBinding]
 
     public var design: LogicDesignReference
     public var libraries: [TimingLibraryReference]
-    public var constraints: ArtifactReference
+    public var constraints: LogicArtifactBinding
     public var pdk: PDKReference
     public var powerIntent: PowerIntentReference?
+    public var powerIntentBinding: LogicArtifactBinding?
     public var artifactDirectory: String?
 
     public init(
         runID: String,
-        inputs: [ArtifactReference] = [],
+        inputBindings: [LogicArtifactBinding],
         design: LogicDesignReference,
         libraries: [TimingLibraryReference],
-        constraints: ArtifactReference,
+        constraints: LogicArtifactBinding,
         pdk: PDKReference,
         powerIntent: PowerIntentReference? = nil,
+        powerIntentBinding: LogicArtifactBinding? = nil,
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
-        let prerequisites = [design.artifact]
-            + libraries.map(\.artifact)
-            + [constraints, pdk.manifest]
+        self.inputBindings = inputBindings
+        let prerequisites = inputBindings.map(\.reference)
+            + libraries.map(\.artifact.reference)
+            + [constraints.reference, pdk.manifest]
             + (powerIntent.map { [$0.artifact] } ?? [])
-            + inputs
         var allInputs: [ArtifactReference] = []
         for artifact in prerequisites where !allInputs.contains(artifact) {
             allInputs.append(artifact)
@@ -47,6 +50,7 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         self.constraints = constraints
         self.pdk = pdk
         self.powerIntent = powerIntent
+        self.powerIntentBinding = powerIntentBinding
         self.artifactDirectory = artifactDirectory
     }
 
@@ -74,20 +78,36 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
                 "at least one timing library is required"
             )
         }
-        guard constraints.kind == .constraint else {
+        guard constraints.descriptor.kind == .constraint else {
             throw LogicExecutionContractError.invalidRequest(
                 "synthesis constraints must use the constraint artifact kind"
             )
         }
         var requiredArtifacts = [design.artifact]
-            + libraries.map(\.artifact)
-            + [constraints, pdk.manifest]
+            + libraries.map(\.artifact.reference)
+            + [constraints.reference, pdk.manifest]
         if let powerIntent {
             requiredArtifacts.append(powerIntent.artifact)
         }
         guard requiredArtifacts.allSatisfy(inputs.contains) else {
             throw LogicExecutionContractError.invalidRequest(
                 "one or more synthesis prerequisites are missing from the input set"
+            )
+        }
+        guard inputBindings.contains(where: { $0.reference == design.artifact }) else {
+            throw LogicExecutionContractError.invalidRequest(
+                "design materialization is missing from synthesis input bindings"
+            )
+        }
+        if let powerIntent {
+            guard powerIntentBinding?.reference == powerIntent.artifact else {
+                throw LogicExecutionContractError.invalidRequest(
+                    "power intent identity and materialization do not match"
+                )
+            }
+        } else if powerIntentBinding != nil {
+            throw LogicExecutionContractError.invalidRequest(
+                "power intent materialization has no semantic reference"
             )
         }
         do {
@@ -103,11 +123,13 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         case schemaVersion
         case runID
         case inputs
+        case inputBindings
         case design
         case libraries
         case constraints
         case pdk
         case powerIntent
+        case powerIntentBinding
         case artifactDirectory
     }
 
@@ -121,11 +143,16 @@ public struct LogicSynthesisRequest: Sendable, Hashable, Codable {
         }
         runID = try container.decode(String.self, forKey: .runID)
         inputs = try container.decode([ArtifactReference].self, forKey: .inputs)
+        inputBindings = try container.decode([LogicArtifactBinding].self, forKey: .inputBindings)
         design = try container.decode(LogicDesignReference.self, forKey: .design)
         libraries = try container.decode([TimingLibraryReference].self, forKey: .libraries)
-        constraints = try container.decode(ArtifactReference.self, forKey: .constraints)
+        constraints = try container.decode(LogicArtifactBinding.self, forKey: .constraints)
         pdk = try container.decode(PDKReference.self, forKey: .pdk)
         powerIntent = try container.decodeIfPresent(PowerIntentReference.self, forKey: .powerIntent)
+        powerIntentBinding = try container.decodeIfPresent(
+            LogicArtifactBinding.self,
+            forKey: .powerIntentBinding
+        )
         artifactDirectory = try container.decodeIfPresent(String.self, forKey: .artifactDirectory)
     }
 }

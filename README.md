@@ -24,14 +24,19 @@ qualification remain external scopes.
 
 `LogicEngineCore` contains the execution artifact schema, four-state values,
 stimulus/assertion records, cell-library and constraint records, provenance, typed
-diagnostics, and a root-bounded filesystem artifact store with symlink-escape
-rejection, atomic publication and immutable collision detection.
+diagnostics, and `LogicArtifactBinding`. A binding joins a location-independent
+`ArtifactReference` to one execution-scoped `ArtifactLocator`; provenance and
+evidence retain only the content reference. The filesystem store admits reads
+from its configured input and output roots, rejects symlink escape and content
+tampering, and publishes immutable outputs atomically.
 
 ## Contract
 
 Every design execution product exposes a canonical boundary:
 
-- a typed `Codable`, `Hashable`, `Sendable` request using `ArtifactReference`;
+- a typed `Codable`, `Hashable`, `Sendable` request with content-only
+  `ArtifactReference` lineage and explicit `LogicArtifactBinding`
+  materializations;
 - a typed result conforming to `ArtifactProducing`, `DiagnosticReporting`, and
   `EvidenceProviding`;
 - a domain protocol refining `CircuiteFoundation.Engine`;
@@ -149,7 +154,9 @@ sorted-key JSON. Consumers must validate its `schemaVersion` before using the
 declared product fields.
 
 Each command decodes the canonical domain request and prints the domain result,
-including artifact references, diagnostics, evidence, and provenance. The
+including artifact bindings, content-addressed evidence, diagnostics, and
+provenance. Artifact locators are execution availability and never participate
+in content identity or evidence identity. The
 retained `logic-*-request.json` fixtures under
 `Tests/LogicEngineTests/Fixtures` are directly executable from the package
 root. Commands print sorted-key JSON, and a non-completed result returns a
@@ -205,7 +212,7 @@ canonical RTL or gate IR owned by `LogicDesign`.
 
 ```mermaid
 flowchart LR
-    Request["Typed request + immutable refs"] --> Verify["Digest and schema validation"]
+    Request["Typed request + content refs + bindings"] --> Verify["Digest, descriptor and schema validation"]
     Verify --> Lower["Native RTL lowering"]
     Lower --> Sim["Native simulation"]
     Lower --> Syn["Native synthesis"]

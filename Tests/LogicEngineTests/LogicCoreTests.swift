@@ -2,6 +2,8 @@ import Foundation
 import CircuiteFoundation
 import LogicEngineCore
 import Testing
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("LogicEngine core")
 struct LogicCoreTests {
@@ -69,6 +71,90 @@ struct LogicCoreTests {
         #expect(try JSONDecoder().decode(LogicDesignDocument.self, from: encoder.encode(design)) == design)
     }
 
+    @Test("artifact bindings preserve content identity across relocation and reject availability drift")
+    func artifactBindingIdentityAndDescriptorValidation() throws {
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: Data("identity".utf8)),
+            byteCount: UInt64(Data("identity".utf8).count),
+            descriptor: ArtifactDescriptor(role: .input, kind: .netlist, format: .json)
+        )
+        let first = try LogicArtifactBinding(
+            reference: reference,
+            availability: .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                relativePath: try ArtifactRelativePath(segments: ["first", "design.json"])
+            )
+        )
+        let second = try LogicArtifactBinding(
+            reference: reference,
+            availability: .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                relativePath: try ArtifactRelativePath(segments: ["second", "design.json"])
+            )
+        )
+
+        #expect(first.reference == second.reference)
+        #expect(first.availability != second.availability)
+        let otherData = Data("other-content".utf8)
+        let otherReference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: otherData),
+            byteCount: UInt64(otherData.count),
+            descriptor: reference.descriptor
+        )
+        #expect(throws: LogicArtifactBindingError.availabilityIdentityMismatch) {
+            try LogicArtifactBinding(
+                reference: reference,
+                availability: .local(
+                    artifactID: otherReference.id,
+                    rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                    relativePath: try ArtifactRelativePath(segments: ["design.vcd"])
+                )
+            )
+        }
+    }
+
+    @Test("filesystem artifact store reports content tampering as a typed failure")
+    func artifactStoreRejectsTamperedContent() throws {
+        let root = FileManager.default.temporaryDirectory.appending(
+            path: "logic-store-tamper-\(UUID().uuidString)"
+        )
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            do {
+                try FileManager.default.removeItem(at: root)
+            } catch {
+                Issue.record("Failed to remove temporary artifact root: \(error)")
+            }
+        }
+        let expected = Data("expected".utf8)
+        try Data("tampered".utf8).write(to: root.appending(path: "artifact.json"))
+        let locator = ArtifactLocator(
+            location: try ArtifactLocation(workspaceRelativePath: "artifact.json"),
+            role: .input,
+            kind: .report,
+            format: .json
+        )
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: expected),
+            byteCount: UInt64(expected.count),
+            descriptor: locator.descriptor
+        )
+        let binding = try LogicArtifactBinding(
+            reference: reference,
+            availability: .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                relativePath: try ArtifactRelativePath(segments: ["artifact.json"])
+            )
+        )
+
+        #expect(throws: LogicExecutionError.artifactDigestMismatch("local:logic-workspace/artifact.json")) {
+            try FileSystemLogicArtifactStore(rootDirectory: root).read(binding)
+        }
+    }
+
     @Test("filesystem artifact store rejects output outside its root")
     func artifactStoreRejectsOutsideRoot() throws {
         let root = FileManager.default.temporaryDirectory.appending(path: "logic-store-root-\(UUID().uuidString)")
@@ -81,7 +167,6 @@ struct LogicCoreTests {
                 fileName: "result.json",
                 outputDirectory: outside.path(percentEncoded: false),
                 runID: "outside-root",
-                artifactID: nil,
                 kind: .report,
                 format: .json
             )
@@ -112,13 +197,51 @@ struct LogicCoreTests {
             fileName: "result.json",
             outputDirectory: outputDirectory.path(percentEncoded: false),
             runID: "configured-output",
-            artifactID: "configured-output-result",
             kind: .report,
             format: .json
         )
 
-        #expect(reference.path == "artifacts/result.json")
+        #expect(
+            reference.availability == .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                relativePath: try ArtifactRelativePath(segments: ["artifacts", "result.json"])
+            )
+        )
         #expect(try store.read(reference) == Data("artifact".utf8))
+    }
+
+    @Test("filesystem artifact store reads its configured output root outside the input root")
+    func artifactStoreReadsConfiguredExternalOutput() throws {
+        let root = FileManager.default.temporaryDirectory.appending(
+            path: "logic-store-input-root-\(UUID().uuidString)"
+        )
+        let output = FileManager.default.temporaryDirectory.appending(
+            path: "logic-store-output-root-\(UUID().uuidString)"
+        )
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer {
+            do {
+                try FileManager.default.removeItem(at: root)
+                try FileManager.default.removeItem(at: output)
+            } catch {
+                Issue.record("Failed to remove temporary artifact roots: \(error)")
+            }
+        }
+        let store = FileSystemLogicArtifactStore(
+            rootDirectory: root,
+            defaultOutputDirectory: output
+        )
+        let binding = try store.write(
+            Data("artifact".utf8),
+            fileName: "result.json",
+            outputDirectory: output.path(percentEncoded: false),
+            runID: "external-output",
+            kind: .report,
+            format: .json
+        )
+
+        #expect(try store.read(binding) == Data("artifact".utf8))
     }
 
     @Test("filesystem artifact store rejects absolute and symlinked input outside its root")
@@ -130,15 +253,20 @@ struct LogicCoreTests {
         let outsideArtifact = outside.appending(path: "result.json")
         let data = Data("artifact".utf8)
         try data.write(to: outsideArtifact)
-        let absoluteReference = ArtifactReference(
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(fileURL: outsideArtifact),
-                role: .input,
-                kind: .report,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data),
-            byteCount: UInt64(data.count)
+        let absoluteLocator = ArtifactLocator(
+            location: try ArtifactLocation(fileURL: outsideArtifact),
+            role: .input,
+            kind: .report,
+            format: .json
+        )
+        let outsideReference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data),
+            byteCount: UInt64(data.count),
+            descriptor: absoluteLocator.descriptor
+        )
+        let absoluteReference = try LogicArtifactBinding.local(
+            reference: outsideReference,
+            fileURL: outsideArtifact
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: root)
         #expect(throws: LogicExecutionError.self) {
@@ -149,15 +277,24 @@ struct LogicCoreTests {
             at: root.appending(path: "escaped.json"),
             withDestinationURL: outsideArtifact
         )
-        let symlinkReference = ArtifactReference(
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "escaped.json"),
-                role: .input,
-                kind: .report,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data),
-            byteCount: UInt64(data.count)
+        let symlinkLocator = ArtifactLocator(
+            location: try ArtifactLocation(workspaceRelativePath: "escaped.json"),
+            role: .input,
+            kind: .report,
+            format: .json
+        )
+        let symlinkArtifactReference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data),
+            byteCount: UInt64(data.count),
+            descriptor: symlinkLocator.descriptor
+        )
+        let symlinkReference = try LogicArtifactBinding(
+            reference: symlinkArtifactReference,
+            availability: .local(
+                artifactID: symlinkArtifactReference.id,
+                rootID: try ArtifactRootID(rawValue: LogicArtifactBinding.workspaceRootIdentifier),
+                relativePath: try ArtifactRelativePath(segments: ["escaped.json"])
+            )
         )
         #expect(throws: LogicExecutionError.self) {
             try store.read(symlinkReference)
@@ -180,7 +317,6 @@ struct LogicCoreTests {
                 fileName: "result.json",
                 outputDirectory: "escaped",
                 runID: "symlink-escape",
-                artifactID: nil,
                 kind: .report,
                 format: .json
             )
@@ -196,7 +332,6 @@ struct LogicCoreTests {
             fileName: "result.json",
             outputDirectory: "artifacts",
             runID: "collision",
-            artifactID: "immutable-result",
             kind: .report,
             format: .json
         )
@@ -205,7 +340,6 @@ struct LogicCoreTests {
             fileName: "result.json",
             outputDirectory: "artifacts",
             runID: "collision",
-            artifactID: "immutable-result",
             kind: .report,
             format: .json
         )
@@ -217,7 +351,6 @@ struct LogicCoreTests {
                 fileName: "result.json",
                 outputDirectory: "artifacts",
                 runID: "collision",
-                artifactID: "immutable-result",
                 kind: .report,
                 format: .json
             )

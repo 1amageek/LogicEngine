@@ -10,7 +10,8 @@ public struct LogicUnboundedTemporalEquivalenceResult: Sendable, Hashable, Codab
     public let runID: String
     public let status: LogicIR.LogicExecutionStatus
     public let payload: LogicUnboundedTemporalEquivalencePayload
-    public let artifacts: [ArtifactReference]
+    public let artifactBindings: [LogicArtifactBinding]
+    public var artifacts: [ArtifactReference] { artifactBindings.map(\.reference) }
     public let diagnostics: [DesignDiagnostic]
     public let evidence: EvidenceManifest
 
@@ -18,17 +19,20 @@ public struct LogicUnboundedTemporalEquivalenceResult: Sendable, Hashable, Codab
         runID: String,
         status: LogicIR.LogicExecutionStatus,
         payload: LogicUnboundedTemporalEquivalencePayload,
-        artifacts: [ArtifactReference] = [],
+        artifactBindings: [LogicArtifactBinding] = [],
         diagnostics: [DesignDiagnostic] = [],
         provenance: ExecutionProvenance,
-        schemaVersion: SchemaVersion = .v1
-    ) {
+        schemaVersion: SchemaVersion = LogicUnboundedTemporalEquivalenceRequest.currentSchemaVersion
+    ) throws {
         self.schemaVersion = schemaVersion
         self.runID = runID
         self.status = status
         self.payload = payload
-        self.artifacts = artifacts
+        self.artifactBindings = artifactBindings
         self.diagnostics = diagnostics
-        self.evidence = EvidenceManifest(provenance: provenance, artifacts: artifacts)
+        self.evidence = try LogicEvidenceManifestFactory.make(
+            provenance: provenance,
+            artifacts: artifactBindings.map(\.reference)
+        )
     }
 }

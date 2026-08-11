@@ -4,6 +4,8 @@ import LogicIR
 import LogicSimulation
 import Testing
 import CircuiteFoundation
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("Native logic simulation")
 struct SimulationTests {
@@ -90,9 +92,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "extended-semantics-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "extended_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -155,9 +157,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "arithmetic-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "arithmetic_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -237,9 +239,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "vector-logical-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "vector_logical_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -321,9 +323,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "signed-arithmetic-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "signed_arithmetic_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -402,9 +404,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "reset-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "reset_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -480,9 +482,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "dff-reset-edge-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "dff_reset_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -573,9 +575,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "async-reset-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "async_reset_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -637,9 +639,9 @@ struct SimulationTests {
         let stimulusReference = try writeJSON(stimulus, name: "case-stimulus.json", root: root, kind: .testPattern)
         let request = LogicSimulationRequest(
             runID: "case-equality-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "case_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -709,9 +711,9 @@ struct SimulationTests {
         let stimulusReference = try writeJSON(stimulus, name: "sequential-stimulus.json", root: root, kind: .testPattern)
         let request = LogicSimulationRequest(
             runID: "sequential-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "sequential_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -791,9 +793,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "negative-edge-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "negative_edge_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -872,9 +874,9 @@ struct SimulationTests {
         let stimulusReference = try writeJSON(stimulus, name: "vector-stimulus.json", root: root, kind: .testPattern)
         let request = LogicSimulationRequest(
             runID: "vector-simulation",
-            inputs: [designReference, stimulusReference],
+            inputBindings: [designReference, stimulusReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "vector_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -895,12 +897,17 @@ struct SimulationTests {
 
     @Test("runs deterministic four-state simulation and writes review artifacts")
     func simulationProducesArtifacts() async throws {
-        let design = try LogicEngineTestFixture.designReference()
-        let stimulus = try LogicEngineTestFixture.reference(named: "and-stimulus", kind: .testPattern)
+        let designBinding = try LogicEngineTestFixture.binding(named: "and-design", kind: .netlist)
+        let design = LogicDesignReference(
+            artifact: designBinding.reference,
+            topDesignName: "and_top",
+            canonicalDesignDigest: designBinding.digest
+        )
+        let stimulus = try LogicEngineTestFixture.binding(named: "and-stimulus", kind: .testPattern)
         let outputDirectory = try LogicEngineTestFixture.temporaryOutputDirectory()
         let request = LogicSimulationRequest(
             runID: "logic-simulation-fixture",
-            inputs: [design.artifact, stimulus],
+            inputBindings: [designBinding, stimulus],
             design: design,
             stimulus: stimulus,
             seed: 42,
@@ -922,17 +929,29 @@ struct SimulationTests {
             Issue.record("waveform artifact is missing")
             return
         }
-        let waveformText = try String(contentsOf: URL(fileURLWithPath: waveform.path), encoding: .utf8)
+        let waveformBinding = try LogicArtifactBinding.require(
+            waveform,
+            in: result.artifactBindings
+        )
+        let waveformText = String(decoding: try store.read(waveformBinding), as: UTF8.self)
         #expect(waveformText.contains("$enddefinitions $end"))
         #expect(waveformText.contains("#10"))
     }
 
     @Test("unsupported semantics are blocked with a structured diagnostic")
     func unsupportedSemanticsAreBlocked() async throws {
-        let design = try LogicEngineTestFixture.designReference(named: "unsupported-design")
+        let designBinding = try LogicEngineTestFixture.binding(
+            named: "unsupported-design",
+            kind: .netlist
+        )
+        let design = LogicDesignReference(
+            artifact: designBinding.reference,
+            topDesignName: "unsupported_top",
+            canonicalDesignDigest: designBinding.digest
+        )
         let request = LogicSimulationRequest(
             runID: "logic-simulation-unsupported",
-            inputs: [design.artifact],
+            inputBindings: [designBinding],
             design: design
         )
         let store = FileSystemLogicArtifactStore(rootDirectory: URL(fileURLWithPath: "/"))
@@ -956,10 +975,15 @@ struct SimulationTests {
                 Issue.record("Failed to remove cancellation output directory: \(error)")
             }
         }
-        let design = try LogicEngineTestFixture.designReference()
+        let designBinding = try LogicEngineTestFixture.binding(named: "and-design", kind: .netlist)
+        let design = LogicDesignReference(
+            artifact: designBinding.reference,
+            topDesignName: "and_top",
+            canonicalDesignDigest: designBinding.digest
+        )
         let request = LogicSimulationRequest(
             runID: "logic-simulation-cancelled",
-            inputs: [design.artifact],
+            inputBindings: [designBinding],
             design: design,
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
@@ -986,10 +1010,14 @@ struct SimulationTests {
             Issue.record("cancellation record is missing")
             return
         }
-        let cancellationURL = try cancellation.locator.location.resolvedFileURL(
-            relativeTo: outputDirectory
+        let cancellationBinding = try LogicArtifactBinding.require(
+            cancellation,
+            in: result.artifactBindings
         )
-        let data = try Data(contentsOf: cancellationURL)
+        let data = try FileSystemLogicArtifactStore(
+            rootDirectory: outputDirectory,
+            defaultOutputDirectory: outputDirectory
+        ).read(cancellationBinding)
         let record = try JSONDecoder().decode(LogicCancellationRecord.self, from: data)
         #expect(record.runID == request.runID)
         #expect(record.engineID == "LogicSimulation")
@@ -1027,9 +1055,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "cycle-simulation",
-            inputs: [designReference],
+            inputBindings: [designReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "cycle_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -1071,9 +1099,9 @@ struct SimulationTests {
             artifactStore: FileSystemLogicArtifactStore(rootDirectory: root)
         ).execute(LogicSimulationRequest(
             runID: "multiple-driver-simulation",
-            inputs: [designReference],
+            inputBindings: [designReference],
             design: LogicDesignReference(
-                artifact: designReference,
+                artifact: designReference.reference,
                 topDesignName: "multiple_driver_top",
                 canonicalDesignDigest: designReference.digest
             ),
@@ -1089,21 +1117,19 @@ struct SimulationTests {
         name: String,
         root: URL,
         kind: ArtifactKind
-    ) throws -> ArtifactReference {
+    ) throws -> LogicArtifactBinding {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: root.appending(path: name), options: [.atomic])
-        return ArtifactReference(
-            id: try ArtifactID(rawValue: name),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: name),
-                role: .input,
-                kind: kind,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: kind, format: .json)
+        )
+        return try LogicArtifactBinding.local(
+            reference: reference,
+            fileURL: root.appending(path: name)
         )
     }
 }

@@ -6,6 +6,8 @@ import LogicLowering
 import LogicSimulation
 import LogicSynthesis
 import Testing
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("LogicEngine CircuiteFoundation contract")
 struct CircuiteFoundationIntegrationTests {
@@ -15,40 +17,34 @@ struct CircuiteFoundationIntegrationTests {
             algorithm: .sha256,
             hexadecimalValue: String(repeating: "a", count: 64)
         )
-        let design = ArtifactReference(
-            id: try ArtifactID(rawValue: "logic-design"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "inputs/design.json"),
-                role: .input,
-                kind: .netlist,
-                format: .json
-            ),
+        let design = try binding(
+            path: "inputs/design.json",
+            role: .input,
+            kind: .netlist,
+            format: .json,
             digest: digest,
             byteCount: 1
         )
-        let output = ArtifactReference(
-            id: try ArtifactID(rawValue: "logic-waveform"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "outputs/waveform.vcd"),
-                role: .output,
-                kind: .waveform,
-                format: .vcd
-            ),
+        let output = try binding(
+            path: "outputs/waveform.vcd",
+            role: .output,
+            kind: .waveform,
+            format: .vcd,
             digest: try ContentDigest(
                 algorithm: .sha256,
                 hexadecimalValue: String(repeating: "b", count: 64)
             ),
             byteCount: 2
         )
-        let fixedResult = LogicSimulationResult(
+        let fixedResult = try LogicSimulationResult(
             runID: "run-1",
             status: .completed,
             payload: LogicSimulationPayload(
                 traceCount: 1,
                 assertionFailureCount: 0,
-                waveform: output
+                waveform: output.reference
             ),
-            artifacts: [output],
+            artifactBindings: [output],
             diagnostics: [],
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
@@ -56,7 +52,7 @@ struct CircuiteFoundationIntegrationTests {
                     identifier: "LogicSimulation",
                     version: "1"
                 ),
-                inputs: [design],
+                inputs: [design.reference],
                 randomSeed: 7,
                 startedAt: Date(),
                 completedAt: Date()
@@ -65,8 +61,9 @@ struct CircuiteFoundationIntegrationTests {
         let engine: any LogicSimulationExecuting = FixedSimulationEngine(result: fixedResult)
         let request = LogicSimulationRequest(
             runID: "run-1",
+            inputBindings: [design],
             design: LogicDesignReference(
-                artifact: design,
+                artifact: design.reference,
                 topDesignName: "top",
                 canonicalDesignDigest: design.digest
             ),
@@ -76,10 +73,10 @@ struct CircuiteFoundationIntegrationTests {
         let result = try await engine.execute(request)
 
         #expect(result.status == .completed)
-        #expect(result.artifacts.map(\.id.rawValue) == ["logic-waveform"])
-        #expect(result.payload.waveform?.id.rawValue == "logic-waveform")
+        #expect(result.artifacts == [output.reference])
+        #expect(result.payload.waveform == output.reference)
         #expect(result.payload.assertionReport == nil)
-        #expect(result.evidence.provenance.inputs == [design])
+        #expect(result.evidence.provenance.inputs == [design.reference])
         #expect(result.evidence.provenance.randomSeed == 7)
         #expect(result.evidence.provenance.inputDesignRevision == nil)
         #expect(result.evidence.provenance.outputDesignRevision == nil)
@@ -136,21 +133,19 @@ struct CircuiteFoundationIntegrationTests {
                 .digest(data: snapshotData, using: .sha256)
                 .hexadecimalValue
         )
-        let artifact = ArtifactReference(
-            id: try ArtifactID(rawValue: "rtl-snapshot"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "snapshot.json"),
-                role: .input,
-                kind: .netlist,
-                format: .json
-            ),
+        let artifact = try binding(
+            path: "snapshot.json",
+            role: .input,
+            kind: .netlist,
+            format: .json,
             digest: fileDigest,
             byteCount: UInt64(snapshotData.count)
         )
         let request = LogicLoweringRequest(
             runID: "canonical-lowering",
+            inputBindings: [artifact],
             design: LogicDesignReference(
-                artifact: artifact,
+                artifact: artifact.reference,
                 topDesignName: "top",
                 canonicalDesignDigest: try ContentDigest(
                     algorithm: .sha256,
@@ -167,7 +162,7 @@ struct CircuiteFoundationIntegrationTests {
         #expect(result.status == LogicExecutionStatus.completed)
         #expect(result.payload.sourceDesignDigest?.hexadecimalValue == snapshotDigest)
         #expect(result.payload.executionDesign?.topDesignName == "top")
-        #expect(result.evidence.provenance.inputs == [artifact])
+        #expect(result.evidence.provenance.inputs == [artifact.reference])
     }
 
     @Test
@@ -176,59 +171,47 @@ struct CircuiteFoundationIntegrationTests {
             algorithm: .sha256,
             hexadecimalValue: String(repeating: "d", count: 64)
         )
-        let reference = ArtifactReference(
-            id: try ArtifactID(rawValue: "reference-design"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "inputs/reference.json"),
-                role: .input,
-                kind: .netlist,
-                format: .json
-            ),
+        let reference = try binding(
+            path: "inputs/reference.json",
+            role: .input,
+            kind: .netlist,
+            format: .json,
             digest: digest,
             byteCount: 1
         )
-        let implementation = ArtifactReference(
-            id: try ArtifactID(rawValue: "implementation-design"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "inputs/implementation.json"),
-                role: .input,
-                kind: .netlist,
-                format: .json
-            ),
+        let implementation = try binding(
+            path: "inputs/implementation.json",
+            role: .input,
+            kind: .netlist,
+            format: .json,
             digest: digest,
             byteCount: 1
         )
-        let stimulus = ArtifactReference(
-            id: try ArtifactID(rawValue: "stimulus"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "inputs/stimulus.json"),
-                role: .input,
-                kind: .evidence,
-                format: .json
-            ),
+        let stimulus = try binding(
+            path: "inputs/stimulus.json",
+            role: .input,
+            kind: .evidence,
+            format: .json,
             digest: digest,
             byteCount: 1
         )
-        let output = ArtifactReference(
-            id: try ArtifactID(rawValue: "equivalence-report"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "outputs/equivalence.json"),
-                role: .output,
-                kind: .report,
-                format: .json
-            ),
+        let output = try binding(
+            path: "outputs/equivalence.json",
+            role: .output,
+            kind: .report,
+            format: .json,
             digest: try ContentDigest(
                 algorithm: .sha256,
                 hexadecimalValue: String(repeating: "e", count: 64)
             ),
             byteCount: 4
         )
-        let fixedResult = LogicBoundedTemporalEquivalenceResult(
-            schemaVersion: .v1,
+        let fixedResult = try LogicBoundedTemporalEquivalenceResult(
+            schemaVersion: .v2,
             runID: "run-2",
             status: .completed,
             diagnostics: [],
-            artifacts: [output],
+            artifactBindings: [output],
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
                     kind: .engine,
@@ -236,7 +219,7 @@ struct CircuiteFoundationIntegrationTests {
                     version: "1",
                     build: "native"
                 ),
-                inputs: [reference, implementation, stimulus],
+                inputs: [reference.reference, implementation.reference, stimulus.reference],
                 invocation: ExecutionInvocation.inProcess(entryPoint: "test"),
                 startedAt: Date(),
                 completedAt: Date()
@@ -246,21 +229,21 @@ struct CircuiteFoundationIntegrationTests {
                 comparedSampleCount: 2,
                 mismatchCount: 0,
                 outputSignals: ["out"],
-                equivalenceReport: output
+                equivalenceReport: output.reference
             )
         )
         let engine: any LogicBoundedTemporalEquivalenceExecuting =
             FixedBoundedEquivalenceEngine(result: fixedResult)
         let request = LogicBoundedTemporalEquivalenceRequest(
             runID: "run-2",
-            inputs: [reference, implementation, stimulus],
+            inputBindings: [reference, implementation, stimulus],
             referenceDesign: LogicDesignReference(
-                artifact: reference,
+                artifact: reference.reference,
                 topDesignName: "top",
                 canonicalDesignDigest: reference.digest
             ),
             implementationDesign: LogicDesignReference(
-                artifact: implementation,
+                artifact: implementation.reference,
                 topDesignName: "top",
                 canonicalDesignDigest: implementation.digest
             ),
@@ -272,9 +255,46 @@ struct CircuiteFoundationIntegrationTests {
 
         #expect(result.status == .completed)
         #expect(result.payload.proofStatus == .proved)
-        #expect(result.payload.equivalenceReport?.id.rawValue == "equivalence-report")
-        #expect(result.artifacts.map(\.id.rawValue) == ["equivalence-report"])
-        #expect(result.evidence.provenance.inputs == [reference, implementation, stimulus])
+        #expect(result.payload.equivalenceReport == output.reference)
+        #expect(result.artifacts == [output.reference])
+        #expect(result.evidence.provenance.inputs == [
+            reference.reference,
+            implementation.reference,
+            stimulus.reference,
+        ])
+    }
+
+    private func binding(
+        path: String,
+        role: ArtifactRole,
+        kind: ArtifactKind,
+        format: ArtifactFormat,
+        digest: ContentDigest,
+        byteCount: UInt64
+    ) throws -> LogicArtifactBinding {
+        let locator = ArtifactLocator(
+            location: try ArtifactLocation(workspaceRelativePath: path),
+            role: role,
+            kind: kind,
+            format: format
+        )
+        let reference = try ArtifactReference(
+            digest: digest,
+            byteCount: byteCount,
+            descriptor: locator.descriptor
+        )
+        return try LogicArtifactBinding(
+            reference: reference,
+            availability: .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(
+                    rawValue: LogicArtifactBinding.workspaceRootIdentifier
+                ),
+                relativePath: try ArtifactRelativePath(
+                    segments: path.split(separator: "/").map(String.init)
+                )
+            ),
+        )
     }
 }
 

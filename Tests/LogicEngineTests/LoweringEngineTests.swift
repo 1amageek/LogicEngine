@@ -5,6 +5,8 @@ import LogicLowering
 import LogicSimulation
 import Testing
 import CircuiteFoundation
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("Logic lowering engine")
 struct LoweringEngineTests {
@@ -34,22 +36,20 @@ struct LoweringEngineTests {
         let canonicalDigest = try LogicDesignSnapshotCodec.digest(snapshot)
         let snapshotURL = root.appending(path: "snapshot.json")
         try snapshotData.write(to: snapshotURL, options: [.atomic])
-        let sourceReference = ArtifactReference(
-            id: try ArtifactID(rawValue: "rtl-snapshot"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "snapshot.json"),
-                role: .input,
-                kind: .rtl,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: snapshotData, using: .sha256),
-            byteCount: UInt64(snapshotData.count)
+        let sourceReference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: snapshotData, using: .sha256),
+            byteCount: UInt64(snapshotData.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: .rtl, format: .json)
+        )
+        let sourceBinding = try LogicArtifactBinding.local(
+            reference: sourceReference,
+            fileURL: snapshotURL
         )
         let request = LogicLoweringRequest(
             runID: "lowering-engine-test",
-            inputs: [sourceReference],
+            inputBindings: [sourceBinding],
             design: LogicDesignReference(
-                artifact: sourceReference,
+                artifact: sourceBinding.reference,
                 topDesignName: "top",
                 canonicalDesignDigest: try ContentDigest(algorithm: .sha256, hexadecimalValue: canonicalDigest)
             ),
@@ -67,14 +67,15 @@ struct LoweringEngineTests {
             Issue.record("The lowering engine did not return an execution-design reference.")
             return
         }
-        let outputData = try store.read(output)
+        let outputBinding = try LogicArtifactBinding.require(output, in: result.artifactBindings)
+        let outputData = try store.read(outputBinding)
         let document = try JSONDecoder().decode(LogicDesignDocument.self, from: outputData)
         #expect(document.nodes.first?.kind == .buffer)
 
         let repeatResult = try await NativeLogicLoweringEngine(artifactStore: store).execute(
             LogicLoweringRequest(
                 runID: "lowering-engine-repeat",
-                inputs: [sourceReference],
+                inputBindings: [sourceBinding],
                 design: request.design,
                 artifactDirectory: "repeat-outputs"
             )
@@ -84,7 +85,11 @@ struct LoweringEngineTests {
             Issue.record("The repeated lowering run did not return an execution-design reference.")
             return
         }
-        #expect(try store.read(repeatOutput) == outputData)
+        let repeatOutputBinding = try LogicArtifactBinding.require(
+            repeatOutput,
+            in: repeatResult.artifactBindings
+        )
+        #expect(try store.read(repeatOutputBinding) == outputData)
 
         let stimulus = LogicStimulusDocument(
             events: [LogicStimulusEvent(
@@ -100,23 +105,21 @@ struct LoweringEngineTests {
         )
         let stimulusData = try JSONEncoder().encode(stimulus)
         try stimulusData.write(to: root.appending(path: "stimulus.json"), options: [.atomic])
-        let stimulusReference = ArtifactReference(
-            id: try ArtifactID(rawValue: "stimulus"),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: "stimulus.json"),
-                role: .input,
-                kind: .testPattern,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: stimulusData, using: .sha256),
-            byteCount: UInt64(stimulusData.count)
+        let stimulusReference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: stimulusData, using: .sha256),
+            byteCount: UInt64(stimulusData.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: .testPattern, format: .json)
+        )
+        let stimulusBinding = try LogicArtifactBinding.local(
+            reference: stimulusReference,
+            fileURL: root.appending(path: "stimulus.json")
         )
         let simulation = try await NativeLogicSimulationEngine(artifactStore: store).execute(
             LogicSimulationRequest(
                 runID: "lowering-engine-simulation",
-                inputs: [output, stimulusReference],
+                inputBindings: [outputBinding, stimulusBinding],
                 design: executionDesign,
-                stimulus: stimulusReference,
+                stimulus: stimulusBinding,
                 artifactDirectory: "simulation-output"
             )
         )

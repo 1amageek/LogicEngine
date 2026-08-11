@@ -1,4 +1,5 @@
 import CircuiteFoundation
+import CircuiteFoundationCrypto
 import Foundation
 import LogicEngineCore
 import LogicIR
@@ -71,12 +72,20 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
     private func loadDesignPair(
         request: LogicUnboundedTemporalEquivalenceRequest
     ) throws -> DesignPair {
+        let referenceBinding = try LogicArtifactBinding.require(
+            request.referenceDesign.artifact,
+            in: request.inputBindings
+        )
+        let implementationBinding = try LogicArtifactBinding.require(
+            request.implementationDesign.artifact,
+            in: request.inputBindings
+        )
         let reference = try decodeDesign(
-            artifact: request.referenceDesign.artifact,
+            artifact: referenceBinding,
             label: "reference"
         )
         let implementation = try decodeDesign(
-            artifact: request.implementationDesign.artifact,
+            artifact: implementationBinding,
             label: "implementation"
         )
         try validatePair(
@@ -133,7 +142,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
     }
 
     private func decodeDesign(
-        artifact: ArtifactReference,
+        artifact: LogicArtifactBinding,
         label: String
     ) throws -> LogicDesignDocument {
         let data = try artifactStore.read(artifact)
@@ -758,17 +767,16 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
         let reportDigest = try SHA256ContentDigester()
             .digest(data: reportData, using: .sha256)
             .hexadecimalValue
-        let reportReference = try artifactStore.write(
+        let reportBinding = try artifactStore.write(
             reportData,
             fileName: "logic-unbounded-temporal-equivalence-report.json",
             outputDirectory: request.artifactDirectory,
             runID: request.runID,
-            artifactID: "logic-unbounded-temporal-equivalence-report",
             kind: .report,
             format: .json
         )
-        var producedArtifacts = [reportReference]
-        let certificateReference: ArtifactReference?
+        var producedArtifacts = [reportBinding]
+        let certificateBinding: LogicArtifactBinding?
         if outcome.status == .proved {
             let certificate = LogicUnboundedTemporalEquivalenceCertificate(
                 requestDigest: requestDigest,
@@ -784,40 +792,38 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
             )
             try certificate.validate()
             let certificateData = try encoder.encode(certificate)
-            certificateReference = try artifactStore.write(
+            certificateBinding = try artifactStore.write(
                 certificateData,
                 fileName: "logic-unbounded-temporal-equivalence-certificate.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-unbounded-temporal-equivalence-certificate",
                 kind: .report,
                 format: .json
             )
-            if let certificateReference {
-                producedArtifacts.append(certificateReference)
+            if let certificateBinding {
+                producedArtifacts.append(certificateBinding)
             }
         } else {
-            certificateReference = nil
+            certificateBinding = nil
         }
-        let counterexampleReference: ArtifactReference?
+        let counterexampleBinding: LogicArtifactBinding?
         if outcome.status == .counterexample {
-            counterexampleReference = try artifactStore.write(
+            counterexampleBinding = try artifactStore.write(
                 reportData,
                 fileName: "logic-unbounded-temporal-counterexample.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-unbounded-temporal-counterexample",
                 kind: .report,
                 format: .json
             )
-            if let counterexampleReference {
-                producedArtifacts.append(counterexampleReference)
+            if let counterexampleBinding {
+                producedArtifacts.append(counterexampleBinding)
             }
         } else {
-            counterexampleReference = nil
+            counterexampleBinding = nil
         }
         let producer = try producerIdentity()
-        let artifacts = producedArtifacts
+        let artifactBindings = producedArtifacts
         let diagnostics = try diagnostics(
             for: outcome.status,
             exploredTransitionCount: outcome.exploredTransitionCount
@@ -829,15 +835,15 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
             outputSignals: pair.outputSignals,
             stateSignals: pair.stateSignals,
             inputSignals: pair.inputSignals,
-            equivalenceReport: reportReference,
-            proofCertificate: certificateReference,
-            counterexample: counterexampleReference
+            equivalenceReport: reportBinding.reference,
+            proofCertificate: certificateBinding?.reference,
+            counterexample: counterexampleBinding?.reference
         )
         return try makeResult(
             request: request,
             status: outcome.status == .proved ? .completed : .failed,
             payload: payload,
-            artifacts: artifacts,
+            artifactBindings: artifactBindings,
             diagnostics: diagnostics,
             producer: producer,
             startedAt: startedAt
@@ -880,7 +886,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
             request: request,
             status: executionStatus,
             payload: payload,
-            artifacts: [],
+            artifactBindings: [],
             diagnostics: [diagnostic],
             producer: producer,
             startedAt: startedAt
@@ -933,7 +939,7 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
         request: LogicUnboundedTemporalEquivalenceRequest,
         status: LogicIR.LogicExecutionStatus,
         payload: LogicUnboundedTemporalEquivalencePayload,
-        artifacts: [ArtifactReference],
+        artifactBindings: [LogicArtifactBinding],
         diagnostics: [DesignDiagnostic],
         producer: ProducerIdentity,
         startedAt: Date
@@ -944,11 +950,11 @@ public struct NativeLogicUnboundedTemporalEquivalenceEngine:
             startedAt: startedAt,
             completedAt: Date()
         )
-        return LogicUnboundedTemporalEquivalenceResult(
+        return try LogicUnboundedTemporalEquivalenceResult(
             runID: request.runID,
             status: status,
             payload: payload,
-            artifacts: artifacts,
+            artifactBindings: artifactBindings,
             diagnostics: diagnostics,
             provenance: provenance
         )

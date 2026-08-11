@@ -4,36 +4,38 @@ import LogicIR
 import CircuiteFoundation
 
 public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v1
+    public static let currentSchemaVersion = SchemaVersion.v2
 
     public var schemaVersion: SchemaVersion
     public var runID: String
     public var inputs: [ArtifactReference]
+    public var inputBindings: [LogicArtifactBinding]
     public var referenceDesign: LogicDesignReference
     public var implementationDesign: LogicDesignReference
-    public var stimulus: ArtifactReference
+    public var stimulus: LogicArtifactBinding
     public var outputSignals: [String]
     public var sampleLimit: Int
     public var artifactDirectory: String?
 
     public init(
         runID: String,
-        inputs: [ArtifactReference] = [],
+        inputBindings: [LogicArtifactBinding],
         referenceDesign: LogicDesignReference,
         implementationDesign: LogicDesignReference,
-        stimulus: ArtifactReference,
+        stimulus: LogicArtifactBinding,
         outputSignals: [String] = [],
         sampleLimit: Int,
         artifactDirectory: String? = nil
     ) {
         self.schemaVersion = Self.currentSchemaVersion
         self.runID = runID
-        var allInputs: [ArtifactReference] = []
-        for artifact in [referenceDesign.artifact, implementationDesign.artifact, stimulus] + inputs
-            where !allInputs.contains(artifact) {
-            allInputs.append(artifact)
+        var allBindings: [LogicArtifactBinding] = []
+        for binding in inputBindings + [stimulus]
+            where !allBindings.contains(where: { $0.reference == binding.reference }) {
+            allBindings.append(binding)
         }
-        self.inputs = allInputs
+        self.inputs = allBindings.map(\.reference)
+        self.inputBindings = allBindings
         self.referenceDesign = referenceDesign
         self.implementationDesign = implementationDesign
         self.stimulus = stimulus
@@ -67,11 +69,6 @@ public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codabl
                 "bounded temporal equivalence designs must carry valid SHA-256 digests"
             )
         }
-        guard !stimulus.locator.location.value.isEmpty else {
-            throw LogicExecutionContractError.invalidRequest(
-                "bounded temporal equivalence stimulus path is empty"
-            )
-        }
         guard sampleLimit > 0 else {
             throw LogicExecutionContractError.invalidRequest(
                 "bounded temporal equivalence sample limit must be positive"
@@ -85,10 +82,17 @@ public struct LogicBoundedTemporalEquivalenceRequest: Sendable, Hashable, Codabl
         }
         guard inputs.contains(referenceDesign.artifact),
               inputs.contains(implementationDesign.artifact),
-              inputs.contains(stimulus) else {
+              inputs.contains(stimulus.reference) else {
             throw LogicExecutionContractError.invalidRequest(
                 "equivalence design and stimulus artifacts must be present in the input set"
             )
         }
+        guard inputBindings.map(\.reference) == inputs else {
+            throw LogicExecutionContractError.invalidRequest(
+                "input bindings do not match the content-only input lineage"
+            )
+        }
+        _ = try LogicArtifactBinding.require(referenceDesign.artifact, in: inputBindings)
+        _ = try LogicArtifactBinding.require(implementationDesign.artifact, in: inputBindings)
     }
 }

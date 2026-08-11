@@ -3,7 +3,7 @@ import LogicEngineCore
 import CircuiteFoundation
 
 public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = 2
+    public static let currentSchemaVersion = 3
 
     public let schemaVersion: Int
     public let runID: String
@@ -49,8 +49,7 @@ public struct LogicSynthesisEquivalenceEvidence: Sendable, Hashable, Codable {
         }
         if status == .proved {
             guard let proofArtifact,
-                  !proofArtifact.locator.location.value.isEmpty,
-                  !proofArtifact.digest.hexadecimalValue.isEmpty,
+                  proofArtifact.digest.algorithm == .sha256,
                   proofArtifact.byteCount > 0 else {
                 throw LogicExecutionError.missingPrerequisite(
                     "proved equivalence evidence requires an integrity-bearing proof artifact"

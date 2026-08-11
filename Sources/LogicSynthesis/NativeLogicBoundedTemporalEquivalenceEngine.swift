@@ -3,6 +3,7 @@ import LogicEngineCore
 import LogicIR
 import LogicSimulation
 import CircuiteFoundation
+import CircuiteFoundationCrypto
 
 public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalEquivalenceExecuting {
     public let artifactStore: any LogicArtifactStoring
@@ -23,8 +24,16 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         do {
             try request.validate()
             try checkCancellation()
-            let referenceDesign = try decodeDesign(request.referenceDesign.artifact)
-            let implementationDesign = try decodeDesign(request.implementationDesign.artifact)
+            let referenceBinding = try LogicArtifactBinding.require(
+                request.referenceDesign.artifact,
+                in: request.inputBindings
+            )
+            let implementationBinding = try LogicArtifactBinding.require(
+                request.implementationDesign.artifact,
+                in: request.inputBindings
+            )
+            let referenceDesign = try decodeDesign(referenceBinding)
+            let implementationDesign = try decodeDesign(implementationBinding)
             try validateDesignPair(
                 reference: referenceDesign,
                 implementation: implementationDesign,
@@ -74,12 +83,16 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                     "bounded temporal equivalence requires both simulation reports"
                 )
             }
-            let referenceArtifacts = labelArtifacts(referenceEnvelope.artifacts, role: "reference")
-            let implementationArtifacts = labelArtifacts(implementationEnvelope.artifacts, role: "implementation")
-            let referenceReportReference = labeled(rawReferenceReportReference, role: "reference")
-            let implementationReportReference = labeled(rawImplementationReportReference, role: "implementation")
-            let referenceReport = try decodeReport(rawReferenceReportReference)
-            let implementationReport = try decodeReport(rawImplementationReportReference)
+            let referenceReportBinding = try LogicArtifactBinding.require(
+                rawReferenceReportReference,
+                in: referenceEnvelope.artifactBindings
+            )
+            let implementationReportBinding = try LogicArtifactBinding.require(
+                rawImplementationReportReference,
+                in: implementationEnvelope.artifactBindings
+            )
+            let referenceReport = try decodeReport(referenceReportBinding)
+            let implementationReport = try decodeReport(implementationReportBinding)
             guard referenceReport.samples.count <= request.sampleLimit,
                   implementationReport.samples.count <= request.sampleLimit else {
                 throw LogicExecutionError.missingPrerequisite(
@@ -109,22 +122,23 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 status: status
             )
             try report.validate()
-            let reportReference = try writeJSON(
+            let reportBinding = try writeJSON(
                 report,
                 fileName: "logic-bounded-temporal-equivalence-report.json",
                 request: request
             )
-            let counterexampleReference: ArtifactReference?
+            let counterexampleBinding: LogicArtifactBinding?
             if differences.isEmpty {
-                counterexampleReference = nil
+                counterexampleBinding = nil
             } else {
-                counterexampleReference = try writeJSON(
+                counterexampleBinding = try writeJSON(
                     report,
                     fileName: "logic-bounded-temporal-counterexample.json",
                     request: request
                 )
             }
-            let simulationArtifacts = referenceArtifacts + implementationArtifacts
+            let simulationArtifacts = referenceEnvelope.artifactBindings
+                + implementationEnvelope.artifactBindings
             let diagnostics: [DesignDiagnostic]
             if differences.isEmpty {
                 diagnostics = [DesignDiagnostic(
@@ -146,17 +160,18 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
                 comparedSampleCount: report.comparedSampleCount,
                 mismatchCount: differences.count,
                 outputSignals: outputSignals,
-                referenceSimulationReport: referenceReportReference,
-                implementationSimulationReport: implementationReportReference,
-                equivalenceReport: reportReference,
-                counterexample: counterexampleReference
+                referenceSimulationReport: referenceReportBinding.reference,
+                implementationSimulationReport: implementationReportBinding.reference,
+                equivalenceReport: reportBinding.reference,
+                counterexample: counterexampleBinding?.reference
             )
-            return LogicBoundedTemporalEquivalenceResult(
+            return try LogicBoundedTemporalEquivalenceResult(
                 schemaVersion: LogicBoundedTemporalEquivalenceRequest.currentSchemaVersion,
                 runID: request.runID,
                 status: differences.isEmpty ? .completed : .failed,
                 diagnostics: diagnostics,
-                artifacts: simulationArtifacts + [reportReference] + (counterexampleReference.map { [$0] } ?? []),
+                artifactBindings: simulationArtifacts + [reportBinding]
+                    + (counterexampleBinding.map { [$0] } ?? []),
                 provenance: try ExecutionProvenance(
                     producer: ProducerIdentity(
                         kind: .engine,
@@ -181,8 +196,8 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         }
     }
 
-    private func decodeDesign(_ reference: ArtifactReference) throws -> LogicDesignDocument {
-        let data = try artifactStore.read(reference)
+    private func decodeDesign(_ binding: LogicArtifactBinding) throws -> LogicDesignDocument {
+        let data = try artifactStore.read(binding)
         do {
             let design = try JSONDecoder().decode(LogicDesignDocument.self, from: data)
             try design.validate()
@@ -267,7 +282,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         try await NativeLogicSimulationEngine(artifactStore: artifactStore).execute(
             LogicSimulationRequest(
                 runID: "\(request.runID)-\(role)",
-                inputs: request.inputs + [request.stimulus],
+                inputBindings: request.inputBindings,
                 design: design,
                 stimulus: request.stimulus,
                 waveformFormat: .vcd,
@@ -276,22 +291,8 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         )
     }
 
-    private func labelArtifacts(
-        _ artifacts: [ArtifactReference],
-        role: String
-    ) -> [ArtifactReference] {
-        artifacts.map { labeled($0, role: role) }
-    }
-
-    private func labeled(
-        _ reference: ArtifactReference,
-        role: String
-    ) -> ArtifactReference {
-        reference
-    }
-
-    private func decodeReport(_ reference: ArtifactReference) throws -> LogicSimulationReport {
-        let data = try artifactStore.read(reference)
+    private func decodeReport(_ binding: LogicArtifactBinding) throws -> LogicSimulationReport {
+        let data = try artifactStore.read(binding)
         do {
             return try JSONDecoder().decode(LogicSimulationReport.self, from: data)
         } catch {
@@ -330,7 +331,7 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         _ value: T,
         fileName: String,
         request: LogicBoundedTemporalEquivalenceRequest
-    ) throws -> ArtifactReference {
+    ) throws -> LogicArtifactBinding {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         return try artifactStore.write(
@@ -338,7 +339,6 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
             fileName: fileName,
             outputDirectory: request.artifactDirectory,
             runID: request.runID,
-            artifactID: fileName.replacingOccurrences(of: ".json", with: ""),
             kind: .report,
             format: .json
         )
@@ -357,12 +357,12 @@ public struct NativeLogicBoundedTemporalEquivalenceEngine: LogicBoundedTemporalE
         error: LogicExecutionError,
         startedAt: Date
     ) throws -> LogicBoundedTemporalEquivalenceResult {
-        LogicBoundedTemporalEquivalenceResult(
+        try LogicBoundedTemporalEquivalenceResult(
             schemaVersion: LogicBoundedTemporalEquivalenceRequest.currentSchemaVersion,
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             diagnostics: [LogicDiagnosticFactory.make(for: error)],
-            artifacts: [],
+            artifactBindings: [],
             provenance: try ExecutionProvenance(
                 producer: ProducerIdentity(
                     kind: .engine,

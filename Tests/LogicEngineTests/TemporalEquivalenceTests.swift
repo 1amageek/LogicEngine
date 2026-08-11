@@ -4,6 +4,8 @@ import LogicIR
 import LogicSynthesis
 import Testing
 import CircuiteFoundation
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("Bounded temporal equivalence")
 struct TemporalEquivalenceTests {
@@ -38,9 +40,16 @@ struct TemporalEquivalenceTests {
         #expect(result.payload.mismatchCount == 0)
         #expect(result.payload.comparedSampleCount == 2)
         #expect(result.payload.counterexample == nil)
-        #expect(result.artifacts.contains { $0.artifactID == "logic-bounded-temporal-equivalence-report" })
         let reportReference = try #require(result.payload.equivalenceReport)
-        let reportData = try Data(contentsOf: root.appending(path: reportReference.path))
+        let reportBinding = try LogicArtifactBinding.require(
+            reportReference,
+            in: result.artifactBindings
+        )
+        #expect(
+            reportBinding.materializationDescription
+                .hasSuffix("logic-bounded-temporal-equivalence-report.json")
+        )
+        let reportData = try FileSystemLogicArtifactStore(rootDirectory: root).read(reportBinding)
         let report = try JSONDecoder().decode(LogicBoundedTemporalEquivalenceReport.self, from: reportData)
         try report.validate()
         #expect(!report.requestDigest.isEmpty)
@@ -111,21 +120,21 @@ struct TemporalEquivalenceTests {
 
     private func makeRequest(
         runID: String,
-        referenceArtifact: ArtifactReference,
-        implementationArtifact: ArtifactReference,
-        stimulusArtifact: ArtifactReference,
+        referenceArtifact: LogicArtifactBinding,
+        implementationArtifact: LogicArtifactBinding,
+        stimulusArtifact: LogicArtifactBinding,
         sampleLimit: Int
     ) -> LogicBoundedTemporalEquivalenceRequest {
         LogicBoundedTemporalEquivalenceRequest(
             runID: runID,
-            inputs: [referenceArtifact, implementationArtifact, stimulusArtifact],
+            inputBindings: [referenceArtifact, implementationArtifact, stimulusArtifact],
             referenceDesign: LogicDesignReference(
-                artifact: referenceArtifact,
+                artifact: referenceArtifact.reference,
                 topDesignName: "temporal_top",
                 canonicalDesignDigest: referenceArtifact.digest
             ),
             implementationDesign: LogicDesignReference(
-                artifact: implementationArtifact,
+                artifact: implementationArtifact.reference,
                 topDesignName: "temporal_top",
                 canonicalDesignDigest: implementationArtifact.digest
             ),
@@ -192,22 +201,20 @@ struct TemporalEquivalenceTests {
         name: String,
         root: URL,
         kind: ArtifactKind
-    ) throws -> ArtifactReference {
+    ) throws -> LogicArtifactBinding {
         let url = root.appending(path: name)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: url, options: .atomic)
-        return ArtifactReference(
-            id: try ArtifactID(rawValue: name),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: name),
-                role: .input,
-                kind: kind,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: kind, format: .json)
+        )
+        return try LogicArtifactBinding.local(
+            reference: reference,
+            fileURL: url
         )
     }
 }

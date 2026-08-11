@@ -13,10 +13,11 @@ foundry-specific qualification remain external scopes.**
 |---|---|---|
 | Responsibility boundary | Complete | README.md and DESIGN.md |
 | Public package products | Implemented | Package.swift |
-| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | One canonical request/result pair per domain, direct `Engine` conformance, artifact and evidence tests |
-| Artifact persistence trust boundary | Implemented | Output paths are root-bounded after symlink resolution; publication is atomic and immutable collisions produce typed errors; focused filesystem regressions cover absolute escape, symlink escape and idempotent replay |
-| Contract build | Passed | swift build |
-| Contract test | Passed | timeout-bounded `xcodebuild test -scheme LogicEngine-Package -destination 'platform=macOS' -parallel-testing-enabled NO` through the workspace verifier |
+| CircuiteFoundation request/result contract | Implemented for lowering, simulation, synthesis, bounded equivalence, and exhaustive finite-state equivalence | Content-only `ArtifactReference` lineage is separated from execution-scoped `LogicArtifactBinding`; results emit content-addressed evidence |
+| Artifact persistence trust boundary | Implemented | Input and configured output roots are read-admitted after symlink resolution; publication is atomic; descriptor drift, digest tampering, escape and immutable collision produce typed errors |
+| Contract build | Passed | Timeout-bounded `xcodebuild build` for the library and CLI schemes |
+| Contract test build | Passed | Timeout-bounded `xcodebuild build-for-testing -scheme LogicEngine-Package -destination 'platform=macOS'` |
+| CLI behavioral lanes | Passed for retained native profile | Lowering, simulation, synthesis, bounded equivalence, unbounded equivalence, native evidence corpus and unbounded evidence corpus execute from canonical schema-v2/v3 fixtures |
 | Domain implementation | Native graph profile plus deterministic lowering, generic combinational processes, vector/NBA/reset/topology, scalar/vector logical operations, comparisons, signed arithmetic, division/modulo, arithmetic-shift semantics, both clock edges, asynchronous reset, and level-sensitive latch semantics | `NativeLogicDesignLowering`, shared `LogicExecutionGraphEvaluator`, simulation, synthesis, exhaustive equivalence |
 | CLI implementation | Implemented | `lower`, `simulate`, `synthesize`, `bounded-equivalence`, `unbounded-equivalence`, and `assess-evidence` execute the canonical domain contracts |
 | Fixture corpus | Retained native and exhaustive-proof corpus runner and CLI baseline | `Tests/LogicEngineTests/Fixtures`, retained suites, evidence tests, and persisted `logic-evidence-report.json` artifacts |

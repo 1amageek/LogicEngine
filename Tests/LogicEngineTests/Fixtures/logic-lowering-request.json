@@ -1,47 +1,54 @@
 {
-  "schemaVersion": { "major": 1, "minor": 0, "patch": 0 },
+  "schemaVersion": {
+    "major": 2,
+    "minor": 0,
+    "patch": 0
+  },
   "runID": "logic-lowering-cli",
   "inputs": [
     {
-      "id": "rtl-snapshot",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/logic-lowering-snapshot.json"
-        },
+      "id": "43697263756974654172746966616374436f6e74656e7400000100067368613235360020331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b20000000000000001ec",
+      "descriptor": {
+        "role": "input",
         "kind": "netlist",
-        "format": "json",
-        "role": "input"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
-      },
-      "byteCount": 492,
-      "producer": null
+        "format": "json"
+      }
     }
   ],
   "design": {
     "artifact": {
-      "id": "rtl-snapshot",
-      "locator": {
-        "location": {
-          "storage": "workspaceRelative",
-          "value": "Tests/LogicEngineTests/Fixtures/logic-lowering-snapshot.json"
-        },
+      "id": "43697263756974654172746966616374436f6e74656e7400000100067368613235360020331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b20000000000000001ec",
+      "descriptor": {
+        "role": "input",
         "kind": "netlist",
-        "format": "json",
-        "role": "input"
-      },
-      "digest": {
-        "algorithm": "sha256",
-        "hexadecimalValue": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
-      },
-      "byteCount": 492,
-      "producer": null
+        "format": "json"
+      }
     },
     "topDesignName": "top",
-    "designDigest": "331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b200"
+    "designDigest": "94b1dd9daf7866fcf3ff34ae08d365bed9904e140d6a755ed4067a67900a272a"
   },
-  "artifactDirectory": "outputs/logic-lowering"
+  "artifactDirectory": "outputs/logic-lowering",
+  "inputBindings": [
+    {
+      "reference": {
+        "id": "43697263756974654172746966616374436f6e74656e7400000100067368613235360020331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b20000000000000001ec",
+        "descriptor": {
+          "role": "input",
+          "kind": "netlist",
+          "format": "json"
+        }
+      },
+      "availability": {
+        "kind": "local",
+        "artifactID": "43697263756974654172746966616374436f6e74656e7400000100067368613235360020331882fe2e3a2ad221e3fe5d8369f7f30f0d5d4c77415eb96922fa3471b0b20000000000000001ec",
+        "rootID": "logic-workspace",
+        "relativePath": [
+          "Tests",
+          "LogicEngineTests",
+          "Fixtures",
+          "logic-lowering-snapshot.json"
+        ]
+      }
+    }
+  ]
 }

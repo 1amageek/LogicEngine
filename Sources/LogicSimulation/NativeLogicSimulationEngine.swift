@@ -22,13 +22,19 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         do {
             try validate(request)
             try checkCancellation()
-            for input in request.inputs {
+            for input in request.inputBindings {
                 _ = try artifactStore.read(input)
             }
-            let designData = try artifactStore.read(request.design.artifact)
+            let designBinding = try LogicArtifactBinding.require(
+                request.design.artifact,
+                in: request.inputBindings
+            )
+            let designData = try artifactStore.read(designBinding)
             let designDigest = request.design.artifact.digest.hexadecimalValue
             guard request.design.designDigest == designDigest else {
-                throw LogicExecutionError.artifactDigestMismatch(request.design.artifact.locator.location.value)
+                throw LogicExecutionError.artifactDigestMismatch(
+                    designBinding.materializationDescription
+                )
             }
             let design = try decodeDesign(designData)
             guard design.topDesignName == request.design.topDesignName else {
@@ -88,7 +94,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
     }
 
     private func loadStimulus(
-        _ reference: ArtifactReference?,
+        _ reference: LogicArtifactBinding?,
         design: LogicDesignDocument
     ) throws -> LogicStimulusDocument {
         guard let reference else {
@@ -206,7 +212,6 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             fileName: "logic-waveform.vcd",
             outputDirectory: request.artifactDirectory,
             runID: request.runID,
-            artifactID: "logic-waveform",
             kind: .waveform,
             format: .vcd
         )
@@ -215,7 +220,6 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             fileName: "logic-simulation-report.json",
             outputDirectory: request.artifactDirectory,
             runID: request.runID,
-            artifactID: "logic-simulation-report",
             kind: .report,
             format: .json
         )
@@ -243,15 +247,15 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
             traceCount: result.report.samples.count,
             assertionFailureCount: failureCount,
             eventCount: result.report.eventCount,
-            waveform: waveformReference,
-            assertionReport: reportReference,
+            waveform: waveformReference.reference,
+            assertionReport: reportReference.reference,
             finalValues: result.finalValues
         )
-        return LogicSimulationResult(
+        return try LogicSimulationResult(
             runID: request.runID,
             status: status,
             payload: payload,
-            artifacts: [waveformReference, reportReference],
+            artifactBindings: [waveformReference, reportReference],
             diagnostics: diagnostics,
             provenance: try makeProvenance(request: request, startedAt: startedAt)
         )
@@ -263,7 +267,7 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
         startedAt: Date
     ) throws -> LogicSimulationResult {
         let diagnostic = LogicDiagnosticFactory.make(for: error)
-        let cancellationReference: ArtifactReference?
+        let cancellationReference: LogicArtifactBinding?
         if case .cancelled = error {
             let record = LogicCancellationRecord(
                 runID: request.runID,
@@ -285,22 +289,21 @@ public struct NativeLogicSimulationEngine: LogicSimulationExecuting {
                 fileName: "logic-cancellation-record.json",
                 outputDirectory: request.artifactDirectory,
                 runID: request.runID,
-                artifactID: "logic-cancellation-record",
                 kind: .report,
                 format: .json
             )
         } else {
             cancellationReference = nil
         }
-        return LogicSimulationResult(
+        return try LogicSimulationResult(
             runID: request.runID,
             status: LogicDiagnosticFactory.status(for: error),
             payload: LogicSimulationPayload(
                 traceCount: 0,
                 assertionFailureCount: 0,
-                cancellationRecord: cancellationReference
+                cancellationRecord: cancellationReference?.reference
             ),
-            artifacts: cancellationReference.map { [$0] } ?? [],
+            artifactBindings: cancellationReference.map { [$0] } ?? [],
             diagnostics: [diagnostic],
             provenance: try makeProvenance(request: request, startedAt: startedAt)
         )

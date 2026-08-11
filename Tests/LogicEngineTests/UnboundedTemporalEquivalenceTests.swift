@@ -4,6 +4,8 @@ import LogicEngineCore
 import LogicIR
 import LogicSynthesis
 import Testing
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 
 @Suite("Unbounded temporal equivalence")
 struct UnboundedTemporalEquivalenceTests {
@@ -32,8 +34,14 @@ struct UnboundedTemporalEquivalenceTests {
         #expect(result.payload.exploredTransitionCount == 4)
         let reportReference = try #require(result.payload.equivalenceReport)
         let certificateReference = try #require(result.payload.proofCertificate)
-        let reportData = try readFoundationArtifact(reportReference, root: root)
-        let certificateData = try readFoundationArtifact(certificateReference, root: root)
+        let reportData = try readFoundationArtifact(
+            LogicArtifactBinding.require(reportReference, in: result.artifactBindings),
+            root: root
+        )
+        let certificateData = try readFoundationArtifact(
+            LogicArtifactBinding.require(certificateReference, in: result.artifactBindings),
+            root: root
+        )
         let report = try JSONDecoder().decode(LogicUnboundedTemporalEquivalenceReport.self, from: reportData)
         let certificate = try JSONDecoder().decode(
             LogicUnboundedTemporalEquivalenceCertificate.self,
@@ -99,7 +107,7 @@ struct UnboundedTemporalEquivalenceTests {
             stateSpaceLimit: 1,
             transitionLimit: 4,
             timeoutNanoseconds: request.timeoutNanoseconds,
-            inputs: request.inputs,
+            inputBindings: request.inputBindings,
             artifactDirectory: request.artifactDirectory
         )
 
@@ -241,8 +249,8 @@ struct UnboundedTemporalEquivalenceTests {
 
     private func makeRequest(
         runID: String,
-        reference: ArtifactReference,
-        implementation: ArtifactReference,
+        reference: LogicArtifactBinding,
+        implementation: LogicArtifactBinding,
         topName: String,
         outputSignals: [String],
         valueDomain: LogicUnboundedTemporalEquivalenceDomain = .twoState,
@@ -254,12 +262,12 @@ struct UnboundedTemporalEquivalenceTests {
         return LogicUnboundedTemporalEquivalenceRequest(
             runID: runID,
             referenceDesign: LogicDesignReference(
-                artifact: reference,
+                artifact: reference.reference,
                 topDesignName: topName,
                 canonicalDesignDigest: reference.digest
             ),
             implementationDesign: LogicDesignReference(
-                artifact: implementation,
+                artifact: implementation.reference,
                 topDesignName: topName,
                 canonicalDesignDigest: implementation.digest
             ),
@@ -269,7 +277,7 @@ struct UnboundedTemporalEquivalenceTests {
             transitionLimit: transitionLimit,
             timeoutNanoseconds: timeoutNanoseconds,
             clockSignal: clockSignal,
-            inputs: [reference, implementation],
+            inputBindings: [reference, implementation],
             artifactDirectory: "outputs"
         )
     }
@@ -383,27 +391,24 @@ struct UnboundedTemporalEquivalenceTests {
         name: String,
         root: URL,
         kind: ArtifactKind
-    ) throws -> ArtifactReference {
+    ) throws -> LogicArtifactBinding {
         let url = root.appending(path: name)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(value)
         try data.write(to: url, options: .atomic)
-        return ArtifactReference(
-            id: try ArtifactID(rawValue: name),
-            locator: ArtifactLocator(
-                location: try ArtifactLocation(workspaceRelativePath: name),
-                role: .input,
-                kind: kind,
-                format: .json
-            ),
-            digest: try SHA256ContentDigester().digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
+        let reference = try ArtifactReference(
+            digest: SHA256ContentDigester().digest(data: data, using: .sha256),
+            byteCount: UInt64(data.count),
+            descriptor: ArtifactDescriptor(role: .input, kind: kind, format: .json)
+        )
+        return try LogicArtifactBinding.local(
+            reference: reference,
+            fileURL: url
         )
     }
 
-    private func readFoundationArtifact(_ reference: ArtifactReference, root: URL) throws -> Data {
-        let path = reference.locator.location.value
-        return try Data(contentsOf: root.appending(path: path))
+    private func readFoundationArtifact(_ binding: LogicArtifactBinding, root: URL) throws -> Data {
+        try FileSystemLogicArtifactStore(rootDirectory: root).read(binding)
     }
 }

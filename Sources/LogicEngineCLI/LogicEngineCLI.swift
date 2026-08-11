@@ -104,7 +104,7 @@ struct LogicEngineCLI {
                     transitionLimit: request.transitionLimit,
                     timeoutNanoseconds: request.timeoutNanoseconds,
                     clockSignal: request.clockSignal,
-                    inputs: request.inputs,
+                    inputBindings: request.inputBindings,
                     artifactDirectory: outputPath
                 )
             }
@@ -160,7 +160,6 @@ struct LogicEngineCLI {
                 fileName: "logic-evidence-report.json",
                 outputDirectory: options.outputPath,
                 runID: Self.evidenceRunID(for: suite.suiteID),
-                artifactID: "logic-evidence-report",
                 kind: .report,
                 format: .json
             )
@@ -258,7 +257,7 @@ struct LogicEngineCLI {
                     transitionLimit: request.transitionLimit,
                     timeoutNanoseconds: request.timeoutNanoseconds,
                     clockSignal: request.clockSignal,
-                    inputs: request.inputs,
+                    inputBindings: request.inputBindings,
                     artifactDirectory: runOutputDirectory
                 ))
             }

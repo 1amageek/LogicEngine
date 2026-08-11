@@ -1,4 +1,6 @@
 import CircuiteFoundation
+import CircuiteFoundationCrypto
+import CircuiteFoundationFoundation
 import Darwin
 import Foundation
 
@@ -25,17 +27,23 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
         self.digester = digester
     }
 
-    public func read(_ reference: ArtifactReference) throws -> Data {
-        let path = reference.locator.location.value
+    public func read(_ artifact: LogicArtifactBinding) throws -> Data {
+        let reference = artifact.reference
+        let path = artifact.materializationDescription
         let url: URL
         do {
-            url = try reference.locator.location.resolvedFileURL(relativeTo: rootDirectory)
+            url = try artifact.localFileURL(
+                relativeTo: rootDirectory,
+                outputRoot: defaultOutputDirectory
+            )
         } catch {
             throw LogicExecutionError.artifactReadOutsideRoot(path)
         }
-        let canonicalRoot = rootDirectory.resolvingSymlinksInPath().standardizedFileURL
         let canonicalURL = url.resolvingSymlinksInPath().standardizedFileURL
-        guard contains(canonicalURL, in: canonicalRoot) else {
+        let readableRoots = [rootDirectory, defaultOutputDirectory]
+            .compactMap { $0 }
+            .map { $0.resolvingSymlinksInPath().standardizedFileURL }
+        guard readableRoots.contains(where: { contains(canonicalURL, in: $0) }) else {
             throw LogicExecutionError.artifactReadOutsideRoot(
                 canonicalURL.path(percentEncoded: false)
             )
@@ -64,10 +72,9 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
         fileName: String,
         outputDirectory: String?,
         runID: String,
-        artifactID: String?,
         kind: ArtifactKind,
         format: ArtifactFormat
-    ) throws -> ArtifactReference {
+    ) throws -> LogicArtifactBinding {
         let directory = try prepareOutputDirectory(outputDirectory, runID: runID)
         guard isSinglePathComponent(fileName) else {
             throw LogicExecutionError.invalidArtifact("output file name must be one path component: \(fileName)")
@@ -85,29 +92,42 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
             throw LogicExecutionError.artifactWriteFailed("output file escapes the run directory")
         }
         try persistImmutable(data, to: destination)
-        let path = relativeOrAbsolutePath(destination)
-        let location: ArtifactLocation
-        do {
-            if path.hasPrefix("/") {
-                location = try ArtifactLocation(fileURL: destination)
-            } else {
-                location = try ArtifactLocation(workspaceRelativePath: path)
-            }
-        } catch {
-            throw LogicExecutionError.invalidArtifact(path)
-        }
-        let id: ArtifactID?
-        if let artifactID {
-            do { id = try ArtifactID(rawValue: artifactID) }
-            catch { throw LogicExecutionError.invalidArtifact("invalid artifact ID: \(artifactID)") }
+        let descriptor = ArtifactDescriptor(
+            role: .output,
+            kind: kind,
+            format: format
+        )
+        let reference = try ArtifactReference(
+                digest: digester.digest(data: data, using: .sha256),
+                byteCount: UInt64(data.count),
+                descriptor: descriptor
+            )
+        let availability: ArtifactAvailability
+        if contains(destination, in: rootDirectory) {
+            availability = .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(
+                    rawValue: LogicArtifactBinding.workspaceRootIdentifier
+                ),
+                relativePath: try relativePath(destination, to: rootDirectory)
+            )
+        } else if let defaultOutputDirectory,
+                  contains(destination, in: defaultOutputDirectory) {
+            availability = .local(
+                artifactID: reference.id,
+                rootID: try ArtifactRootID(
+                    rawValue: LogicArtifactBinding.outputRootIdentifier
+                ),
+                relativePath: try relativePath(destination, to: defaultOutputDirectory)
+            )
         } else {
-            id = nil
+            throw LogicExecutionError.artifactOutputOutsideRoot(
+                destination.path(percentEncoded: false)
+            )
         }
-        return ArtifactReference(
-            id: id,
-            locator: ArtifactLocator(location: location, role: .output, kind: kind, format: format),
-            digest: try digester.digest(data: data, using: .sha256),
-            byteCount: UInt64(data.count)
+        return try LogicArtifactBinding(
+            reference: reference,
+            availability: availability
         )
     }
 
@@ -264,18 +284,16 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
         return candidate.standardizedFileURL
     }
 
-    private func relativeOrAbsolutePath(_ url: URL) -> String {
-        let rootPath = rootDirectory.path(percentEncoded: false)
-        if rootPath == "/" {
-            return url.path(percentEncoded: false)
+    private func relativePath(_ url: URL, to root: URL) throws -> ArtifactRelativePath {
+        let rootComponents = root.standardizedFileURL.pathComponents
+        let urlComponents = url.standardizedFileURL.pathComponents
+        guard urlComponents.starts(with: rootComponents) else {
+            throw LogicExecutionError.artifactOutputOutsideRoot(
+                url.path(percentEncoded: false)
+            )
         }
-        let base = rootPath.hasSuffix("/")
-            ? rootPath
-            : rootPath + "/"
-        let path = url.path(percentEncoded: false)
-        if path.hasPrefix(base) {
-            return String(path.dropFirst(base.count))
-        }
-        return path
+        return try ArtifactRelativePath(
+            segments: Array(urlComponents.dropFirst(rootComponents.count))
+        )
     }
 }
