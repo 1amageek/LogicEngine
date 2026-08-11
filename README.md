@@ -122,20 +122,12 @@ remain outside this package.
 
 ## Build
 
-`Package.swift` resolves each dependency independently. When the corresponding
-`../<Package>/Package.swift` exists it uses the local sibling checkout;
-otherwise it uses the pinned GitHub revision below. No umbrella repository is
-required for either mode.
-
-| Dependency | Local sibling | Remote fallback revision |
-|---|---|---|
-| CircuiteFoundation | `../CircuiteFoundation` | `7abcac83517935c9b9f7553d7016d62cffde259d` |
-| LogicDesign | `../LogicDesign` | `b9aa25b0b78e6168befa25df3bfe8309bd020a6d` |
-| TimingEngine | `../TimingEngine` | `baada25223ccc1225afefa672120ba0d7d1d5d41` |
-| PDKKit | `../PDKKit` | `b62c5ad7e5819a24977038c2133856caed52f481` |
+`Package.swift` resolves every internal dependency from an exact remote release.
+Local sibling selection and mutable revisions are not part of the build contract.
 
 ```bash
-swift build
+swift build --build-tests -j 4 \
+  -Xswiftc -Xfrontend -Xswiftc -disable-round-trip-debug-types
 ```
 
 The deterministic JSON CLI is available as:
