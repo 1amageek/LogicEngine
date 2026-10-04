@@ -50,9 +50,11 @@ All outputs are immutable run artifacts with format, digest, producer metadata a
 
 ## Exact Timing Dependency Adoption
 
-Adopt [TimingEngine](../TimingEngine/DESIGN.md) at
-`fc21d6abe40e2888e595bcb58ed76f2733497e1d` so the composing host resolves one
-exact timing dependency. TimingCore sources and the consumed public value/API
-contract are unchanged from `c009525`; this adoption changes no domain source
-or analysis behavior. Manifest decoding checks the exact pin, and Xcircuite's
-dedicated host build compiles/links the consumed products against this closure.
+[Package.swift](Package.swift) owns the exact dependency revisions shared with
+Xcircuite. This closure adopts verified TimingEngine source contracts, including
+[TimingCore strict source characterization](../TimingEngine/Sources/TimingCore/DESIGN.md),
+and the verified standard-format dependency closure. It preserves this package's
+domain source bytes; it does not claim dependency source or behavior is unchanged.
+Manifest inspection checks every exact pin before the composing host resolves,
+compiles and exercises the consumed products. Process qualification remains a
+separate owner contract.
