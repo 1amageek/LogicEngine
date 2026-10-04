@@ -47,3 +47,12 @@ coverage.
 ## Artifact requirements
 
 All outputs are immutable run artifacts with format, digest, producer metadata and the input design/PDK revision needed to reproduce the result.
+
+## Exact Timing Dependency Adoption
+
+Adopt [TimingEngine](../TimingEngine/DESIGN.md) at
+`fc21d6abe40e2888e595bcb58ed76f2733497e1d` so the composing host resolves one
+exact timing dependency. TimingCore sources and the consumed public value/API
+contract are unchanged from `c009525`; this adoption changes no domain source
+or analysis behavior. Manifest decoding checks the exact pin, and Xcircuite's
+dedicated host build compiles/links the consumed products against this closure.
