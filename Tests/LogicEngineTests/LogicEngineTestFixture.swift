@@ -77,7 +77,7 @@ struct LogicEngineTestFixture {
             design: design,
             libraries: [TimingLibraryReference(artifact: timingLibraryBinding, cornerIDs: ["typical"])],
             constraints: constraintsBinding,
-            pdk: PDKReference(
+            pdk: try PDKReference(
                 manifest: pdkBinding.reference,
                 manifestLocator: try locator(
                     named: "pdk-manifest",
@@ -85,8 +85,7 @@ struct LogicEngineTestFixture {
                     format: .json
                 ),
                 processID: "logic-fixture",
-                version: "1",
-                digest: pdkBinding.digest.hexadecimalValue
+                version: "1"
             ),
             artifactDirectory: outputDirectory?.path(percentEncoded: false)
         )

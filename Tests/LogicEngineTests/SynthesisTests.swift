@@ -85,7 +85,7 @@ struct SynthesisTests {
                 cornerIDs: ["typical"]
             )],
             constraints: constraints,
-            pdk: PDKReference(
+            pdk: try PDKReference(
                 manifest: pdk.reference,
                 manifestLocator: try LogicEngineTestFixture.locator(
                     named: "pdk-manifest",
@@ -93,8 +93,7 @@ struct SynthesisTests {
                     format: .json
                 ),
                 processID: "logic-fixture",
-                version: "1",
-                digest: pdk.digest.hexadecimalValue
+                version: "1"
             ),
             artifactDirectory: outputDirectory.path(percentEncoded: false)
         )
