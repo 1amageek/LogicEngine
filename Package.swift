@@ -3,22 +3,22 @@ import PackageDescription
 
 let circuiteFoundationDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/CircuiteFoundation.git",
-    exact: "26.812.0"
+    revision: "ae88104c556f5802819713ed741f5b2fffffc2d9"
 )
 
 let logicDesignDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/LogicDesign.git",
-    exact: "26.812.0"
+    revision: "d13cebf1454e124a352f87186a22a70ef47d99a5"
 )
 
 let timingEngineDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/TimingEngine.git",
-    revision: "087143be22e5c54283bfabc590067aa23203ee6a"
+    revision: "2c0e6df5ac88a2e331fbb41403e4d8265db64314"
 )
 
 let pdkKitDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/PDKKit.git",
-    revision: "06212417a47d8dec4a3c541a0612a1ac08e66b45"
+    revision: "14f7b508dd8961ed4bfa6d6e29600fdc5c6ae9f5"
 )
 
 let package = Package(
