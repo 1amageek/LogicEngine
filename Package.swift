@@ -1,4 +1,4 @@
-// swift-tools-version: 6.3
+// swift-tools-version: 6.4
 import PackageDescription
 
 let circuiteFoundationDependency: Package.Dependency = .package(
@@ -12,16 +12,16 @@ let logicDesignDependency: Package.Dependency = .package(
 )
 
 let timingEngineDependency: Package.Dependency = .package(url: "https://github.com/1amageek/TimingEngine.git",
-    revision: "b419a09995174289545132048451ac9d2acc372b"
+    revision: "bcaaa735207fa77a0b76ad8105d59100612f6c0d"
 )
 
 let pdkKitDependency: Package.Dependency = .package(url: "https://github.com/1amageek/PDKKit.git",
-    revision: "c3491863601c16357e40e57dd2f6a7b648535c6a"
+    revision: "58fa393275080e0a88dc8ac9f8a95fc0c054b019"
 )
 
 let package = Package(
     name: "LogicEngine",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS("27.0")],
     products: [
         .library(name: "LogicEngineCore", targets: ["LogicEngineCore"]),
         .library(name: "LogicLowering", targets: ["LogicLowering"]),

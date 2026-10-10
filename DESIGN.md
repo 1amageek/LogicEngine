@@ -71,3 +71,18 @@ Transitive revisions must agree with the composing Xcircuite graph without overr
 This dependency change preserves this package's domain implementation; lower
 behavioral evidence and host identity/provenance tests establish the consumed
 contract, not process qualification or unexecuted domain test coverage.
+
+## Portable Kernel Dependency Correction
+
+The approved redesign uses LogicDesign's
+[LogicKernelCore](../LogicDesign/Sources/LogicKernelCore/DESIGN.md) for resource
+budgets, run control and typed failures. LogicEngineCore must not own a second
+context or reset a context between stages. Frontend kernels do not import
+LogicEngine. Artifact, filesystem, library acquisition and STA remain host concerns.
+The planned symbolic proof checker is not supplied by the retained exhaustive or
+structural engines; their evidence must not be promoted to actual-cell functional
+proof. Implementation and verification remain tracked in [PROGRESS.md](../PROGRESS.md).
+
+## Verification and Change Impact
+
+The package manifest consumes the [CoreSpice host deployment contract](../CoreSpice/DESIGN.md#responsibilities-and-boundaries) through its exact dependency closure. Changes to that contract require resolution and affected host-product verification.
