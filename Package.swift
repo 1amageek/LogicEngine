@@ -12,11 +12,11 @@ let logicDesignDependency: Package.Dependency = .package(
 )
 
 let timingEngineDependency: Package.Dependency = .package(url: "https://github.com/1amageek/TimingEngine.git",
-    revision: "cfbe3b097e0743c07af9d0633f189f5a30af7547"
+    revision: "f238359ce6f9e251fe9bef5623956ad35fac6b24"
 )
 
 let pdkKitDependency: Package.Dependency = .package(url: "https://github.com/1amageek/PDKKit.git",
-    revision: "0dcc32a46c950b346b8f505067792b038b7b32a1"
+    revision: "ada919723cad21aa40a33ee600fb558e5c3b7011"
 )
 
 let package = Package(
