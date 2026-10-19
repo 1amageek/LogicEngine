@@ -1,6 +1,6 @@
 import Foundation
-import LogicEngineCore
 import LogicIR
+import LogicDesignSerialization
 
 public struct LogicEvidenceCaseEvaluation: Sendable, Hashable, Codable {
     public var caseID: String

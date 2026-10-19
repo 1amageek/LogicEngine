@@ -1,27 +1,14 @@
-import LogicSynthesis
+import LogicEngineRuntime
 
 public struct LogicSynthesisCapabilities: Sendable, Hashable, Codable {
     public let implementation: String
     public let equivalenceRequired: Bool
-    public let acceptanceState: LogicSynthesisAcceptanceState
-    public let equivalenceRequestArtifact: Bool
+    public let actualCellMapping: Bool
+    public let independentRUPChecking: Bool
+    public let checkedArtifactReload: Bool
+    public let synthesisRequestMajorVersion: UInt16
 
-    public init(
-        implementation: String,
-        equivalenceRequired: Bool,
-        acceptanceState: LogicSynthesisAcceptanceState,
-        equivalenceRequestArtifact: Bool
-    ) {
-        self.implementation = implementation
-        self.equivalenceRequired = equivalenceRequired
-        self.acceptanceState = acceptanceState
-        self.equivalenceRequestArtifact = equivalenceRequestArtifact
-    }
-
-    public static let native = Self(
-        implementation: "native-lowering-optimization-mapping",
-        equivalenceRequired: true,
-        acceptanceState: .pendingEquivalence,
-        equivalenceRequestArtifact: true
-    )
+    public static let native = Self(implementation: "native-actual-cell-synthesis-v1", equivalenceRequired: true,
+        actualCellMapping: true, independentRUPChecking: true, checkedArtifactReload: true,
+        synthesisRequestMajorVersion: LogicSynthesisRequest.currentSchemaVersion.major)
 }

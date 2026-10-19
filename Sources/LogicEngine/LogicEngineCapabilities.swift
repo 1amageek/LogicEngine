@@ -2,7 +2,7 @@ import CircuiteFoundation
 import LogicEngineCore
 
 public struct LogicEngineCapabilities: Sendable, Hashable, Codable {
-    public static let currentSchemaVersion = SchemaVersion.v1
+    public static let currentSchemaVersion = SchemaVersion(major: 3, minor: 0, patch: 0)
 
     public let schemaVersion: SchemaVersion
     public let lowering: LogicLoweringCapabilities
@@ -55,11 +55,15 @@ public struct LogicEngineCapabilities: Sendable, Hashable, Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try container.decode(SchemaVersion.self, forKey: .schemaVersion)
+        guard schemaVersion == Self.currentSchemaVersion else {
+            throw LogicExecutionError.invalidArtifact(
+                "unsupported LogicEngine capabilities schema version \(schemaVersion)"
+            )
+        }
         lowering = try container.decode(LogicLoweringCapabilities.self, forKey: .lowering)
         simulation = try container.decode(LogicSimulationCapabilities.self, forKey: .simulation)
         synthesis = try container.decode(LogicSynthesisCapabilities.self, forKey: .synthesis)
         equivalence = try container.decode(LogicEquivalenceCapabilities.self, forKey: .equivalence)
         evidence = try container.decode(LogicEvidenceCapabilities.self, forKey: .evidence)
-        try validate()
     }
 }

@@ -5,23 +5,11 @@ import Testing
 
 @Suite("Logic evidence contracts")
 struct EvidenceTests {
-    @Test("retained suite decodes as an agent-operable corpus")
-    func evidenceFixtureDecodes() throws {
-        let suite = try loadSuite()
-        try suite.validate()
-        #expect(suite.cases.count == 4)
-    }
-
-    @Test("corpus outcome is derived from case mismatches")
-    func corpusOutcomeIsDerived() async throws {
-        let suite = try loadSuite()
-        let report = try await NativeLogicEvidenceRunner(
-            executor: FixtureObservationExecutor()
-        ).evaluate(suite, checkedAt: Date(timeIntervalSince1970: 1))
-
+    @Test("corpus outcome is derived from passive case mismatches")
+    func corpusOutcomeIsDerived() throws {
+        let report = report()
         #expect(report.state == .corpusChecked)
         #expect(report.corpusPassed)
-        #expect(report.evaluations.filter { !$0.matched }.isEmpty)
         try report.validate()
 
         let encoded = try JSONEncoder().encode(report)
@@ -37,168 +25,74 @@ struct EvidenceTests {
     }
 
     @Test("oracle correlation is derived from identities and raw mismatches")
-    func oracleCorrelationIsDerived() async throws {
-        let report = try await NativeLogicEvidenceRunner(
-            executor: FixtureObservationExecutor()
-        ).evaluate(try loadSuite(), checkedAt: Date(timeIntervalSince1970: 1))
+    func oracleCorrelationIsDerived() throws {
+        let report = report()
         let oracle = try loadOracle()
-        let correlation = try NativeLogicEvidenceOracleCorrelator().correlate(
-            nativeReport: report,
-            oracle: oracle
-        )
+        let correlator = NativeLogicEvidenceOracleCorrelator()
+        let correlation = try correlator.correlate(nativeReport: report, oracle: oracle)
         let correlated = report.includingOracleCorrelation(correlation)
-
-        #expect(correlation.matched)
-        #expect(correlation.independenceVerified)
-        #expect(correlated.state == .oracleCorrelated)
-        #expect(correlated.oraclePassed)
+        #expect(correlation.matched && correlation.independenceVerified)
+        #expect(correlated.state == .oracleCorrelated && correlated.oraclePassed)
         try correlated.validate()
 
         let selfOracle = LogicEvidenceOracleObservationSet(
             oracleImplementationID: report.implementationID,
-            oracleImplementationVersion: "1",
-            observations: oracle.observations
+            oracleImplementationVersion: "1", observations: oracle.observations
         )
-        let rejected = try NativeLogicEvidenceOracleCorrelator().correlate(
-            nativeReport: report,
-            oracle: selfOracle
-        )
-        #expect(!rejected.independenceVerified)
+        let rejected = try correlator.correlate(nativeReport: report, oracle: selfOracle)
         #expect(!rejected.isUsableForPromotion)
         #expect(rejected.mismatches.contains("oracle_not_independent"))
-    }
 
-    @Test("duplicate corpus case identities fail validation")
-    func duplicateCaseIdentityIsRejected() throws {
-        var suite = try loadSuite()
-        suite.cases.append(try #require(suite.cases.first))
-
-        #expect(throws: LogicEvidenceError.duplicateCase(suite.cases[0].caseID)) {
-            try suite.validate()
-        }
-    }
-
-    @Test("unbounded corpus cases remain executable raw evidence")
-    func unboundedCorpusExecutes() async throws {
-        let suite = try loadUnboundedSuite()
-        let report = try await NativeLogicEvidenceRunner(
-            executor: ExpectedObservationExecutor(suite: suite)
-        ).evaluate(suite, checkedAt: Date(timeIntervalSince1970: 1))
-
-        #expect(report.state == .corpusChecked)
-        #expect(report.evaluations.count == suite.cases.count)
-        #expect(report.corpusPassed)
-        try report.validate()
+        var changed = oracle
+        changed.observations[0].observation.diagnosticCodes = ["different"]
+        let mismatch = try correlator.correlate(nativeReport: report, oracle: changed)
+        #expect(!mismatch.isUsableForPromotion)
+        #expect(mismatch.mismatches.contains("diagnostic_mismatch:simulation-and-gate"))
     }
 
     @Test("a report cannot claim oracle correlation without complete independent coverage")
     func forgedOracleStateIsRejected() throws {
-        let report = LogicEvidenceReport(
-            suiteID: "suite",
-            implementationID: "native",
-            implementationVersion: "1",
-            state: .oracleCorrelated,
-            evaluations: [LogicEvidenceCaseEvaluation(
-                caseID: "case",
-                observedStatus: .completed,
-                observedDiagnosticCodes: [],
-                observedArtifactIDs: [],
-                mismatches: []
-            )]
-        )
-
-        #expect(throws: LogicEvidenceError.self) {
-            try report.validate()
-        }
+        var forged = report()
+        forged.state = .oracleCorrelated
+        #expect(throws: LogicEvidenceError.self) { try forged.validate() }
     }
 
     @Test("a corpus mismatch remains reviewable raw evidence and cannot claim promotion")
-    func corpusMismatchFailsClosedWithStructuredBlockers() async throws {
-        let suite = try loadSuite()
-        let report = try await NativeLogicEvidenceRunner(
-            executor: MismatchingObservationExecutor()
-        ).evaluate(suite, checkedAt: Date(timeIntervalSince1970: 2))
-
-        #expect(report.state == .unassessed)
-        #expect(!report.corpusPassed)
-        #expect(report.blockers.count == suite.cases.count)
-        #expect(report.limitations.contains { $0.contains("status expected") })
-        try report.validate()
+    func corpusMismatchFailsClosedWithStructuredBlockers() throws {
+        var mismatch = report()
+        mismatch.evaluations[0].observedStatus = .blocked
+        mismatch.evaluations[0].mismatches = ["status expected completed observed blocked"]
+        mismatch.blockers = ["simulation-and-gate:status mismatch"]
+        mismatch.limitations = mismatch.evaluations[0].mismatches
+        #expect(!mismatch.corpusPassed)
+        #expect(throws: LogicEvidenceError.self) { try mismatch.validate() }
+        mismatch.state = .unassessed
+        try mismatch.validate()
+        #expect(mismatch.blockers == ["simulation-and-gate:status mismatch"])
+        let correlation = try NativeLogicEvidenceOracleCorrelator().correlate(
+            nativeReport: mismatch, oracle: loadOracle()
+        )
+        #expect(!mismatch.includingOracleCorrelation(correlation).oraclePassed)
     }
 
-    private func loadSuite() throws -> LogicEvidenceSuite {
-        try JSONDecoder().decode(
-            LogicEvidenceSuite.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-evidence-suite"))
-        )
+    private func report() -> LogicEvidenceReport {
+        let simulationCases = ["simulation-and-gate", "simulation-signed-arithmetic", "simulation-vector-logical"]
+        var evaluations = simulationCases.map {
+            LogicEvidenceCaseEvaluation(caseID: $0, observedStatus: .completed,
+                observedDiagnosticCodes: ["logic.simulation.completed"],
+                observedArtifactIDs: ["logic-simulation-report", "logic-waveform"], mismatches: [])
+        }
+        evaluations.append(LogicEvidenceCaseEvaluation(caseID: "synthesis-and-gate", observedStatus: .completed,
+            observedDiagnosticCodes: ["LOGIC_EQUIVALENCE_REQUIRED", "LOGIC_SYNTHESIS_COMPLETED"],
+            observedArtifactIDs: ["logic-equivalence-request", "logic-synthesis-provenance", "mapped-design"], mismatches: []))
+        return LogicEvidenceReport(suiteID: "passive-report", implementationID: "native-observations",
+            implementationVersion: "1", state: .corpusChecked, evaluations: evaluations,
+            checkedAt: Date(timeIntervalSince1970: 1))
     }
 
     private func loadOracle() throws -> LogicEvidenceOracleObservationSet {
-        try JSONDecoder().decode(
-            LogicEvidenceOracleObservationSet.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-evidence-oracle-v1"))
-        )
-    }
-
-    private func loadUnboundedSuite() throws -> LogicEvidenceSuite {
-        try JSONDecoder().decode(
-            LogicEvidenceSuite.self,
-            from: Data(contentsOf: try LogicEngineTestFixture.url(named: "logic-unbounded-evidence-suite"))
-        )
-    }
-}
-
-private struct MismatchingObservationExecutor: LogicEvidenceExecuting {
-    func execute(_ request: LogicEvidenceRequest) async throws -> LogicEvidenceObservation {
-        LogicEvidenceObservation(status: .blocked)
-    }
-}
-
-private struct ExpectedObservationExecutor: LogicEvidenceExecuting {
-    let observations: [String: LogicEvidenceObservation]
-
-    init(suite: LogicEvidenceSuite) {
-        observations = Dictionary(uniqueKeysWithValues: suite.cases.map {
-            ($0.request.runID, LogicEvidenceObservation(
-                status: $0.expectation.expectedStatus,
-                diagnosticCodes: $0.expectation.requiredDiagnosticCodes
-            ))
-        })
-    }
-
-    func execute(_ request: LogicEvidenceRequest) async throws -> LogicEvidenceObservation {
-        guard let observation = observations[request.runID] else {
-            throw LogicEvidenceError.unsupportedRequest(request.runID)
-        }
-        return observation
-    }
-}
-
-private struct FixtureObservationExecutor: LogicEvidenceExecuting {
-    func execute(
-        _ request: LogicEvidenceRequest
-    ) async throws -> LogicEvidenceObservation {
-        switch request.runID {
-        case "logic-evidence-simulation":
-            return LogicEvidenceObservation(
-                status: .completed,
-                diagnosticCodes: ["logic.simulation.completed"],
-                artifactIDs: ["logic-simulation-report", "logic-waveform"]
-            )
-        case "logic-evidence-synthesis":
-            return LogicEvidenceObservation(
-                status: .completed,
-                diagnosticCodes: ["LOGIC_EQUIVALENCE_REQUIRED", "LOGIC_SYNTHESIS_COMPLETED"],
-                artifactIDs: ["logic-equivalence-request", "logic-synthesis-provenance", "mapped-design"]
-            )
-        case "logic-evidence-signed-arithmetic", "logic-evidence-vector-logical":
-            return LogicEvidenceObservation(
-                status: .completed,
-                diagnosticCodes: ["logic.simulation.completed"],
-                artifactIDs: ["logic-simulation-report", "logic-waveform"]
-            )
-        default:
-            throw LogicEvidenceError.unsupportedRequest(request.runID)
-        }
+        let url = try #require(Bundle.module.url(forResource: "logic-evidence-oracle-v1",
+            withExtension: "json", subdirectory: "Fixtures"))
+        return try JSONDecoder().decode(LogicEvidenceOracleObservationSet.self, from: Data(contentsOf: url))
     }
 }

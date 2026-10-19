@@ -1,35 +1,13 @@
-import LogicEngineCore
+import LogicEngineRuntime
 
 public struct LogicEquivalenceCapabilities: Sendable, Hashable, Codable {
     public let implementation: String
-    public let boundedTemporalTrace: Bool
-    public let unboundedTemporalFormal: Bool
-    public let unboundedImplementation: String
-    public let unboundedProofCertificate: Bool
-    public let waveformFormats: [LogicWaveformFormat]
+    public let requestSchemaMajor: UInt16
+    public let independentRUPChecking: Bool
+    public let actualCellFunctions: Bool
+    public let checkedArtifactReload: Bool
 
-    public init(
-        implementation: String,
-        boundedTemporalTrace: Bool,
-        unboundedTemporalFormal: Bool,
-        unboundedImplementation: String,
-        unboundedProofCertificate: Bool,
-        waveformFormats: [LogicWaveformFormat]
-    ) {
-        self.implementation = implementation
-        self.boundedTemporalTrace = boundedTemporalTrace
-        self.unboundedTemporalFormal = unboundedTemporalFormal
-        self.unboundedImplementation = unboundedImplementation
-        self.unboundedProofCertificate = unboundedProofCertificate
-        self.waveformFormats = waveformFormats
-    }
-
-    public static let native = Self(
-        implementation: "native-bounded-trace",
-        boundedTemporalTrace: true,
-        unboundedTemporalFormal: true,
-        unboundedImplementation: "native-exhaustive-finite-state",
-        unboundedProofCertificate: true,
-        waveformFormats: [.vcd]
-    )
+    public static let native = Self(implementation: "native-actual-cell-rup",
+        requestSchemaMajor: LogicEquivalenceRequest.currentSchemaVersion.major,
+        independentRUPChecking: true, actualCellFunctions: true, checkedArtifactReload: true)
 }

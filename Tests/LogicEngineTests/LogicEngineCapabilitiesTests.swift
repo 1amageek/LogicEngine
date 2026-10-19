@@ -3,6 +3,7 @@ import CircuiteFoundation
 import Testing
 @testable import LogicEngine
 @testable import LogicEngineCore
+import LogicEngineRuntime
 
 @Suite("LogicEngine capabilities")
 struct LogicEngineCapabilitiesTests {
@@ -10,11 +11,19 @@ struct LogicEngineCapabilitiesTests {
     func nativeCapabilitiesUseCurrentSchema() {
         let capabilities = LogicEngineCapabilities.native
 
-        #expect(capabilities.schemaVersion == LogicEngineCapabilities.currentSchemaVersion)
-        #expect(capabilities.simulation.waveformFormats == [.vcd])
-        #expect(capabilities.simulation.maximumArithmeticWidthBits == 64)
+        #expect(capabilities.schemaVersion == SchemaVersion(major: 3, minor: 0, patch: 0))
+        #expect(capabilities.lowering.typedWordLowering && capabilities.lowering.typedBitLowering)
+        #expect(capabilities.lowering.binarySynthesisProfile)
+        #expect(capabilities.synthesis.synthesisRequestMajorVersion == LogicSynthesisRequest.currentSchemaVersion.major)
+        #expect(capabilities.simulation.requestSchemaMajor == LogicSimulationRequest.currentSchemaVersion.major)
+        #expect(capabilities.equivalence.requestSchemaMajor == LogicEquivalenceRequest.currentSchemaVersion.major)
+        #expect(capabilities.equivalence.independentRUPChecking && capabilities.equivalence.actualCellFunctions)
+        #expect(capabilities.equivalence.checkedArtifactReload)
+        #expect(capabilities.evidence.passiveReportValidation)
+        #expect(capabilities.simulation.requestSchemaMajor == 4 && capabilities.simulation.fourState)
+        #expect(capabilities.simulation.arbitraryWidth && capabilities.simulation.actualCellFunctions)
         #expect(capabilities.synthesis.equivalenceRequired)
-        #expect(capabilities.synthesis.acceptanceState == .pendingEquivalence)
+        #expect(capabilities.synthesis.actualCellMapping && capabilities.synthesis.checkedArtifactReload)
         #expect(capabilities.evidence.independentOracleCorrelation)
     }
 

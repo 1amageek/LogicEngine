@@ -1,6 +1,6 @@
 import Foundation
-import LogicEngineCore
 import LogicIR
+import LogicDesignSerialization
 
 public struct LogicEvidenceObservation: Sendable, Hashable, Codable {
     public var status: LogicExecutionStatus

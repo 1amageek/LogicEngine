@@ -3,30 +3,32 @@ import PackageDescription
 
 let circuiteFoundationDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/CircuiteFoundation.git",
-    revision: "ae88104c556f5802819713ed741f5b2fffffc2d9"
+    revision: "5f132c58209123433e0e479e1ea61096e46061ba"
 )
 
 let logicDesignDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/LogicDesign.git",
-    revision: "d13cebf1454e124a352f87186a22a70ef47d99a5"
+    revision: "5e1d3eec838a0add91c617413682d186a5182335"
 )
 
 let timingEngineDependency: Package.Dependency = .package(url: "https://github.com/1amageek/TimingEngine.git",
-    revision: "1e16c86c6e6240922f7e38315b5cd2fadf2643f8"
+    revision: "be979a9e3095e811f5d7cc4d5f74668142d9c052"
 )
 
 let pdkKitDependency: Package.Dependency = .package(url: "https://github.com/1amageek/PDKKit.git",
-    revision: "4bd00d6c7cecc5ef1d5854d60f310fb94a3045b9"
+    revision: "f59dfd1dbdd20545ddf97e6a0ab9a956ad7ca809"
 )
 
 let package = Package(
     name: "LogicEngine",
     platforms: [.macOS("27.0")],
     products: [
-        .library(name: "LogicEngineCore", targets: ["LogicEngineCore"]),
-        .library(name: "LogicLowering", targets: ["LogicLowering"]),
-        .library(name: "LogicSimulation", targets: ["LogicSimulation"]),
         .library(name: "LogicSynthesis", targets: ["LogicSynthesis"]),
+        .library(name: "LogicEngineCore", targets: ["LogicEngineCore"]),
+        .library(name: "LogicEngineRuntime", targets: ["LogicEngineRuntime"]),
+        .library(name: "LogicLowering", targets: ["LogicLowering"]),
+        .library(name: "LogicProof", targets: ["LogicProof"]),
+        .library(name: "LogicSimulation", targets: ["LogicSimulation"]),
         .library(name: "LogicEvidence", targets: ["LogicEvidence"]),
         .library(name: "LogicEngine", targets: ["LogicEngine"]),
         .executable(name: "logic-engine", targets: ["LogicEngineCLI"]),
@@ -38,87 +40,173 @@ let package = Package(
         pdkKitDependency,
     ],
     targets: [
+        .target(name: "LogicOptimizationProbeSupport", dependencies: ["LogicSynthesis", "LogicProof", "LogicSimulation", "LogicProofProbeSupport", "LogicLowering", "LogicWordLoweringProbeSupport",
+            .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign"),
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation")], exclude: ["DESIGN.md"]),
+        .testTarget(name: "LogicOptimizationTests", dependencies: ["LogicOptimizationProbeSupport", "LogicSynthesis", "LogicProof", "LogicProofProbeSupport", "LogicSimulation",
+            .product(name: "LogicIR", package: "LogicDesign"), .product(name: "LogicKernelCore", package: "LogicDesign")]),
+        .executableTarget(name: "LogicOptimizationPortabilityProbe", dependencies: ["LogicOptimizationProbeSupport"]),
+        .executableTarget(name: "LogicOptimizationEmbeddedPortabilityProbe", dependencies: ["LogicOptimizationProbeSupport"],
+            linkerSettings: [.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi])),
+                .unsafeFlags(["-Xlinker", "-z", "-Xlinker", "stack-size=4194304"], .when(platforms: [.wasi]))]),
+
+        .target(name: "LogicSynthesis", dependencies: [
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign")
+        ], exclude: ["DESIGN.md", "StateOptimization/DESIGN.md", "TechnologyMapping/DESIGN.md"]),
+        .target(name: "LogicEngineRuntime", dependencies: [
+            .product(name: "PDKCore", package: "PDKKit"),
+            "LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicProof", "LogicSynthesis",
+            .product(name: "LogicDesignSerialization", package: "LogicDesign"),
+            .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
+            .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+            .product(name: "STAEngine", package: "TimingEngine"),
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign"),
+            .product(name: "TimingCore", package: "TimingEngine")
+        ], exclude: ["DESIGN.md", "TechnologyLibraryCompilation/DESIGN.md", "ActualCellExecution/DESIGN.md", "VerifiedArtifacts/DESIGN.md", "EventExecution/DESIGN.md"]),
+        .testTarget(name: "LogicRuntimeTests", dependencies: ["LogicEngineRuntime", "LogicEngineCore", "LogicProof", "LogicSynthesis", "LogicSimulation",
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign"),
+            .product(name: "STAEngine", package: "TimingEngine"),
+            .product(name: "TimingCore", package: "TimingEngine"),
+            .product(name: "PDKCore", package: "PDKKit")], resources: [.copy("Fixtures")]),
+        .testTarget(name: "LogicLibraryCompilationTests", dependencies: ["LogicEngineRuntime", "LogicSimulation", "LogicSynthesis", "LogicProof", "LogicProofProbeSupport",
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign"),
+            .product(name: "TimingCore", package: "TimingEngine")]),
+        .target(
+            name: "LogicWordLoweringProbeSupport",
+            dependencies: ["LogicLowering", .product(name: "SystemVerilogFrontend", package: "LogicDesign"), .product(name: "LogicIR", package: "LogicDesign"),
+                .product(name: "LogicKernelCore", package: "LogicDesign"),
+                .product(name: "CircuiteFoundation", package: "CircuiteFoundation")],
+            exclude: ["DESIGN.md"]
+        ),
+        .executableTarget(name: "LogicWordLoweringPortabilityProbe", dependencies: ["LogicWordLoweringProbeSupport"], exclude: ["DESIGN.md"],
+            linkerSettings: [.unsafeFlags(["-Xlinker", "-z", "-Xlinker", "stack-size=4194304"], .when(platforms: [.wasi]))]),
+        .executableTarget(
+            name: "LogicWordLoweringEmbeddedPortabilityProbe", dependencies: ["LogicWordLoweringProbeSupport"],
+            exclude: ["DESIGN.md"],
+            linkerSettings: [.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi])),
+                .unsafeFlags(["-Xlinker", "-z", "-Xlinker", "stack-size=4194304"], .when(platforms: [.wasi]))]
+        ),
+        .target(
+            name: "LogicBitLoweringProbeSupport",
+            dependencies: ["LogicLowering", .product(name: "LogicIR", package: "LogicDesign"),
+                .product(name: "LogicKernelCore", package: "LogicDesign"),
+                .product(name: "CircuiteFoundation", package: "CircuiteFoundation")],
+            exclude: ["DESIGN.md"]
+        ),
+        .executableTarget(name: "LogicBitLoweringPortabilityProbe", dependencies: ["LogicBitLoweringProbeSupport"]),
+        .executableTarget(
+            name: "LogicBitLoweringEmbeddedPortabilityProbe", dependencies: ["LogicBitLoweringProbeSupport"],
+            linkerSettings: [.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi]))]
+        ),
         .target(
             name: "LogicEngineCore",
             dependencies: [
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
                 .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
-                .product(name: "CircuiteFoundationFileSystem", package: "CircuiteFoundation"),
-                .product(name: "LogicIR", package: "LogicDesign"),
-            ]
+                .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+            ], exclude: ["DESIGN.md", "ArtifactStorage/DESIGN.md"]
         ),
         .target(
             name: "LogicLowering",
             dependencies: [
-                "LogicEngineCore",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "LogicKernelCore", package: "LogicDesign"),
                 .product(name: "LogicIR", package: "LogicDesign"),
-            ]
+            ],
+            exclude: ["DESIGN.md", "BitExpansion/DESIGN.md", "ProceduralLowering/DESIGN.md"]
         ),
-        .target(
-            name: "LogicSimulation",
-            dependencies: [
-                "LogicEngineCore",
-                "LogicLowering",
-                .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "LogicIR", package: "LogicDesign"),
-            ]
-        ),
-        .target(
-            name: "LogicSynthesis",
-            dependencies: [
-                "LogicEngineCore",
-                "LogicLowering",
-                "LogicSimulation",
-                .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-                .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
-                .product(name: "LogicIR", package: "LogicDesign"),
-                .product(name: "PowerIntent", package: "LogicDesign"),
-                .product(name: "TimingCore", package: "TimingEngine"),
-                .product(name: "PDKCore", package: "PDKKit"),
-            ]
-        ),
+        .target(name: "LogicProof", dependencies: ["LogicSimulation",
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign")
+        ], exclude: ["DESIGN.md", "CNFModel/DESIGN.md", "RUPChecking/DESIGN.md", "CDCLSearch/DESIGN.md", "CircuitEquivalence/DESIGN.md"]),
+        .testTarget(name: "LogicProofTests", dependencies: ["LogicProof", "LogicSimulation", "LogicProofProbeSupport", .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign")]),
+        .target(name: "LogicProofProbeSupport", dependencies: ["LogicProof", "LogicSimulation", .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"), .product(name: "LogicKernelCore", package: "LogicDesign")], exclude: ["DESIGN.md"]),
+        .executableTarget(name: "LogicProofPortabilityProbe", dependencies: ["LogicProofProbeSupport"], exclude: ["DESIGN.md"]),
+        .executableTarget(name: "LogicProofEmbeddedPortabilityProbe", dependencies: ["LogicProofProbeSupport"], exclude: ["DESIGN.md"],
+            linkerSettings: [.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi]))]),
+        .target(name: "LogicSimulationProbeSupport", dependencies: ["LogicSimulation",
+            .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"), .product(name: "LogicKernelCore", package: "LogicDesign")], exclude: ["DESIGN.md"]),
+        .testTarget(name: "LogicSimulationKernelTests", dependencies: ["LogicSimulation", "LogicSimulationProbeSupport",
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"), .product(name: "LogicKernelCore", package: "LogicDesign")]),
+        .executableTarget(name: "LogicSimulationPortabilityProbe", dependencies: ["LogicSimulationProbeSupport"], exclude: ["DESIGN.md"],
+            linkerSettings: [.unsafeFlags(["-Xlinker", "-z", "-Xlinker", "stack-size=4194304"], .when(platforms: [.wasi]))]),
+        .executableTarget(name: "LogicSimulationEmbeddedPortabilityProbe", dependencies: ["LogicSimulationProbeSupport"], exclude: ["DESIGN.md"],
+            linkerSettings: [.linkedLibrary("swiftUnicodeDataTables", .when(platforms: [.wasi])),
+                .unsafeFlags(["-Xlinker", "-z", "-Xlinker", "stack-size=4194304"], .when(platforms: [.wasi]))]),
+        .target(name: "LogicSimulation", dependencies: [
+            .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+            .product(name: "LogicIR", package: "LogicDesign"),
+            .product(name: "LogicKernelCore", package: "LogicDesign")
+        ], exclude: ["DESIGN.md", "CellEvents/DESIGN.md", "RTLEvents/DESIGN.md", "BinaryRelations/DESIGN.md"]),
         .target(
             name: "LogicEvidence",
             dependencies: [
-                "LogicSimulation",
-                "LogicSynthesis",
-                "LogicEngineCore",
-                .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
                 .product(name: "LogicIR", package: "LogicDesign"),
-            ]
+                .product(name: "LogicDesignSerialization", package: "LogicDesign"),
+            ],
+            exclude: ["DESIGN.md"]
         ),
         .target(
             name: "LogicEngine",
             dependencies: [
-                "LogicEngineCore",
-                "LogicLowering",
-                "LogicSimulation",
-                "LogicSynthesis",
+                "LogicEngineCore", "LogicEngineRuntime", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicProof",
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
-            ]
+            ], exclude: ["DESIGN.md"]
+        ),
+        .testTarget(
+            name: "LogicWordLoweringTests",
+            dependencies: ["LogicLowering", .product(name: "SystemVerilogFrontend", package: "LogicDesign"), .product(name: "LogicIR", package: "LogicDesign"),
+                .product(name: "LogicKernelCore", package: "LogicDesign"),
+                .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
+                .product(name: "LogicDesignSerialization", package: "LogicDesign"), "LogicWordLoweringProbeSupport"]
+        ),
+        .testTarget(
+            name: "LogicBitLoweringTests",
+            dependencies: ["LogicLowering", .product(name: "LogicIR", package: "LogicDesign"),
+                .product(name: "LogicKernelCore", package: "LogicDesign"),
+                .product(name: "CircuiteFoundation", package: "CircuiteFoundation")]
         ),
         .testTarget(
             name: "LogicEngineTests",
             dependencies: [
                 "LogicEngineCore",
-                "LogicLowering",
-                "LogicSimulation",
-                "LogicSynthesis",
                 "LogicEvidence",
                 "LogicEngine",
+                "LogicEngineRuntime",
+                .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
                 .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
                 .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
-                .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
-                .product(name: "TimingCore", package: "TimingEngine"),
-                .product(name: "PDKCore", package: "PDKKit"),
             ],
             resources: [.copy("Fixtures")]
         ),
         .executableTarget(
             name: "LogicEngineCLI",
-            dependencies: ["LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicSynthesis", "LogicEvidence", "LogicEngine", .product(name: "LogicIR", package: "LogicDesign")]
+            dependencies: [
+                "LogicEngineRuntime",
+                "LogicEngineCore",
+                "LogicEngine",
+            ], exclude: ["DESIGN.md"]
         ),
     ]
 )
