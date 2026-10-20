@@ -42,9 +42,12 @@ resource exhaustion and cancellation cannot become completed results.
 
 The manifest selects exact public HTTPS revisions of CircuiteFoundation,
 LogicDesign, TimingEngine and PDKKit. Their current identities and qualification
-boundary are owned by [the package design](DESIGN.md#current-native-flow-dependency-alignment).
-This pin-only successor to public `a6dead55` aligns TimingEngine `0177d7da` and
-PDKKit `a538326c`, preserving all implementation/test/resource bytes.
+boundary are owned by [the package design](DESIGN.md#current-cancellation-dependency-alignment).
+This pin-only successor to public `a99216ecdd76bfee28b9c6f9f5162d4286662ef5` aligns
+TimingEngine `d6d0bec0ee5b97a25687ad0db02e127b6d3a9df0` and PDKKit
+`d27217e8312c072f4fde731d722e48f3040d5a5b`, preserving every implementation,
+test and resource byte. Existing runtime receipts keep their original graph;
+final Physical integration owns the new consumer execution.
 No local path, edited dependency or availability mirror is a release dependency.
 The Native host baseline is Swift 6.4 and macOS 27.
 

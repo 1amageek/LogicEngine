@@ -315,7 +315,7 @@ floor lacked the required mapped/typed-borrow APIs. The current public LogicDesi
 preserves those original required source contracts.
 
 
-## Current Native Flow Dependency Alignment
+## Prior Native Flow Dependency Alignment
 
 This pin-only successor starts at public LogicEngine
 `a6dead5545439c8b5fb2dd9860bf498d8f62be56`. All production, test and resource
@@ -336,3 +336,33 @@ checked receipt replay. This reconciles the exact graph for consuming Physical
 flows; it grants no new API, algorithm, temporal, process or release authority.
 Earlier portable, CLI and full-suite receipts retain their original finite scope
 and are not reported as rerun on this successor.
+
+
+## Current Cancellation Dependency Alignment
+
+This pin-only successor starts at public LogicEngine `a99216ecdd76bfee28b9c6f9f5162d4286662ef5`.
+All production/test/resource bytes, modes, products and license boundaries remain
+unchanged. The following exact published selectors reconcile the same Core graph:
+
+| Dependency | Exact revision |
+|---|---|
+| PDKKit | `d27217e8312c072f4fde731d722e48f3040d5a5b` |
+| TimingEngine | `d6d0bec0ee5b97a25687ad0db02e127b6d3a9df0` |
+
+The transitive CoreSpice revision is `5fa29e8accb1ff9de0d1e5f8bc9efe128accf0b7`. Its only
+production change from `40eefa8e` checks per-call cancellation after the first
+Native voltage-observation reservation, before metadata reservation. It changes
+no public API, parser, STA, PDK or Logic semantics. PDK source inspection uses
+`SPICEParser.parseProfile`; CoreSpiceIO has no dependency on the CoreSpice target
+that owns Native Flow. Timing uses its own STA/PDK products, and Logic required
+STA and replay use NativeSTAEngine. These consumer paths cannot call the changed
+Native Flow observation assembly.
+
+Fresh canonical HTTPS resolution and exact source preservation establish this
+mechanical compatibility step without paths, mirrors or edited dependencies.
+Existing consumer runtime receipts retain their original graph scope; no tests
+or builds are reported as rerun here. CoreSpice owns the demonstrated first-
+reservation cancellation red/green and finding-only recheck. The final Physical
+consumer compile/runtime owns integration on the reconciled graph, not these
+pin-only publications. No new physical/history/process or release guarantee is
+granted. The existing tracked lock is regenerated from that actual public graph.
