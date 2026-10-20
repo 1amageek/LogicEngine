@@ -42,8 +42,8 @@ resource exhaustion and cancellation cannot become completed results.
 
 The manifest selects exact public HTTPS revisions of CircuiteFoundation,
 LogicDesign, TimingEngine and PDKKit. Their current identities and qualification
-boundary are owned by [the package design](DESIGN.md#current-source-containment-dependency-alignment).
-This pin-only successor to public `3b3db10ddd8aa4cfb0e938da6644999f1feba5bb` aligns
+boundary are owned by [the package design](DESIGN.md#current-simulation-parameter-dependency-alignment).
+The historical pin-only successor to public `3b3db10ddd8aa4cfb0e938da6644999f1feba5bb` aligned
 TimingEngine `bc88162612c089c66d1a4022230d23958a7738c0` and PDKKit
 `2c35305fd943174b98009368cf0481f3b308718f`, preserving every implementation,
 test and resource byte. Existing runtime receipts keep their original graph;
@@ -79,3 +79,11 @@ source tree; the focused result is not whole-platform or process qualification.
 Owned source and documentation are available under [MIT](LICENSE). Dependencies,
 external tools and model/PDK inputs retain their own licenses and notices; this
 license does not relicense third-party materials.
+
+
+## Current simulation-parameter dependency floor
+
+The [current dependency contract](DESIGN.md#current-simulation-parameter-dependency-alignment)
+selects PDKKit `1bd686f8a4b47a90ef136b5f7dbcca7390971b8e`, TimingEngine `812036ecfcbbefdb784be344c8a1087c7eec8766`.
+Its CoreSpice source is `82eb35e8bc57402880db3529c8a1dc2045349d87`; CF `5f132c58` and SDK `1.2.0` remain fixed.
+Source behavior is retained; final Physical integration owns new consumer execution.

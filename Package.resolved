@@ -1,5 +1,5 @@
 {
-  "originHash" : "2a982361280f0854ce1ff6b7cb98bff23061461b5976b35bab1a7a07a1d354bc",
+  "originHash" : "482ab4997a668f9a53eababc4748589858f73f7cea4cae7d28c49f6974d15945",
   "pins" : [
     {
       "identity" : "circuitefoundation",
@@ -14,7 +14,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/1amageek/CoreSpice.git",
       "state" : {
-        "revision" : "70ebb46d96edf58a173fccc3f76ccb163076238f"
+        "revision" : "82eb35e8bc57402880db3529c8a1dc2045349d87"
       }
     },
     {
@@ -30,7 +30,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/1amageek/PDKKit.git",
       "state" : {
-        "revision" : "2c35305fd943174b98009368cf0481f3b308718f"
+        "revision" : "1bd686f8a4b47a90ef136b5f7dbcca7390971b8e"
       }
     },
     {
@@ -81,7 +81,7 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/1amageek/TimingEngine.git",
       "state" : {
-        "revision" : "bc88162612c089c66d1a4022230d23958a7738c0"
+        "revision" : "812036ecfcbbefdb784be344c8a1087c7eec8766"
       }
     },
     {
