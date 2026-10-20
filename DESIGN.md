@@ -338,7 +338,7 @@ Earlier portable, CLI and full-suite receipts retain their original finite scope
 and are not reported as rerun on this successor.
 
 
-## Current Cancellation Dependency Alignment
+## Prior Cancellation Dependency Alignment
 
 This pin-only successor starts at public LogicEngine `a99216ecdd76bfee28b9c6f9f5162d4286662ef5`.
 All production/test/resource bytes, modes, products and license boundaries remain
@@ -366,3 +366,31 @@ reservation cancellation red/green and finding-only recheck. The final Physical
 consumer compile/runtime owns integration on the reconciled graph, not these
 pin-only publications. No new physical/history/process or release guarantee is
 granted. The existing tracked lock is regenerated from that actual public graph.
+
+
+## Current Source Containment Dependency Alignment
+
+This pin-only successor starts at public LogicEngine `3b3db10ddd8aa4cfb0e938da6644999f1feba5bb`.
+All production/test/resource bytes, modes, products and license boundaries remain
+unchanged. Exact published selectors are:
+
+| Dependency | Exact revision |
+|---|---|
+| PDKKit | `2c35305fd943174b98009368cf0481f3b308718f` |
+| TimingEngine | `bc88162612c089c66d1a4022230d23958a7738c0` |
+
+The transitive CoreSpice revision is `70ebb46d96edf58a173fccc3f76ccb163076238f`. Its only
+production change from `5fa29e8a` accepts identical valid finite source-enclosure
+endpoints before applying the existing directed containment test. No public API,
+parser, PDK, STA or Logic value contract changes. PDK uses
+`CoreSpiceIO.SPICEParser.parseProfile`; CoreSpiceIO does not depend on the target
+owning Native Flow. Timing uses STA/PDK products, and Logic required STA and
+replay use NativeSTAEngine. None of these paths invokes the changed Flow assembly.
+
+Fresh canonical HTTPS resolution and exact source preservation qualify this
+mechanical pin reconciliation without paths, mirrors or edited dependencies.
+Existing consumer runtime receipts retain their original graph scope; builds and
+tests are not rerun or claimed on this successor graph. CoreSpice owns the actual
+identical-enclosure red/green and scoped review. Final Physical consumer execution
+owns integration. This grants no new full-history, physical-root or release
+guarantee. The existing tracked lock is regenerated from the actual public graph.

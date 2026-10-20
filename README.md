@@ -42,10 +42,10 @@ resource exhaustion and cancellation cannot become completed results.
 
 The manifest selects exact public HTTPS revisions of CircuiteFoundation,
 LogicDesign, TimingEngine and PDKKit. Their current identities and qualification
-boundary are owned by [the package design](DESIGN.md#current-cancellation-dependency-alignment).
-This pin-only successor to public `a99216ecdd76bfee28b9c6f9f5162d4286662ef5` aligns
-TimingEngine `d6d0bec0ee5b97a25687ad0db02e127b6d3a9df0` and PDKKit
-`d27217e8312c072f4fde731d722e48f3040d5a5b`, preserving every implementation,
+boundary are owned by [the package design](DESIGN.md#current-source-containment-dependency-alignment).
+This pin-only successor to public `3b3db10ddd8aa4cfb0e938da6644999f1feba5bb` aligns
+TimingEngine `bc88162612c089c66d1a4022230d23958a7738c0` and PDKKit
+`2c35305fd943174b98009368cf0481f3b308718f`, preserving every implementation,
 test and resource byte. Existing runtime receipts keep their original graph;
 final Physical integration owns the new consumer execution.
 No local path, edited dependency or availability mirror is a release dependency.
