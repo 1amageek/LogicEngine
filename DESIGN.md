@@ -264,7 +264,7 @@ snapshot. Their existing references keep their original finite proof scope;
 private task logs and output artifacts are not part of the source distribution.
 
 
-## Public Prerequisite Dependency Floor
+## Historical Public Prerequisite Dependency Floor
 
 This finite source publication preserves selected implementation/test/resource
 bytes from `f5869ffe6ecd518671f6fe90aebb4b529a2ff174`, excluding only the explicitly
@@ -299,7 +299,7 @@ not requalify unrelated portable targets, external backends, full temporal
 semantics, foundry processes or release policy. No production or test algorithm
 changes are part of this dependency/source-publication step.
 
-The r2 public graph resolved eleven clean HTTPS dependencies. On Swift 6.4.0
+The original r2 public graph resolved eleven clean HTTPS dependencies. On Swift 6.4.0
 with the macOS 27 SDK and two build jobs, the explicit `LogicRuntimeTests`
 test product compiled in 219.585 seconds. The four `OperatingProcessScopeTests`
 and six `ActualCellOperatingConditionTests` all executed with zero skips in
@@ -313,3 +313,26 @@ review and explicit publication remain separate gates.
 The earlier r1 compile refusal remains retained separately; its old LogicDesign
 floor lacked the required mapped/typed-borrow APIs. The current public LogicDesign
 preserves those original required source contracts.
+
+
+## Current Native Flow Dependency Alignment
+
+This pin-only successor starts at public LogicEngine
+`a6dead5545439c8b5fb2dd9860bf498d8f62be56`. All production, test and resource
+bytes, modes, symlinks, products and licenses remain unchanged. The existing
+source migration and historical exclusions above are not repeated or expanded.
+
+| Updated dependency | Exact published revision | Dependency effect |
+|---|---|---|
+| PDKKit | `a538326cec683bbd41a971c123d817e6093233e3` | Same PDK APIs, selecting CoreSpice `40eefa8efe9960def7d7151298e96f898cbebab2` |
+| TimingEngine | `0177d7da87bfe824f79e8dbce19ffcc00a65f70b` | Existing STA/source contracts with the same PDK/Core revisions |
+
+Other direct selectors stay unchanged. The tracked lock is freshly resolved from
+canonical HTTPS without mirrors, paths or edited checkouts. Qualification builds
+`LogicRuntimeTests` and executes the original `OperatingProcessScopeTests` and
+`ActualCellOperatingConditionTests`: ten declarations covering actual source,
+normal-power/corner qualification, required STA, typed bounds/cancellation and
+checked receipt replay. This reconciles the exact graph for consuming Physical
+flows; it grants no new API, algorithm, temporal, process or release authority.
+Earlier portable, CLI and full-suite receipts retain their original finite scope
+and are not reported as rerun on this successor.

@@ -42,7 +42,9 @@ resource exhaustion and cancellation cannot become completed results.
 
 The manifest selects exact public HTTPS revisions of CircuiteFoundation,
 LogicDesign, TimingEngine and PDKKit. Their current identities and qualification
-boundary are owned by [the package design](DESIGN.md#public-prerequisite-dependency-floor).
+boundary are owned by [the package design](DESIGN.md#current-native-flow-dependency-alignment).
+This pin-only successor to public `a6dead55` aligns TimingEngine `0177d7da` and
+PDKKit `a538326c`, preserving all implementation/test/resource bytes.
 No local path, edited dependency or availability mirror is a release dependency.
 The Native host baseline is Swift 6.4 and macOS 27.
 
@@ -65,7 +67,7 @@ The focused consuming fixtures are
 and [ActualCellOperatingConditionTests](Tests/LogicRuntimeTests/ActualCellOperatingConditionTests.swift).
 They exercise source-selected functional premises, candidate qualification,
 strict native STA, cancellation/resource refusal and exact checked reload.
-The current public graph executed all ten tests with zero skips on Swift 6.4.0
+The original prerequisite graph executed all ten tests with zero skips on Swift 6.4.0
 and the macOS 27 SDK. Execution evidence is recorded outside the distributed
 source tree; the focused result is not whole-platform or process qualification.
 
