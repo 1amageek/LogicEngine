@@ -12,6 +12,9 @@ import TimingCore
 internal enum LogicRuntimeComposition {
     static func compilation(_ request: LogicSynthesisRequest, io: inout LogicRuntimeIO,
                             context: inout LogicKernelContext) throws -> LogicLibraryCompilation {
+        if io.controlled != nil {
+            return try controlledCompilation(request, io: &io, context: &context)
+        }
         let bytes = Array(try io.read(request.library))
         let usage = context.usage
         let limits = context.limits
@@ -42,6 +45,9 @@ internal enum LogicRuntimeComposition {
     }
     static func sources(_ inputs: [LogicSourceInput], io: inout LogicRuntimeIO,
                         context: inout LogicKernelContext) throws -> LogicSourceBundle {
+        if io.controlled != nil {
+            return try controlledSources(inputs, io: &io, context: &context)
+        }
         var documents: [LogicSourceDocument] = []
         for input in inputs {
             documents.append(try .init(logicalName: input.logicalName, artifactID: input.artifact.id,
@@ -68,16 +74,27 @@ internal enum LogicRuntimeComposition {
                        caseMatches: n, ports: n, processes: n), maximumNesting: nesting)
     }
     static func problem(_ original: BitLogicDesign, _ mapped: MappedGateDesign,
-                        context: inout LogicKernelContext) throws -> LogicEquivalenceProblem {
-        let counts = original.withTables { _, _, ports, _, states, _ in
+                        context: inout LogicKernelContext, controlled: Bool = false) throws -> LogicEquivalenceProblem {
+        let counts = try original.withTables { _, _, ports, _, states, _ in
             var inputs = 0; var outputs = 0
             for p in ports.indices {
+                if controlled { try context.charge(.workUnits) }
                 if ports[p].direction == .input { inputs += ports[p].bits.count } else { outputs += ports[p].bits.count }
             }
             return (inputs, outputs, states.count)
         }
         func pairs(_ count: Int) throws -> [LogicBitCorrespondence] {
-            try (0..<count).map { try .init(reference: $0, candidate: $0) }
+            if !controlled { return try (0..<count).map { try .init(reference: $0, candidate: $0) } }
+            let size = UInt64(count).multipliedReportingOverflow(by: UInt64(MemoryLayout<LogicBitCorrespondence>.stride))
+            guard !size.overflow else { throw LogicKernelError.invalidInput("Proof correspondence capacity overflows") }
+            _ = try context.reserveStorage(byteCount: size.partialValue)
+            var result: [LogicBitCorrespondence] = []
+            result.reserveCapacity(count)
+            for index in 0..<count {
+                try context.charge(.workUnits)
+                result.append(try .init(reference: index, candidate: index))
+            }
+            return result
         }
         return try .init(reference: .bit(original), candidate: .mapped(mapped), inputs: pairs(counts.0),
                          outputs: pairs(counts.1), states: pairs(counts.2), context: &context)

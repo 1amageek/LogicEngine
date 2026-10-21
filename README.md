@@ -87,3 +87,8 @@ The [current dependency contract](DESIGN.md#current-simulation-parameter-depende
 selects PDKKit `1bd686f8a4b47a90ef136b5f7dbcca7390971b8e`, TimingEngine `812036ecfcbbefdb784be344c8a1087c7eec8766`.
 Its CoreSpice source is `82eb35e8bc57402880db3529c8a1dc2045349d87`; CF `5f132c58` and SDK `1.2.0` remain fixed.
 Source behavior is retained; final Physical integration owns new consumer execution.
+
+
+## Controlled reload qualification
+
+The [controlled public-floor contract](DESIGN.md#controlled-reload-on-the-stable-public-floor) owns the exact current dependency selectors and finite qualification scope. The additive API retains the original accountant, proof and STA authority; existing CLI commands keep their legacy contract. On the locked public graph, the final Native host API/CLI run passed 19 declarations / 31 expanded cases with zero skips. Unchanged prior 32 declarations / 32 cases compose to 51 distinct declarations / 63 cases; this is not an all-fresh or whole-Logic qualification. The sole review finding has a genuine RED and closed targeted recheck.

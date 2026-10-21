@@ -8,12 +8,36 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
     public let rootDirectory: URL
     public let defaultOutputDirectory: URL?
     private let digester: SHA256ContentDigester
+    internal let controlledWorkspaceSegments: [String]
+    internal let controlledOutputSegments: [String]?
+    internal let controlledReadRoots: [LogicArtifactReadRoot]
 
     public init(
         rootDirectory: URL = URL(fileURLWithPath: FileManager.default.currentDirectoryPath, isDirectory: true),
         defaultOutputDirectory: URL? = nil,
         digester: SHA256ContentDigester = SHA256ContentDigester()
     ) {
+        self.init(rootDirectory: rootDirectory, defaultOutputDirectory: defaultOutputDirectory,
+            digester: digester, readRoots: [])
+    }
+
+    public init(rootDirectory: URL,
+        defaultOutputDirectory: URL? = nil,
+        digester: SHA256ContentDigester = SHA256ContentDigester(),
+        controlledReadRoots: [LogicArtifactReadRoot]) throws {
+        for index in controlledReadRoots.indices {
+            for prior in 0..<index {
+                guard controlledReadRoots[index].rootID != controlledReadRoots[prior].rootID else {
+                    throw LogicArtifactReadRootError.duplicateRootID(controlledReadRoots[index].rootID)
+                }
+            }
+        }
+        self.init(rootDirectory: rootDirectory, defaultOutputDirectory: defaultOutputDirectory,
+            digester: digester, readRoots: controlledReadRoots)
+    }
+
+    private init(rootDirectory: URL, defaultOutputDirectory: URL?,
+        digester: SHA256ContentDigester, readRoots: [LogicArtifactReadRoot]) {
         self.rootDirectory = URL(
             fileURLWithPath: rootDirectory.standardizedFileURL.path(percentEncoded: false),
             isDirectory: true
@@ -25,6 +49,13 @@ public struct FileSystemLogicArtifactStore: LogicArtifactStoring {
             )
         }
         self.digester = digester
+        self.controlledReadRoots = readRoots
+        // Immutable caller-owned root configuration, prepared before any controlled invocation.
+        controlledWorkspaceSegments = self.rootDirectory.path(percentEncoded: false)
+            .split(separator: "/").map(String.init)
+        controlledOutputSegments = self.defaultOutputDirectory.map {
+            $0.path(percentEncoded: false).split(separator: "/").map(String.init)
+        }
     }
 
     public func read(_ artifact: LogicArtifactBinding) throws -> Data {

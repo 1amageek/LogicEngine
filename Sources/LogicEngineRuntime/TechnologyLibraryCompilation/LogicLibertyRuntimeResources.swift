@@ -8,8 +8,8 @@ internal final class LogicLibertyRuntimeResources: LibertySourceResourceAccounti
     let maximumStorage: UInt64
     let maximumWork: UInt64
     let maximumAllocations: UInt64
-    let control: LogicRuntimeControl
-    init(maximumStorage: UInt64, maximumWork: UInt64, maximumAllocations: UInt64, control: LogicRuntimeControl) {
+    let control: any LogicRunControlling
+    init(maximumStorage: UInt64, maximumWork: UInt64, maximumAllocations: UInt64, control: any LogicRunControlling) {
         self.maximumStorage = maximumStorage; self.maximumWork = maximumWork
         self.maximumAllocations = maximumAllocations; self.control = control
     }

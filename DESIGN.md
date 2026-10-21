@@ -416,3 +416,12 @@ source and assumptions. This step records canonical public dependency resolution
 no numerical build or test is claimed as rerun. The final Physical consumer owns
 compiled/runtime integration on this graph. No stable tag or broader physical,
 interval or history qualification is granted. The tracked lock records this graph.
+
+
+## Controlled Reload on the Stable Public Floor
+
+This additive controlled-reload candidate starts at public `c322b4f16c4673ba7b0c0776dbb1abb2d816d7eb`. It retains the public source, metadata history, products, resources, license and mode contracts. The controlled read/replay owner contracts are defined by [VerifiedArtifacts](Sources/LogicEngineRuntime/VerifiedArtifacts/DESIGN.md) and [ArtifactStorage](Sources/LogicEngineCore/ArtifactStorage/DESIGN.md).
+
+The existing four direct edges select CircuiteFoundation exact `26.1021.1`, LogicDesign `9fbffcb1dfbf37517dfc05aa0f37f53c6a5e7659`, TimingEngine `bbca740b65543c2a8c0737317e6dd1c258d18ee4`, and PDKKit `82fddd548af704b3f0723eada8e5b09df2dad6e4`. ToolQualification, CoreSpice and SDK remain transitive dependencies. The fresh tracked lock records the canonical public graph.
+
+The final Native host qualification passed the real RUP and mandatory full typed STA replay paths, copied-owner final refunds, original resource/cancellation causes, and the current legacy CLI save/reload and rehashed-metric refusal. Current 19 declarations / 31 expanded cases / six suites / zero skips compose with unchanged prior 32 declarations / 32 cases, for 51 distinct declarations / 63 cases; this is not an all-fresh run. The owning component records the genuine producer-audit RED and the closed finding-limited recheck. Existing CLI checks establish its legacy route, not a controlled CLI operation. Historical evidence keeps its original graph. Full-phase/history and physical or process guarantees remain outside this finite gate.

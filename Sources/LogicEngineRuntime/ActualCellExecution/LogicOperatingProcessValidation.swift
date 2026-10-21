@@ -2,6 +2,7 @@ import CircuiteFoundation
 import Foundation
 import LogicKernelCore
 import PDKCore
+import PDKDiscovery
 import TimingCore
 
 /// Joins public manifest and original Liberty facts; it performs no timing analysis.
@@ -13,11 +14,22 @@ internal enum LogicOperatingProcessValidation {
         try scope.validate(library: request.library.reference) { amount throws(LogicKernelError) in
             try context.charge(.workUnits, amount: amount)
         }
-        let data = try io.read(NativeLogicSynthesisEngine.logicBinding(scope.pdkManifest))
-        // The public codec is an opaque byte-bounded stage; admit its retained input before decoding.
-        _ = try context.reserveStorage(byteCount: UInt64(data.count))
-        try context.charge(.workUnits, amount: UInt64(data.count))
-        let manifest = try PDKManifestCodec.decode(data: data)
+        let data = try io.read(NativeLogicSynthesisEngine.logicBinding(scope.pdkManifest), context: &context)
+        let controlledManifest: PDKControlledManifest?
+        let manifest: PDKManifest
+        if let controlled = io.controlled {
+            let result = try LogicReloadDocumentDecoding.manifest(data: data, limits: io.limits,
+                context: &context, resources: controlled.resources)
+            controlledManifest = result
+            manifest = result.manifest
+        } else {
+            // Preserve the legacy host codec and its original accounting profile.
+            _ = try context.reserveStorage(byteCount: UInt64(data.count))
+            try context.charge(.workUnits, amount: UInt64(data.count))
+            manifest = try PDKManifestCodec.decode(data: data)
+            controlledManifest = nil
+        }
+        defer { withExtendedLifetime(controlledManifest) {} }
         let limit = min(request.limits.maximumTableEntries, io.limits.maximumTableEntries)
         var records = 0
         func count(_ amount: Int) throws {
@@ -46,7 +58,8 @@ internal enum LogicOperatingProcessValidation {
         _ = try context.reserveStorage(byteCount: bytes.partialValue)
         try context.charge(.nodes, amount: UInt64(records))
         try context.charge(.workUnits, amount: UInt64(records))
-        guard manifest.validate().isValid,
+        let valid = controlledManifest?.validation.isValid ?? manifest.validate().isValid
+        guard valid,
               try same(manifest.processID, scope.processID, context: &context),
               try same(manifest.version, scope.pdkVersion, context: &context) else {
             throw LogicKernelError.invalidInput("Functional process scope differs from the captured manifest")

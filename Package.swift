@@ -3,20 +3,20 @@ import PackageDescription
 
 let circuiteFoundationDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/CircuiteFoundation.git",
-    revision: "5f132c58209123433e0e479e1ea61096e46061ba"
+    exact: "26.1021.1"
 )
 
 let logicDesignDependency: Package.Dependency = .package(
     url: "https://github.com/1amageek/LogicDesign.git",
-    revision: "5e1d3eec838a0add91c617413682d186a5182335"
+    revision: "9fbffcb1dfbf37517dfc05aa0f37f53c6a5e7659"
 )
 
 let timingEngineDependency: Package.Dependency = .package(url: "https://github.com/1amageek/TimingEngine.git",
-    revision: "812036ecfcbbefdb784be344c8a1087c7eec8766"
+    revision: "bbca740b65543c2a8c0737317e6dd1c258d18ee4"
 )
 
 let pdkKitDependency: Package.Dependency = .package(url: "https://github.com/1amageek/PDKKit.git",
-    revision: "1bd686f8a4b47a90ef136b5f7dbcca7390971b8e"
+    revision: "82fddd548af704b3f0723eada8e5b09df2dad6e4"
 )
 
 let package = Package(
@@ -59,6 +59,8 @@ let package = Package(
         ], exclude: ["DESIGN.md", "StateOptimization/DESIGN.md", "TechnologyMapping/DESIGN.md"]),
         .target(name: "LogicEngineRuntime", dependencies: [
             .product(name: "PDKCore", package: "PDKKit"),
+            .product(name: "PDKDiscovery", package: "PDKKit"),
+            .product(name: "CircuiteFoundationFileSystem", package: "CircuiteFoundation"),
             "LogicEngineCore", "LogicLowering", "LogicSimulation", "LogicProof", "LogicSynthesis",
             .product(name: "LogicDesignSerialization", package: "LogicDesign"),
             .product(name: "SystemVerilogFrontend", package: "LogicDesign"),
@@ -74,11 +76,13 @@ let package = Package(
             .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
             .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
             .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+            .product(name: "CircuiteFoundationFileSystem", package: "CircuiteFoundation"),
             .product(name: "LogicIR", package: "LogicDesign"),
             .product(name: "LogicKernelCore", package: "LogicDesign"),
             .product(name: "STAEngine", package: "TimingEngine"),
             .product(name: "TimingCore", package: "TimingEngine"),
-            .product(name: "PDKCore", package: "PDKKit")], resources: [.copy("Fixtures")]),
+            .product(name: "PDKCore", package: "PDKKit"),
+            .product(name: "PDKDiscovery", package: "PDKKit")], resources: [.copy("Fixtures")]),
         .testTarget(name: "LogicLibraryCompilationTests", dependencies: ["LogicEngineRuntime", "LogicSimulation", "LogicSynthesis", "LogicProof", "LogicProofProbeSupport",
             .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
             .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
@@ -118,6 +122,7 @@ let package = Package(
                 .product(name: "CircuiteFoundation", package: "CircuiteFoundation"),
                 .product(name: "CircuiteFoundationCrypto", package: "CircuiteFoundation"),
                 .product(name: "CircuiteFoundationFoundation", package: "CircuiteFoundation"),
+                .product(name: "CircuiteFoundationFileSystem", package: "CircuiteFoundation"),
             ], exclude: ["DESIGN.md", "ArtifactStorage/DESIGN.md"]
         ),
         .target(

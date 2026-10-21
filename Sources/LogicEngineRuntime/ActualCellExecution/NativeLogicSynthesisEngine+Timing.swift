@@ -115,38 +115,7 @@ extension NativeLogicSynthesisEngine {
     }
 
     internal static func timingDesign(_ mapped: MappedGateDesign, top: String) throws -> Data {
-        try mapped.withTables { nets, instances, pins, ports, bits, _ in
-            var names = nets.indices.map { "n\($0)" }; var assigned = Set<Int>()
-            for p in ports.indices {
-                for b in 0..<ports[p].bits.count {
-                    let n = bits[ports[p].bits.lowerBound + b].rawValue
-                    if assigned.insert(n).inserted { names[n] = "p\(p)_\(b)" }
-                }
-            }
-            var timingPorts: [TimingDesign.Port] = []
-            for p in ports.indices {
-                for b in 0..<ports[p].bits.count {
-                    let n = bits[ports[p].bits.lowerBound + b].rawValue
-                    let name = "p\(p)_\(b)"
-                    timingPorts.append(.init(name: name, direction: ports[p].direction == .input ? .input : .output,
-                        net: names[n] == name ? nil : names[n]))
-                }
-            }
-            var timingNets: [TimingDesign.Net] = []
-            for n in nets.indices {
-                let constant: TimingDesign.Constant?
-                if case .constant(let value) = nets[n].driver { constant = value ? .one : .zero }
-                else { constant = nil }
-                timingNets.append(.init(name: names[n], constant: constant))
-            }
-            var timingInstances: [TimingDesign.Instance] = []
-            for i in instances.indices {
-                let cell = try mapped.library.cell(at: instances[i].cell); var connections: [String: String] = [:]
-                for p in 0..<cell.pinCount { connections[try cell.pin(at: .init(p)).name] = names[pins[instances[i].pins.lowerBound + p].rawValue] }
-                timingInstances.append(.init(name: "i\(i)", cell: cell.name, connections: connections))
-            }
-            return try LogicRuntimeIO.encode(TimingDesign(topDesignName: top, ports: timingPorts,
-                instances: timingInstances, nets: timingNets))
-        }
+        let projection = try LogicReloadTimingProjection.build(mapped, top: top)
+        return try LogicRuntimeIO.encode(projection.value)
     }
 }
